@@ -11,8 +11,12 @@ enum EncryptionService {
 
     /// Keychain 服务名
     private static let keychainService = "app.memozia.encryption"
+    /// 仅用于解密同机历史数据，不创建、覆盖或删除 Memonta 的密钥。
+    private static let legacyKeychainService = "com.Memonta.encryption"
     /// 密钥存储键
     private static let keychainKey = "encryption_key"
+    /// 手动切换主密钥时保留的原 Memozia 密钥；只读兼容，不在此处轮换密钥。
+    private static let previousKeychainKey = "previous_encryption_key"
 
     /// 加密链路日志（失败留痕用）
     private static let encryptionLogger = Logger(subsystem: "app.memozia", category: "Encryption")
@@ -26,6 +30,8 @@ enum EncryptionService {
 
     private final class KeyBox: @unchecked Sendable {
         var key: SymmetricKey?
+        var legacyKey: SymmetricKey?
+        var previousKey: SymmetricKey?
     }
 
     /// 解密结果缓存（key = 密文，value = 明文；同一密文解密结果恒定）
@@ -98,6 +104,88 @@ enum EncryptionService {
         return newKey
     }
 
+    /// 与主密钥共用 keyLock；只缓存成功读取的密钥，读取失败或暂不存在时允许重试。
+    private static func getLegacyKey() throws -> SymmetricKey? {
+        keyLock.lock()
+        defer { keyLock.unlock() }
+        if let cached = keyBox.legacyKey { return cached }
+
+        #if DEBUG
+        if AppRuntime.isRunningTests,
+           ProcessInfo.processInfo.environment["MEMOZIA_EPHEMERAL_TEST_ENCRYPTION"] == "1" {
+            return nil
+        }
+        #endif
+
+        let data: Data?
+        do {
+            data = try Keychain(service: legacyKeychainService)
+                .accessibility(.afterFirstUnlock)
+                .getData(keychainKey)
+        } catch {
+            throw EncryptionError.keychainReadFailed(error.localizedDescription)
+        }
+        guard let data else { return nil }
+        guard data.count == 32 else { throw EncryptionError.decryptionFailed }
+        let key = SymmetricKey(data: data)
+        keyBox.legacyKey = key
+        return key
+    }
+
+    /// 主密钥被更新为 Memonta 密钥后，仍可读取原 Memozia 密钥加密的数据。
+    private static func getPreviousKey() throws -> SymmetricKey? {
+        keyLock.lock()
+        defer { keyLock.unlock() }
+        if let cached = keyBox.previousKey { return cached }
+
+        #if DEBUG
+        if AppRuntime.isRunningTests,
+           ProcessInfo.processInfo.environment["MEMOZIA_EPHEMERAL_TEST_ENCRYPTION"] == "1" {
+            return nil
+        }
+        #endif
+
+        let data: Data?
+        do {
+            data = try Keychain(service: keychainService)
+                .accessibility(.afterFirstUnlock)
+                .getData(previousKeychainKey)
+        } catch {
+            throw EncryptionError.keychainReadFailed(error.localizedDescription)
+        }
+        guard let data else { return nil }
+        guard data.count == 32 else { throw EncryptionError.decryptionFailed }
+        let key = SymmetricKey(data: data)
+        keyBox.previousKey = key
+        return key
+    }
+
+    /// 主密钥认证失败后才读取旧密钥；格式损坏和 Keychain 错误保留原有失败语义。
+    /// 独立的读取闭包让兼容链路可以用随机测试密钥验证，无需访问用户 Keychain。
+    static func openSealedData(
+        _ combinedData: Data,
+        using key: SymmetricKey,
+        previousKey: () throws -> SymmetricKey? = { nil },
+        legacyKey: () throws -> SymmetricKey?
+    ) throws -> Data {
+        let sealedBox = try AES.GCM.SealedBox(combined: combinedData)
+        do {
+            return try AES.GCM.open(sealedBox, using: key)
+        } catch CryptoKitError.authenticationFailure {
+            if let previous = try previousKey() {
+                do {
+                    return try AES.GCM.open(sealedBox, using: previous)
+                } catch CryptoKitError.authenticationFailure {
+                    // 原 Memozia 密钥不匹配时，继续尝试 Memonta 历史密钥。
+                }
+            }
+            guard let legacy = try legacyKey() else {
+                throw CryptoKitError.authenticationFailure
+            }
+            return try AES.GCM.open(sealedBox, using: legacy)
+        }
+    }
+
     // MARK: - 文本加密/解密
 
     /// 加密文本
@@ -141,8 +229,9 @@ enum EncryptionService {
             throw EncryptionError.invalidCiphertext
         }
 
-        let sealedBox = try AES.GCM.SealedBox(combined: combinedData)
-        let decryptedData = try AES.GCM.open(sealedBox, using: key)
+        let decryptedData = try openSealedData(
+            combinedData, using: key, previousKey: getPreviousKey, legacyKey: getLegacyKey
+        )
 
         guard let plaintext = String(data: decryptedData, encoding: .utf8) else {
             throw EncryptionError.decryptionFailed
@@ -302,8 +391,9 @@ enum EncryptionService {
     static func decryptFile(at encryptedURL: URL) throws -> Data {
         let key = try getOrCreateKey()
         let combinedData = try Data(contentsOf: encryptedURL)
-        let sealedBox = try AES.GCM.SealedBox(combined: combinedData)
-        return try AES.GCM.open(sealedBox, using: key)
+        return try openSealedData(
+            combinedData, using: key, previousKey: getPreviousKey, legacyKey: getLegacyKey
+        )
     }
 
     // MARK: - 数据迁移

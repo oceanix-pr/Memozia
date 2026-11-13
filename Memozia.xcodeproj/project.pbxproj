@@ -54,6 +54,7 @@
 		2B1D3B76A927FE8A597B3C15 /* MainActor+AssumeOnMainThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84887CF1B565FB3F57653751 /* MainActor+AssumeOnMainThread.swift */; };
 		2B9ED70DC3FAE832525477DF /* PIIScanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB23251DB35B0B884D65069 /* PIIScanService.swift */; };
 		2C75EB346DB24C4912B8C74C /* UpdatePermissionRepairTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA136590F93D075F5728B2D /* UpdatePermissionRepairTests.swift */; };
+		2CAD3AD3FFC6D8C48D0036B2 /* LegacyEncryptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C96A8B758AD0ACC0845E5A8 /* LegacyEncryptionTests.swift */; };
 		2CB29B355FB5B38308CBD28B /* VisionOCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1CE65CC46528FEC2F9D227A /* VisionOCRService.swift */; };
 		2DF77522B8658CB9D276B310 /* MCPLoopbackListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B11B64D23A6D2B4BDCA64B9 /* MCPLoopbackListener.swift */; };
 		2E34431B0E7700D2F7C0F926 /* WaveformStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344086E347C6D8D9235860CD /* WaveformStrip.swift */; };
@@ -345,6 +346,7 @@
 		6AFF9463B91BAB359C11D8C2 /* StartupBootstrapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupBootstrapTests.swift; sourceTree = "<group>"; };
 		6B3EE0F2B57EA7AAB5730090 /* MicCaptureFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicCaptureFileStore.swift; sourceTree = "<group>"; };
 		6C6FF36A4C04AFDB284A71C1 /* LLMPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMPreset.swift; sourceTree = "<group>"; };
+		6C96A8B758AD0ACC0845E5A8 /* LegacyEncryptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyEncryptionTests.swift; sourceTree = "<group>"; };
 		6D0B186A914A27804B7AD979 /* Memozia.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Memozia.entitlements; sourceTree = "<group>"; };
 		6D37A0CA3201313380D8E7E6 /* ScreenshotNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotNotifications.swift; sourceTree = "<group>"; };
 		6D60C241C2043D250C30F339 /* SystemAudioCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAudioCaptureService.swift; sourceTree = "<group>"; };
@@ -734,6 +736,7 @@
 				CF47C98323FB976DB05FF877 /* EntryMirrorStoreTests.swift */,
 				333CCF7C744E7DE28BEC2279 /* ImprovementRegressionTests.swift */,
 				91CA011EFF5AACD1FB9F848D /* KeyframeExtractorTests.swift */,
+				6C96A8B758AD0ACC0845E5A8 /* LegacyEncryptionTests.swift */,
 				E4C9B81ABB7607C7CFB3BD03 /* LLMConfigDraftTests.swift */,
 				02981D39BD5B24999028665D /* LLMTitleGenerationTests.swift */,
 				0B8D5A74DCB967C371DF619C /* MarkdownPDFRendererTests.swift */,
@@ -1273,6 +1276,7 @@
 				626AE8C59F7647CA454AA56C /* KeyframeExtractorTests.swift in Sources */,
 				69B4E7503500236E8855157D /* LLMConfigDraftTests.swift in Sources */,
 				3D75D032E22CBC2FDB91D72A /* LLMTitleGenerationTests.swift in Sources */,
+				2CAD3AD3FFC6D8C48D0036B2 /* LegacyEncryptionTests.swift in Sources */,
 				EBA59E856DFF987B61B86838 /* MCPReadOnlyTests.swift in Sources */,
 				752DA55A20C9BC51BCA961AC /* MarkdownPDFRendererTests.swift in Sources */,
 				6D723966CFA03E94A1B67274 /* MediaCleanupTests.swift in Sources */,
@@ -1433,7 +1437,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 153;
+				CURRENT_PROJECT_VERSION = 154;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1449,7 +1453,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.6.9;
+				MARKETING_VERSION = 9.6.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1570,7 +1574,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 153;
+				CURRENT_PROJECT_VERSION = 154;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1592,7 +1596,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.6.9;
+				MARKETING_VERSION = 9.6.10;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
