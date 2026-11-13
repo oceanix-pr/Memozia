@@ -62,6 +62,7 @@
 		2FC709293F5D7519429D4F34 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A24E62BCAA3B77531BB741F /* AppUpdateService.swift */; };
 		31C6AC06659E4C5539889CE2 /* RecordingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117F0191ECCEE2EDC0FB70E8 /* RecordingViewModel.swift */; };
 		3310B48B3298B20963B39846 /* CurrentTimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66A27CE1311EBFCE4A97A2FD /* CurrentTimeService.swift */; };
+		34E6D93A62CB5C8014ADF853 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = E34CAB3EB474AF9398162DB5 /* AppIcon.icon */; };
 		352531B06D72B5B541DAEABC /* NIOPosix in Frameworks */ = {isa = PBXBuildFile; productRef = A5EEEF96CC154CB4A2E17467 /* NIOPosix */; };
 		355A17DEC93764D3BA63CA2B /* ExportDocuments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898FD7D5544563638A667E6A /* ExportDocuments.swift */; };
 		39C921CCE73EF842EAF99EE9 /* TranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D24691CE159ED8A2C42F7A6 /* TranscriptView.swift */; };
@@ -439,6 +440,7 @@
 		DC89F9835CBD4B466F792BFE /* TextFindReplace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFindReplace.swift; sourceTree = "<group>"; };
 		E101AE3221485FB5C49F9C2D /* ScreenVideoRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenVideoRecorder.swift; sourceTree = "<group>"; };
 		E13A591C9E3A3684A5F11C8B /* MicCaptureRestartTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicCaptureRestartTests.swift; sourceTree = "<group>"; };
+		E34CAB3EB474AF9398162DB5 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		E4BE88C531AA538F8A07AF41 /* SummarySources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummarySources.swift; sourceTree = "<group>"; };
 		E4C0D97854285B289F77B246 /* PrivacyPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyTests.swift; sourceTree = "<group>"; };
 		E4C9B81ABB7607C7CFB3BD03 /* LLMConfigDraftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMConfigDraftTests.swift; sourceTree = "<group>"; };
@@ -500,6 +502,7 @@
 		0225704C31E41861A1500C20 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				E34CAB3EB474AF9398162DB5 /* AppIcon.icon */,
 				F2338732C9BAF82CEE634CE1 /* Assets.xcassets */,
 				27A6AFF05B71CF5A01ACC7DB /* Info.plist */,
 				6594516071D94D1046A56F2F /* InfoPlist.xcstrings */,
@@ -1011,6 +1014,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34E6D93A62CB5C8014ADF853 /* AppIcon.icon in Resources */,
 				03C50B47F0B28313296D9105 /* Assets.xcassets in Resources */,
 				1D52ACB071BB3D8FB71EA392 /* InfoPlist.xcstrings in Resources */,
 				506F64EFA21C170FD5CDFB27 /* Localizable.xcstrings in Resources */,
@@ -1437,7 +1441,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 155;
+				CURRENT_PROJECT_VERSION = 156;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1453,7 +1457,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.7.0;
+				MARKETING_VERSION = 9.7.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1576,7 +1580,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 155;
+				CURRENT_PROJECT_VERSION = 156;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1598,7 +1602,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.7.0;
+				MARKETING_VERSION = 9.7.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
