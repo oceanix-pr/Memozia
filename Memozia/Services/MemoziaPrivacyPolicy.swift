@@ -16,7 +16,7 @@ import Foundation
 enum MemoziaPrivacyPolicy {
 
     /// 当前政策版本。语义：主版本号变动 = 实质性变更（需重新同意）。
-    static let version = "6.0"
+    static let version = "7.0"
 
     /// 生效日期（yyyy-MM-dd）
     static let effectiveDate = "2026-11-13"
@@ -148,7 +148,7 @@ enum MemoziaPrivacyPolicy {
             • 云端大模型：转写文本上传到你配置的模型服务。发送前会在本机做 PII 去标识化（人名、公司、账号、手机号、身份证号、邮箱等替换为占位符），收到结果后在本地还原。
             • 云端视觉模型：截图与关键帧会上传；画面本身不做脱敏，请先确认画面中不含敏感信息。
             • 模型下载：从 Hugging Face、GitHub 下载本地语音与说话人分离模型。该过程只下载模型文件，不上传你的内容。
-            • 应用更新：当前副本未配置更新源，不会检查或下载安装应用更新。
+            • 应用更新：同意本政策后，应用通过 Sparkle 从 GitHub 获取 Memozia 更新信息，默认自动检查，也可在设置中关闭自动检查或手动检查。请求会向 GitHub 发送网络连接所需的 IP 地址、应用版本及操作系统版本；不发送录音、笔记、API Key 或其他会议内容，关闭系统画像。更新包从 GitHub 下载并验证签名，安装前需要你确认；录音、录屏或处理任务进行中时会延后安装。
 
             iCloud：本应用当前未启用 iCloud / CloudKit 同步，不会主动把数据写入 iCloud。若你的 macOS 开启了「桌面与文稿」iCloud 云盘同步，~/Documents/Memozia 可能被系统同步到 iCloud；这由你的系统设置决定，可在「系统设置 → Apple 账户 → iCloud」中关闭。
 

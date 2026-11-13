@@ -49,6 +49,7 @@ struct PrivacyPolicyTests {
         #expect(MemoziaPrivacyPolicy.needsConsent(accepted: true, storedVersion: "2.0"))
         #expect(MemoziaPrivacyPolicy.needsConsent(accepted: true, storedVersion: "3.0"))
         #expect(MemoziaPrivacyPolicy.needsConsent(accepted: true, storedVersion: "4.0"))
+        #expect(MemoziaPrivacyPolicy.needsConsent(accepted: true, storedVersion: "6.0"))
     }
 
     @Test("主版本号解析")

@@ -36,8 +36,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "9.6.10"
-    CURRENT_PROJECT_VERSION: "154"
+    MARKETING_VERSION: "9.7.0"
+    CURRENT_PROJECT_VERSION: "155"
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     DEAD_CODE_STRIPPING: YES
     ENABLE_USER_SCRIPT_SANDBOXING: YES
@@ -58,7 +58,9 @@ targets:
     info:
       path: Memozia/Resources/Info.plist
       properties:
-        SUEnableAutomaticChecks: false
+        SUFeedURL: "$(MEMOZIA_UPDATE_FEED_URL)"
+        SUPublicEDKey: "$(MEMOZIA_UPDATE_PUBLIC_KEY)"
+        SUEnableAutomaticChecks: true
         SUAllowsAutomaticUpdates: false
         SUAutomaticallyUpdate: false
         SUEnableSystemProfiling: false
@@ -74,6 +76,8 @@ targets:
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
         GENERATE_INFOPLIST_FILE: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        MEMOZIA_UPDATE_FEED_URL: "https://raw.githubusercontent.com/oceanix-pr/Memozia/updates/stable/appcast.xml"
+        MEMOZIA_UPDATE_PUBLIC_KEY: "gHvPetN6ASgDzgkt5aIgdUmCY/Mh3qhVKulgLmqCnrI="
         # macOS 应用框架位于 Contents/Frameworks，必须用 ../Frameworks；
         # 之前只有 @executable_path/Frameworks（指向 MacOS/Frameworks）导致嵌入动态库启动时崩溃
         LD_RUNPATH_SEARCH_PATHS:

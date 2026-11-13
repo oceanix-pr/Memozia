@@ -4,12 +4,15 @@ import Testing
 
 @Suite @MainActor
 struct UpdateInstallationCoordinatorTests {
-    @Test func newBrandHasNoLegacyUpdaterConfiguration() {
+    @Test func independentUpdaterConfigurationRequiresConfirmedInstallation() {
         let info = Bundle.main.infoDictionary ?? [:]
-        #expect(info["SUFeedURL"] == nil)
-        #expect(info["SUPublicEDKey"] == nil)
-        #expect(info["SUEnableAutomaticChecks"] as? Bool == false)
+        #expect(info["SUFeedURL"] as? String
+                == "https://raw.githubusercontent.com/oceanix-pr/Memozia/updates/stable/appcast.xml")
+        let key = info["SUPublicEDKey"] as? String ?? ""
+        #expect(Data(base64Encoded: key)?.count == 32)
+        #expect(info["SUEnableAutomaticChecks"] as? Bool == true)
         #expect(info["SUAllowsAutomaticUpdates"] as? Bool == false)
+        #expect(info["SUAutomaticallyUpdate"] as? Bool == false)
         #expect(info["SUEnableSystemProfiling"] as? Bool == false)
     }
 

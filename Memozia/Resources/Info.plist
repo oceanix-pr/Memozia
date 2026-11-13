@@ -18,10 +18,10 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>MemoziaUnnotarizedBuild</key>
-	<string>$(MEMOZIA_UNNOTARIZED_BUILD)</string>
 	<key>MemoziaContactEmail</key>
 	<string>$(MEMOZIA_CONTACT_EMAIL)</string>
+	<key>MemoziaUnnotarizedBuild</key>
+	<string>$(MEMOZIA_UNNOTARIZED_BUILD)</string>
 	<key>NSAudioCaptureUsageDescription</key>
 	<string>闻墨集 需要捕获系统音频以录制会议声音</string>
 	<key>NSScreenCaptureUsageDescription</key>
@@ -31,8 +31,12 @@
 	<key>SUAutomaticallyUpdate</key>
 	<false/>
 	<key>SUEnableAutomaticChecks</key>
-	<false/>
+	<true/>
 	<key>SUEnableSystemProfiling</key>
 	<false/>
+	<key>SUFeedURL</key>
+	<string>$(MEMOZIA_UPDATE_FEED_URL)</string>
+	<key>SUPublicEDKey</key>
+	<string>$(MEMOZIA_UPDATE_PUBLIC_KEY)</string>
 </dict>
 </plist>
