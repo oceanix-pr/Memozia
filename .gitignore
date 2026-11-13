@@ -1,0 +1,59 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode personal state
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+
+# Build products and dependency caches
+.build/
+.packages/
+DerivedData/
+build/
+*.dSYM
+*.dSYM.zip
+*.app
+*.xcarchive/
+Memozia 20??-??-?? ??-??-??/
+
+# Swift Package Manager local state
+.swiftpm/
+Package.resolved.bak
+
+# Local tools, diagnostics and temporary output
+.i18n_tmp/
+BUG.txt
+*.crash
+*.ips
+ax-diagnose
+calibrate-diarization-bin
+transcribe
+icon_backup/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.mobileprovision
+
+# Downloaded models and user-generated data
+Memozia/Resources/Models/
+/Models/
+Recordings/
+Screenshots/
+
+.zhiwork-attachments/
+.zhiwork-runs/
+.tmp_*
+*.xcresult
+
+# Shared Xcode schemes must be versioned (global gitignore ignores *.xcscheme)
+!*.xcscheme

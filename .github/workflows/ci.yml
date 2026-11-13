@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      visual_regression:
+        description: 'Run strict screenshot checks (requires reviewed baselines and a GUI runner)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: xcode-27
+    timeout-minutes: 60
+    env:
+      DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+      TEST_RUNNER_MEMOZIA_EPHEMERAL_TEST_ENCRYPTION: '1'
+      TEST_RUNNER_MEMOZIA_CI: '1'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Check localization resources
+        run: python3 Scripts/check_l10n.py
+
+      - name: Prepare package binary frameworks before build planning
+        run: |
+          xcodebuild -resolvePackageDependencies -onlyUsePackageVersionsFromResolvedFile -skipPackageUpdates \
+            -project Memozia.xcodeproj -scheme Memozia \
+            -derivedDataPath "${RUNNER_TEMP}/memozia-ci/DerivedData"
+          MEMOZIA_PACKAGE_CACHE_PATH="${RUNNER_TEMP}/memozia-ci/DerivedData/SourcePackages" \
+            bash Scripts/fix_onnxruntime_framework.sh
+
+      - name: Build
+        run: >-
+          xcodebuild
+          -project Memozia.xcodeproj
+          -scheme Memozia
+          -configuration Debug
+          -destination 'platform=macOS'
+          -derivedDataPath "${RUNNER_TEMP}/memozia-ci/DerivedData"
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          DEVELOPMENT_TEAM=
+          build
+
+      - name: Run unit tests
+        run: >-
+          xcodebuild
+          -project Memozia.xcodeproj
+          -scheme Memozia
+          -configuration Debug
+          -destination 'platform=macOS'
+          -derivedDataPath "${RUNNER_TEMP}/memozia-ci/DerivedData"
+          CODE_SIGN_IDENTITY=-
+          CODE_SIGN_STYLE=Manual
+          DEVELOPMENT_TEAM=
+          ENABLE_HARDENED_RUNTIME=NO
+          test -only-testing:MemoziaTests
+
+      - name: Run UI launch smoke test
+        run: >-
+          xcodebuild
+          -project Memozia.xcodeproj -scheme Memozia -configuration Debug
+          -destination 'platform=macOS'
+          -derivedDataPath "${RUNNER_TEMP}/memozia-ci/DerivedData"
+          -resultBundlePath "${RUNNER_TEMP}/memozia-ci/UI-Smoke.xcresult"
+          CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
+          ENABLE_HARDENED_RUNTIME=NO
+          test -only-testing:MemoziaUITests/MemoziaSmokeUITests/testLaunchesAndShowsMainWindow
+
+      # Opt-in until reviewed baselines have been recorded on the fixed GUI runner.
+      # Missing baselines FAIL this check; recording baselines in CI is forbidden.
+      - name: Run strict visual regression checks
+        if: github.event_name == 'workflow_dispatch' && inputs.visual_regression
+        run: >-
+          xcodebuild
+          -project Memozia.xcodeproj -scheme Memozia -configuration Debug
+          -destination 'platform=macOS'
+          -derivedDataPath "${RUNNER_TEMP}/memozia-ci/DerivedData"
+          -resultBundlePath "${RUNNER_TEMP}/memozia-ci/UI-Visual.xcresult"
+          CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=
+          ENABLE_HARDENED_RUNTIME=NO
+          test -only-testing:MemoziaUITests
+
+      - name: Upload UI test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results
+          path: ${{ runner.temp }}/memozia-ci/UI-*.xcresult
+          if-no-files-found: warn

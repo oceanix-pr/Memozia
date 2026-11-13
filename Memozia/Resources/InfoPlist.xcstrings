@@ -1,0 +1,695 @@
+{
+  "sourceLanguage" : "zh-Hans",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闻墨集"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聞墨集"
+          }
+        }
+      }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闻墨集"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聞墨集"
+          }
+        }
+      }
+    },
+    "NSAudioCaptureUsageDescription" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يحتاج Memozia إلى الوصول إلى صوت النظام لتسجيل صوت الاجتماعات."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia benötigt Zugriff auf Systemaudio, um den Ton von Besprechungen aufzunehmen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia needs access to system audio to record meeting sound."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia necesita acceder al audio del sistema para grabar el sonido de las reuniones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia a besoin d’accéder au son système pour enregistrer les réunions."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia को मीटिंग की आवाज़ रिकॉर्ड करने के लिए सिस्टम ऑडियो तक पहुँच चाहिए।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia memerlukan akses audio sistem untuk merekam suara rapat."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia richiede l’accesso all’audio di sistema per registrare il suono delle riunioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia は会議の音声を録音するためにシステム音声へのアクセスが必要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia는 회의 소리를 녹음하기 위해 시스템 오디오 접근 권한이 필요합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia heeft toegang tot systeemaudio nodig om het geluid van vergaderingen op te nemen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia wymaga dostępu do dźwięku systemowego, aby nagrywać dźwięk spotkań."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Memozia precisa de acesso ao áudio do sistema para gravar o som das reuniões."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia нужен доступ к системному звуку для записи звука встреч."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia behöver tillgång till systemljud för att spela in mötesljud."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia ต้องเข้าถึงเสียงระบบเพื่อบันทึกเสียงการประชุม"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia, toplantı seslerini kaydetmek için sistem sesine erişim iznine ihtiyaç duyar."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia потрібен доступ до системного звуку, щоб записувати звук зустрічей."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia cần truy cập âm thanh hệ thống để ghi lại âm thanh cuộc họp."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闻墨集 需要捕获系统音频以录制会议声音"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聞墨集 需要擷取系統音訊以錄製會議聲音"
+          }
+        }
+      }
+    },
+    "NSMicrophoneUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يحتاج Memozia إلى الوصول إلى الميكروفون لتسجيل صوت الاجتماع."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia benötigt Zugriff auf das Mikrofon, um Besprechungsaudio aufzunehmen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia needs access to the microphone to record meeting audio."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia necesita acceso al micrófono para grabar el audio de las reuniones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia a besoin d’accéder au microphone pour enregistrer l’audio des réunions."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia को बैठक का ऑडियो रिकॉर्ड करने के लिए माइक्रोफ़ोन तक पहुँच चाहिए।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia memerlukan akses ke mikrofon untuk merekam audio rapat."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia necessita dell’accesso al microfono per registrare l’audio delle riunioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia が会議の音声を録音するためにマイクへのアクセスを必要としています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia가 회의 오디오를 녹음하려면 마이크에 접근해야 합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia heeft toegang tot de microfoon nodig om vergaderaudio op te nemen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia potrzebuje dostępu do mikrofonu, aby nagrywać dźwięk spotkań."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Memozia precisa de acesso ao microfone para gravar o áudio das reuniões."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia требуется доступ к микрофону для записи звука встреч."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia behöver åtkomst till mikrofonen för att spela in mötesljud."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia ต้องการเข้าถึงไมโครโฟนเพื่อบันทึกเสียงการประชุม"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia, toplantı sesini kaydetmek için mikrofona erişim gerektirir."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia потрібен доступ до мікрофона, щоб записувати звук зустрічей."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia cần quyền truy cập micrô để ghi âm cuộc họp."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闻墨集 需要访问麦克风以录制会议音频"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聞墨集 需要存取麥克風以錄製會議音訊"
+          }
+        }
+      }
+    },
+    "NSRemindersUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يحتاج Memozia إلى الوصول إلى التذكيرات لكتابة المهام المستخرجة بالذكاء الاصطناعي في تذكيرات النظام."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia benötigt Zugriff auf Erinnerungen, um von der KI extrahierte To-dos in die System-Erinnerungen zu schreiben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia needs access to Reminders to write AI-extracted to-dos into the system Reminders."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia necesita acceso a Recordatorios para escribir en Recordatorios del sistema las tareas extraídas por la IA."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia a besoin d’accéder aux Rappels pour écrire dans les Rappels système les tâches extraites par l’IA."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia को AI द्वारा निकाले गए कार्यों को सिस्टम रिमाइंडर में लिखने के लिए रिमाइंडर तक पहुँच चाहिए।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia memerlukan akses ke Pengingat untuk menulis tugas hasil ekstraksi AI ke Pengingat sistem."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia necessita dell’accesso a Promemoria per scrivere nei Promemoria di sistema le attività estratte dall’IA."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia が AI が抽出した To-Do をシステムのリマインダーに書き込むためにリマインダーへのアクセスを必要としています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia가 AI가 추출한 할 일을 시스템 미리 알림에 기록하려면 미리 알림에 접근해야 합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia heeft toegang tot Herinneringen nodig om door AI geëxtraheerde taken naar de systeem-Herinneringen te schrijven."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia potrzebuje dostępu do Przypomnienia, aby zapisywać zadania wyodrębnione przez AI w systemowych Przypomnieniach."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Memozia precisa de acesso aos Lembretes para gravar nos Lembretes do sistema as tarefas extraídas pela IA."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia требуется доступ к Напоминаниям, чтобы записывать задачи, извлечённые ИИ, в системные Напоминания."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia behöver åtkomst till Påminnelser för att skriva AI-utdragna uppgifter till systemets Påminnelser."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia ต้องการเข้าถึงรายการเตือนเพื่อเขียนสิ่งที่ต้องทำที่ AI สกัดได้ลงในรายการเตือนของระบบ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia, yapay zekânın çıkardığı yapılacakları sistem Hatırlatıcıları’na yazmak için Hatırlatıcılar’a erişim gerektirir."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia потрібен доступ до Нагадувань, щоб записувати завдання, витягнуті ШІ, у системні Нагадування."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia cần quyền truy cập Ứng dụng Nhắc việc để ghi các việc cần làm do AI trích xuất vào Nhắc việc của hệ thống."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闻墨集 需要访问提醒事项以将 AI 拆解的待办写入系统提醒事项"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聞墨集 需要存取提醒事項以將 AI 拆解的待辦寫入系統提醒事項"
+          }
+        }
+      }
+    },
+    "NSScreenCaptureUsageDescription" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يحتاج Memozia إلى إذن تسجيل الشاشة لالتقاط صوت النظام ولقطات الشاشة وتسجيلات الشاشة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia benötigt Zugriff auf die Bildschirmaufnahme, um Systemaudio, Bildschirmfotos und Bildschirmvideos aufzunehmen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia needs screen recording access to capture system audio, screenshots and screen recordings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia necesita permiso de grabación de pantalla para capturar audio del sistema, capturas de pantalla y vídeos de la pantalla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia a besoin de l’accès à l’enregistrement de l’écran pour capturer le son système, des captures d’écran et des vidéos de l’écran."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia को सिस्टम ऑडियो, स्क्रीनशॉट और स्क्रीन रिकॉर्डिंग कैप्चर करने के लिए स्क्रीन रिकॉर्डिंग की अनुमति चाहिए।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia memerlukan izin perekaman layar untuk menangkap audio sistem, tangkapan layar, dan rekaman layar."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia richiede l’accesso alla registrazione dello schermo per acquisire audio di sistema, schermate e video dello schermo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia はシステム音声、スクリーンショット、画面録画を取得するために画面収録の許可が必要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia는 시스템 오디오, 스크린샷 및 화면 녹화를 캡처하기 위해 화면 기록 권한이 필요합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia heeft toestemming voor schermopname nodig om systeemaudio, schermafbeeldingen en schermvideo’s vast te leggen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia wymaga zgody na nagrywanie ekranu, aby przechwytywać dźwięk systemowy, zrzuty i nagrania ekranu."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Memozia precisa de acesso à gravação do ecrã para captar áudio do sistema, capturas de ecrã e vídeos do ecrã."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia нужен доступ к записи экрана для захвата системного звука, снимков и видео экрана."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia behöver tillgång till skärminspelning för att fånga systemljud, skärmbilder och skärmvideor."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia ต้องใช้สิทธิ์บันทึกหน้าจอเพื่อจับเสียงระบบ ภาพหน้าจอ และวิดีโอหน้าจอ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia, sistem sesini, ekran görüntülerini ve ekran videolarını yakalamak için ekran kaydı iznine ihtiyaç duyar."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia потрібен дозвіл на запис екрана для захоплення системного звуку, знімків і відео екрана."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia cần quyền ghi màn hình để thu âm thanh hệ thống, chụp ảnh và quay màn hình."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闻墨集 需要录制屏幕以捕获系统音频、截图和录屏"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聞墨集 需要錄製螢幕以擷取系統音訊、截圖和錄影"
+          }
+        }
+      }
+    },
+    "NSSpeechRecognitionUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يحتاج Memozia إلى الوصول إلى التعرّف على الكلام لنسخ تسجيلات الاجتماع محليًا."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia benötigt Zugriff auf die Spracherkennung, um Besprechungsaufnahmen lokal zu transkribieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia needs access to speech recognition to transcribe meeting recordings locally."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia necesita acceso al reconocimiento de voz para transcribir localmente las grabaciones de reuniones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia a besoin d’accéder à la reconnaissance vocale pour transcrire localement les enregistrements de réunion."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia को बैठक की रिकॉर्डिंग को स्थानीय रूप से ट्रांसक्राइब करने के लिए वाक् पहचान तक पहुँच चाहिए।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia memerlukan akses ke pengenalan suara untuk mentranskripsikan rekaman rapat secara lokal."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia necessita dell’accesso al riconoscimento vocale per trascrivere localmente le registrazioni delle riunioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia が会議の録音をローカルで文字起こしするために音声認識へのアクセスを必要としています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia가 회의 녹음을 로컬에서 받아쓰기하려면 음성 인식에 접근해야 합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia heeft toegang tot spraakherkenning nodig om vergaderopnamen lokaal te transcriberen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia potrzebuje dostępu do rozpoznawania mowy, aby lokalnie transkrybować nagrania spotkań."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Memozia precisa de acesso ao reconhecimento de voz para transcrever localmente as gravações de reuniões."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia требуется доступ к распознаванию речи для локальной расшифровки записей встреч."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia behöver åtkomst till taligenkänning för att transkribera mötesinspelningar lokalt."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia ต้องการเข้าถึงการรู้จำเสียงเพื่อถอดเสียงบันทึกการประชุมในเครื่อง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia, toplantı kayıtlarını yerel olarak yazıya dökmek için konuşma tanımaya erişim gerektirir."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia потрібен доступ до розпізнавання мовлення для локальної транскрипції записів зустрічей."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memozia cần quyền truy cập nhận dạng giọng nói để chuyển lời bản ghi cuộc họp ngay trên máy."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闻墨集 需要访问语音识别以在本地将会议录音转成文字"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "聞墨集 需要存取語音辨識以在本機將會議錄音轉成文字"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

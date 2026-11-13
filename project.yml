@@ -1,0 +1,236 @@
+name: Memozia
+options:
+  bundleIdPrefix: app.memozia
+  deploymentTarget:
+    macOS: "15.0"
+  xcodeVersion: "27.1"
+  generateEmptyDirectories: true
+  # 开发语言：与 String Catalog 的 sourceLanguage（简体中文 zh-Hans）保持一致。
+  # 生成工程的 developmentRegion 会由此变为 zh-Hans；若不设置则默认 en，
+  # 导出本地化时会把源语言误判为英语，产生错误的源/目标语言对应关系。
+  developmentLanguage: zh-Hans
+  # 多语言：与 Whisper 可转写语言对齐（zh-Hans/zh-Hant + 18 种外语）
+  knownRegions:
+    - zh-Hans
+    - zh-Hant
+    - en
+    - ja
+    - ko
+    - fr
+    - de
+    - es
+    - it
+    - pt
+    - ru
+    - ar
+    - hi
+    - th
+    - vi
+    - id
+    - tr
+    - nl
+    - pl
+    - uk
+    - sv
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "9.6.8"
+    CURRENT_PROJECT_VERSION: "152"
+    CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
+    DEAD_CODE_STRIPPING: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    STRING_CATALOG_GENERATE_SYMBOLS: YES
+    # 多语言：启用 String Catalog 自动提取（构建时把 UI 字符串字面量写入 Localizable.xcstrings）
+    LOCALIZATION_PREFERS_STRING_CATALOG: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
+
+targets:
+  Memozia:
+    type: application
+    platform: macOS
+    sources:
+      - path: Memozia
+        excludes:
+          - "Resources/**/*.md"
+          - "Resources/Models/**"
+    info:
+      path: Memozia/Resources/Info.plist
+      properties:
+        SUEnableAutomaticChecks: false
+        SUAllowsAutomaticUpdates: false
+        SUAutomaticallyUpdate: false
+        SUEnableSystemProfiling: false
+        MemoziaUnnotarizedBuild: "$(MEMOZIA_UNNOTARIZED_BUILD)"
+        MemoziaContactEmail: "$(MEMOZIA_CONTACT_EMAIL)"
+        NSScreenCaptureUsageDescription: "闻墨集 需要录制屏幕以捕获系统音频、截图和录屏"
+        NSAudioCaptureUsageDescription: "闻墨集 需要捕获系统音频以录制会议声音"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.memozia
+        PRODUCT_NAME: Memozia
+        INFOPLIST_KEY_CFBundleDisplayName: Memozia
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        GENERATE_INFOPLIST_FILE: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # macOS 应用框架位于 Contents/Frameworks，必须用 ../Frameworks；
+        # 之前只有 @executable_path/Frameworks（指向 MacOS/Frameworks）导致嵌入动态库启动时崩溃
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/../Frameworks"
+          - "@executable_path/Frameworks"
+        # 8.0.0(68) macOS 27 崩溃修复（BUG.txt）：SwiftUI VideoPlayer 实现在 _AVKit_SwiftUI 垫片框架，
+        # 其表示类型的 ObjC 父类在 AVKit；macOS 27 SDK 起 import AVKit 不再自动链接 AVKit.framework
+        # （实测仅 import 只链到 _AVKit_SwiftUI 垫片），首帧构建 VideoPlayer 时 Swift 运行时在
+        # getSuperclassMetadata 解析不到父类而 fatalError abort。
+        # 注意：Xcode 对 app 目标启用 -dead_strip_dylibs，会裁掉「未被引用」的 -framework AVKit
+        # 加载命令（实测被裁）；必须用 -needed_framework 强制保留。
+        # 又：Swift 目标的链接驱动是 swiftc，它不认 clang 的 "-Wl,xxx" 写法（unknown argument），
+        # 只能用 "-Xlinker <arg>" 逐个转发给 ld。
+        # 另外，VideoUnderstandingView 里的 AVPlayerContainer 直接引用 AVKit 的 AVPlayerView，
+        # 这也让加载命令必然存在（双重保障）。
+        OTHER_LDFLAGS:
+          - "$(inherited)"
+          - "-framework"
+          - AVKit
+          - "-Xlinker"
+          - "-needed_framework"
+          - "-Xlinker"
+          - AVKit
+        # 构建脚本需规范 SwiftPM 二进制产物、修正 Mach-O 引用并重签 framework。
+        # 这些操作会递归访问动态 hash 路径和签名扩展属性，无法用固定的
+        # SCRIPT_INPUT/OUTPUT_FILE 列表完整表达；Xcode User Script Sandbox 会令
+        # codesign 因 file-read-data/file-read-xattr 被拒。只对本 target 关闭脚本沙箱，
+        # 不影响应用的 Hardened Runtime 或最终代码签名。
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        ENABLE_HARDENED_RUNTIME: YES
+        INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking: YES
+        INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads: YES
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: "闻墨集 需要访问麦克风以录制会议音频"
+        # 系统语音识别（SpeechAnalyzer）转写需要 Speech 框架授权，缺失该说明会导致授权请求被系统拒绝
+        INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: "闻墨集 需要访问语音识别以在本地将会议录音转成文字"
+        INFOPLIST_KEY_NSRemindersUsageDescription: "闻墨集 需要访问提醒事项以将 AI 拆解的待办写入系统提醒事项"
+        CODE_SIGN_ENTITLEMENTS: Memozia/Resources/Memozia.entitlements
+        MEMOZIA_UNNOTARIZED_BUILD: NO
+        MEMOZIA_CONTACT_EMAIL: ""
+    preBuildScripts:
+      # 上游 onnxruntime shared xcframework 布局非标准（实体目录替代符号链接），
+      # 构建前规范为标准 framework 布局，否则嵌入后签名严格校验失败
+      - path: Scripts/fix_onnxruntime_framework.sh
+        name: Fix Onnxruntime Framework Layout
+        basedOnDependencyAnalysis: false
+        inputFiles: []
+        outputFiles: []
+    postBuildScripts:
+      - path: Scripts/embed_mcp_helper.sh
+        name: Embed MCP Helper
+        basedOnDependencyAnalysis: false
+        inputFiles: []
+        outputFiles: []
+      # 重签 Xcode Run/Test 会优先加载的构建目录动态框架，并校验
+      # SherpaOnnxC 的引用与签名；异常时直接让构建失败，避免启动即崩溃
+      - path: Scripts/verify_embedded_frameworks.sh
+        name: Verify Embedded Frameworks
+        basedOnDependencyAnalysis: false
+        inputFiles: []
+        outputFiles: []
+    dependencies:
+      - target: MemoziaMCPHelper
+        embed: false
+      - package: MCP
+        product: MCP
+      - package: SwiftNIO
+        product: NIOCore
+      - package: SwiftNIO
+        product: NIOPosix
+      - package: SwiftNIO
+        product: NIOHTTP1
+      - package: Sparkle
+      - package: WhisperKit
+      - package: KeychainAccess
+      # 说话人分离（基于 pyannote segmentation 3.0 的 ONNX 导出，CPU 推理）。
+      # 官方 SPM 支持近期才合入 master，故按提交固定依赖（见 packages 段）。
+      # 用 shared 动态产品：静态 onnxruntime 产物是 ar archive 非标准 framework，
+      # 嵌入时生成断链符号链接导致 CodeSign 失败；动态 dylib 产物结构标准可正常嵌入签名
+      - package: SherpaOnnx
+        product: sherpa-onnx-shared
+    scheme:
+      # 必须早于构建计划解析 framework 符号链接；target preBuild 已经太晚。
+      preActions:
+        - name: Prepare Onnxruntime Framework Layout
+          settingsTarget: Memozia
+          script: '"$SRCROOT/Scripts/fix_onnxruntime_framework.sh"'
+      testTargets:
+        - MemoziaTests
+        - MemoziaUITests
+
+  MemoziaMCPHelper:
+    type: tool
+    platform: macOS
+    sources:
+      - path: MemoziaMCPHelper
+    dependencies:
+      - package: MCP
+        product: MCP
+    settings:
+      base:
+        PRODUCT_NAME: memozia-mcp
+        PRODUCT_BUNDLE_IDENTIFIER: app.memozia.mcp-helper
+        ENABLE_HARDENED_RUNTIME: YES
+
+  MemoziaTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: MemoziaTests
+    dependencies:
+      - target: Memozia
+      - package: MCP
+        product: MCP
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.memozia.tests
+        GENERATE_INFOPLIST_FILE: YES
+        # 测试宿主是 macOS App bundle，可执行文件位于 Contents/MacOS
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Memozia.app/Contents/MacOS/Memozia"
+
+  # UI 测试：冒烟、无障碍（VoiceOver）审计、多语言 / RTL / 伪本地化截图基线。
+  # 依赖主 App 作为被测目标；以 --ui-testing 启动参数让应用跳过单实例守卫，从而
+  # 在已运行实例存在时也能拉起被 UI 测试驱动的第二个进程。
+  MemoziaUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: MemoziaUITests
+    dependencies:
+      - target: Memozia
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.memozia.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Memozia
+
+
+packages:
+  MCP:
+    url: https://github.com/modelcontextprotocol/swift-sdk
+    exactVersion: "0.12.1"
+  SwiftNIO:
+    url: https://github.com/apple/swift-nio
+    from: "2.65.0"
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: "2.10.0"
+  WhisperKit:
+    url: https://github.com/argmaxinc/argmax-oss-swift
+    from: "0.9.0"
+  KeychainAccess:
+    url: https://github.com/kishikawakatsumi/KeychainAccess
+    from: "4.2.2"
+  SherpaOnnx:
+    url: https://github.com/k2-fsa/sherpa-onnx
+    # 固定到 v1.13.6 的发布提交（原为 branch: master）：跟踪主干会让推理行为、C API
+    # 与预编译产物随上游变动，发布构建不可复现；升级时显式改此 revision 并重跑
+    # 说话人分离相关回归
+    revision: 1cb484af5e69d3c7803c1eb0b3b5ab8041e0e911

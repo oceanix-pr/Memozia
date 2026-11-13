@@ -1,0 +1,1804 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		016D3ABD396A5ACFB6BDD8C6 /* RecordCountdownPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2FD1B12B26B70110DE18036 /* RecordCountdownPanel.swift */; };
+		03C50B47F0B28313296D9105 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F2338732C9BAF82CEE634CE1 /* Assets.xcassets */; };
+		061F57C30692364C804570FB /* AudioRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C7C8CDDB3BD3F064BFE7458 /* AudioRecording.swift */; };
+		06347745AFEE6A064952D00F /* ScreenshotSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2620EF4E2054B693FDA1EFA5 /* ScreenshotSettingsView.swift */; };
+		08666D3D5F41CAD20F3151CB /* StorageSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751CE2AD97B1CAA467BB8E11 /* StorageSession.swift */; };
+		09256B51E4E16132A88DA390 /* SystemTranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BD6CFBAA69C6E211B6F4A7 /* SystemTranscriptionService.swift */; };
+		0A06A626208E68D61ABBA38D /* RacingWatchdog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF8A44F2501190B9F5E9A1F /* RacingWatchdog.swift */; };
+		0A96DB9FFC1247E13B849BE4 /* MediaCleanupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C207E6ADF067A8AF36A0ECF6 /* MediaCleanupService.swift */; };
+		0BE4BC669D62FDDAB9E5B66B /* AppCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42312B27188177F7E0AECB5 /* AppCommand.swift */; };
+		0CF987C12AAA05C4CF4306F5 /* EchoCancellerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13ADF75D5823A732D0E8A0EA /* EchoCancellerTests.swift */; };
+		0E11CDD907739D909741601D /* QuickNoteDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453D16E2D3CAB1E5A7CD70CE /* QuickNoteDetailView.swift */; };
+		0EAD69AB36978D84ABCB3C71 /* RecordingConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0BB2E0F1413D99D988EE6C3 /* RecordingConfig.swift */; };
+		0EF72706F1C2A84B72F1FA72 /* StorageSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40654482F6E659353B90E28E /* StorageSessionTests.swift */; };
+		0F842E1C14A97A63ADF4A6EF /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0558BA5CC49BC9A98CD1D687 /* SettingsViewModel.swift */; };
+		10954510663F86AC6677B708 /* NativeSpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 550322D288B280595B0EF630 /* NativeSpeechService.swift */; };
+		10E1DABB3BB5E6D1EB6F0F0A /* RootDeletionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B96C5123FAF1AC9A7341ED04 /* RootDeletionRequest.swift */; };
+		113AAF1692C3AF6B0B5DF8BE /* MicCaptureRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5499E4B97A9C06A6FA1343BA /* MicCaptureRecovery.swift */; };
+		117E07B7418901848870A67E /* EncryptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F1252EE9D5F78ACBDE71F0 /* EncryptionService.swift */; };
+		11CE86067995151FAA7BAAD3 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1C9F8BDB4DE66CA6E47C8018 /* PrivacyInfo.xcprivacy */; };
+		121CEF8B000E25E3D2CA2454 /* DiarizationSegmentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B582F544ABC3F4630314E6E /* DiarizationSegmentationTests.swift */; };
+		123E46EB317DAEDF250A68F1 /* FullTextSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 314FF03722A18F491FCCE7AF /* FullTextSearch.swift */; };
+		12CEA9A3153A445911C2583C /* TodoExtractionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F3A14721C6DF9E6AA3FADBB /* TodoExtractionService.swift */; };
+		1531C25C4A79BF11DCE1E4AF /* StartupRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3697C7B27243A4C9251F51 /* StartupRootView.swift */; };
+		1607789CF05266CD01539553 /* RecordingProgressStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DBCA91772199976A7B5DF29 /* RecordingProgressStatus.swift */; };
+		16D2B6FB7AA9F8735456E434 /* WhisperAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87DD4DA248C71EB0E1ACF6E /* WhisperAPIService.swift */; };
+		170EE6FE8709B28FC071E543 /* ScreenshotOverlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF65449138EECD8444005AC9 /* ScreenshotOverlayController.swift */; };
+		171A25DDD35D1D73CF3C39BB /* NoteSpeechViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A5ED83B2476CB3FE627841 /* NoteSpeechViewModel.swift */; };
+		181989B4BE197F19EAA95236 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = B977B1CD3FAE9021A008F140 /* MCP */; };
+		189B00A62419FCF69B25CB0D /* MemoziaPrivacyPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD77EAE4FAEAAFC92EF20DB2 /* MemoziaPrivacyPolicy.swift */; };
+		1C32D624444E1EBC9CA6C680 /* PersistenceReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ECF352B2CFF978139513B21 /* PersistenceReporting.swift */; };
+		1D52ACB071BB3D8FB71EA392 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 6594516071D94D1046A56F2F /* InfoPlist.xcstrings */; };
+		1E8D405EE3BDB6F61D7853FD /* AudioConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33906E2787327F2AD5B53C81 /* AudioConverter.swift */; };
+		2017DA6B5BCE31984D7847EF /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = ED590D990689416989FD6BE9 /* KeychainAccess */; };
+		2078965CA138A087C29970A5 /* EntryIdentityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6524CD8E7BCD340A4835E227 /* EntryIdentityStore.swift */; };
+		222659AAB94E37EAC222ACB8 /* ScreenCaptureAuthorization.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7470A05E48641F5A8809753 /* ScreenCaptureAuthorization.swift */; };
+		22362746B2AC5F766EA91595 /* WhisperModelCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18035331B5620C3D8BE99FD6 /* WhisperModelCatalog.swift */; };
+		225874EEA52557A25DDF1E25 /* SummaryHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05479F298456E5A8024D97DB /* SummaryHistory.swift */; };
+		229B401AD5E175BBF9500799 /* SummarySources.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4BE88C531AA538F8A07AF41 /* SummarySources.swift */; };
+		25535D411197B9BD56747ABE /* RecordingElapsedLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6707B5E3D520C8CB5FFE0DD8 /* RecordingElapsedLabel.swift */; };
+		25E0891856DE89D637AF13AD /* FileSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ECACBBCB8DF4157320AAF95 /* FileSyncService.swift */; };
+		260B0B3D2584D2191E47D874 /* PrivacyConsentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B4830979110C0A48CDCC706 /* PrivacyConsentView.swift */; };
+		289910B463A22BF8EF8C7670 /* STTConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5AD4280C023924A7038C1C /* STTConfig.swift */; };
+		28E1CA83464608B8CE0E9A64 /* RemindersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74F687E8CD6CFB516A78954B /* RemindersService.swift */; };
+		2A614F3E711367D9EFDE111E /* DiarizationCalibrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A63D5FFB1A535B7807DCE0 /* DiarizationCalibrator.swift */; };
+		2B1D3B76A927FE8A597B3C15 /* MainActor+AssumeOnMainThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84887CF1B565FB3F57653751 /* MainActor+AssumeOnMainThread.swift */; };
+		2B9ED70DC3FAE832525477DF /* PIIScanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB23251DB35B0B884D65069 /* PIIScanService.swift */; };
+		2C75EB346DB24C4912B8C74C /* UpdatePermissionRepairTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA136590F93D075F5728B2D /* UpdatePermissionRepairTests.swift */; };
+		2CB29B355FB5B38308CBD28B /* VisionOCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1CE65CC46528FEC2F9D227A /* VisionOCRService.swift */; };
+		2DF77522B8658CB9D276B310 /* MCPLoopbackListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B11B64D23A6D2B4BDCA64B9 /* MCPLoopbackListener.swift */; };
+		2E34431B0E7700D2F7C0F926 /* WaveformStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344086E347C6D8D9235860CD /* WaveformStrip.swift */; };
+		2E704FAB8588B0301A9D7AC0 /* DiarizationAudioLoadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 878646FA1EBF2E7E5215843A /* DiarizationAudioLoadTests.swift */; };
+		2FC709293F5D7519429D4F34 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A24E62BCAA3B77531BB741F /* AppUpdateService.swift */; };
+		31C6AC06659E4C5539889CE2 /* RecordingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117F0191ECCEE2EDC0FB70E8 /* RecordingViewModel.swift */; };
+		3310B48B3298B20963B39846 /* CurrentTimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66A27CE1311EBFCE4A97A2FD /* CurrentTimeService.swift */; };
+		352531B06D72B5B541DAEABC /* NIOPosix in Frameworks */ = {isa = PBXBuildFile; productRef = A5EEEF96CC154CB4A2E17467 /* NIOPosix */; };
+		355A17DEC93764D3BA63CA2B /* ExportDocuments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898FD7D5544563638A667E6A /* ExportDocuments.swift */; };
+		39C921CCE73EF842EAF99EE9 /* TranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D24691CE159ED8A2C42F7A6 /* TranscriptView.swift */; };
+		3A254A7CDE4FDF32DEEA484B /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C21573225D6230BC10378DE2 /* SummaryView.swift */; };
+		3CE2020F802AFBAF92564AD2 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E18EC5A565F605F6B75AEE15 /* Sparkle */; };
+		3D75D032E22CBC2FDB91D72A /* LLMTitleGenerationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02981D39BD5B24999028665D /* LLMTitleGenerationTests.swift */; };
+		3DF39C041C2D619F156BB0F1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF560472B6744BCC4DD9786 /* SettingsView.swift */; };
+		424265F8DCA604066E334DE1 /* Sparkle-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 7F30422A1926F29484FAB298 /* Sparkle-LICENSE.txt */; };
+		42B682254200129267059AAC /* WindowPickOrderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B445EC76090DBC18397D1DE /* WindowPickOrderTests.swift */; };
+		4413FF5293F0A357709144A9 /* PortableBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2A77F1BD14F0F1118FC81E /* PortableBackup.swift */; };
+		452ADF52A950D09C6A5C53E2 /* StartupBootstrap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C2577DD5712A1D1C7B89CC5 /* StartupBootstrap.swift */; };
+		457D57E46F34ADC5BB39DD65 /* EndpointPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25BBAD92495AA63B97EB0A17 /* EndpointPolicy.swift */; };
+		4585EDFD810FF8A974C07B16 /* WindowCloseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBB280ED875D96E9A9CA2573 /* WindowCloseTests.swift */; };
+		47BF1EF5434BB742C199FD4A /* MCPReadOnlyServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8081B8FC35CBC9C07EAD40A7 /* MCPReadOnlyServer.swift */; };
+		47CF4182338E5B9431092CA4 /* SpeakerDiarizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07FDDC22DD9A96DCD5A8440 /* SpeakerDiarizationService.swift */; };
+		47ED45580B92E6DC4DDA40D9 /* AnnotationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB589FEED0D78B270390BDB3 /* AnnotationModel.swift */; };
+		47FA78492C14D21F7288AE76 /* SummaryChunking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C52F21491578AEE9F3DB393 /* SummaryChunking.swift */; };
+		481987C632DE9663188DE97B /* LLMPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C6FF36A4C04AFDB284A71C1 /* LLMPreset.swift */; };
+		4A39703F3A262229358E4B94 /* TodoSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47677CD1B9A6DC8EF23DB8D9 /* TodoSettingsView.swift */; };
+		4B2F9382FEDC0FCB160890B2 /* ScreenVideoRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E101AE3221485FB5C49F9C2D /* ScreenVideoRecorder.swift */; };
+		4C5AFFC284EA1173D2D1C0CB /* VoiceprintLibraryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46A7E159E1A6D4E70D7C73C /* VoiceprintLibraryViews.swift */; };
+		4D16A2103870EAEE7BD535ED /* LLMSettingsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A030E9F923A6C56A754638 /* LLMSettingsViews.swift */; };
+		4D3529BE5C2C60C44AB9EB1B /* RecordingMergeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C93B104F316ABCD8EF9E40 /* RecordingMergeTests.swift */; };
+		4D7BCB917B4D32326DAB62C0 /* PromptTemplate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D833898B776A1C9D77B63BA1 /* PromptTemplate.swift */; };
+		4EC68BC5350DAE80F1BF7AE7 /* AppUpdateSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7E45733F11279CB6F6991E5 /* AppUpdateSettingsView.swift */; };
+		4F0BD2345B85CF4B8A769D81 /* UpdateInstallationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 667A8EC26549497D62635203 /* UpdateInstallationCoordinator.swift */; };
+		506F64EFA21C170FD5CDFB27 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9AEE20FB3911A31BCA31DE8E /* Localizable.xcstrings */; };
+		52DA8A1E2D165E69018F92FC /* RecordingCaptureReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B24E03459D7207D1E8AAD17 /* RecordingCaptureReport.swift */; };
+		5561B499E053EEA26068143C /* DictionarySettingsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DA0A29938B6812E4574EF9D /* DictionarySettingsViews.swift */; };
+		55C5AD8ADE4014B161CB9624 /* TaskCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BDA9656E769684F62BC8F3 /* TaskCenterTests.swift */; };
+		58A25EC0E72990FEB51C7C93 /* WhisperModelDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4812EFC580936B7BE9A7299 /* WhisperModelDownloader.swift */; };
+		593A665362A5335C3FF68ADE /* RecordingCaptureReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09443FC097670B45C6E95798 /* RecordingCaptureReportTests.swift */; };
+		5B00251F447A468F3780AAF7 /* TextFindReplace.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89F9835CBD4B466F792BFE /* TextFindReplace.swift */; };
+		5C020368E677BBE22D6690FB /* PersistenceCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B262A815D739FE936A6FCD /* PersistenceCapability.swift */; };
+		5DC025A9E2CBC0037DEC4470 /* NIOCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6923B4FA10AC767C29A08E76 /* NIOCore */; };
+		61A159D5215871CA2F3172C8 /* MeetingRecorderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D581B3F7408565D6CB9745 /* MeetingRecorderService.swift */; };
+		626AE8C59F7647CA454AA56C /* KeyframeExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91CA011EFF5AACD1FB9F848D /* KeyframeExtractorTests.swift */; };
+		651CDE46EF471D2EA892A7C9 /* MicCaptureRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292AE0E0959F3F31FD0C456C /* MicCaptureRecoveryTests.swift */; };
+		6734DA80BA8F4F5CDAB45AA8 /* WhisperLocalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA419D382128219F14180F2B /* WhisperLocalService.swift */; };
+		69B4E7503500236E8855157D /* LLMConfigDraftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4C9B81ABB7607C7CFB3BD03 /* LLMConfigDraftTests.swift */; };
+		6A1A4599439EF12FD28BDEC2 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE4C450987D518C16533D6 /* MenuBarController.swift */; };
+		6D393CD38B42C4DCF95E6321 /* StabilityRegressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D61366CE367A6784D9D2CE /* StabilityRegressionTests.swift */; };
+		6D4F7DA7754846C3D3F6FE39 /* RecordingMergeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4D349637BB6FA30A44FFDB2 /* RecordingMergeRequest.swift */; };
+		6D723966CFA03E94A1B67274 /* MediaCleanupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A801AA0059815E0E2DCC0B /* MediaCleanupTests.swift */; };
+		6E77337A0E9538971D230C66 /* MemoziaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A001927A5C7729DDCEDC6F7 /* MemoziaTests.swift */; };
+		708D859F694B3E784B9FA469 /* LocalizationSnapshotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF9C03B9F83317E85C5BA640 /* LocalizationSnapshotUITests.swift */; };
+		7386483A7D0B86E440470724 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AE7A7B4B51A82649458F8C6 /* RootView.swift */; };
+		73EE2E76433836FF4309CF61 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94186112E470319B2D9B87BF /* OnboardingView.swift */; };
+		74B67353D003EC8436469ED6 /* SummaryHistoryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC64B4798A3353FF1F9C29B2 /* SummaryHistoryButton.swift */; };
+		75096E0D20CFFCA04A9F08BB /* CurrentTimeServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487B48C035BEAE808C193ECF /* CurrentTimeServiceTests.swift */; };
+		752DA55A20C9BC51BCA961AC /* MarkdownPDFRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B8D5A74DCB967C371DF619C /* MarkdownPDFRendererTests.swift */; };
+		769A7894F8D9CA7A1CA4DD0C /* QuickNoteViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F70F2CDA507ACE83E6E12A6 /* QuickNoteViewModel.swift */; };
+		780E2DFD84479661A192D589 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = 5B09F9390CBECE2E63D828EE /* MCP */; };
+		793C858A6DFA8CDBE7BAA38A /* VoiceprintStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99D9B04EC7EA0F5ADBD7D5F0 /* VoiceprintStore.swift */; };
+		7B32B8C545EE6B373C8ADA98 /* TaskCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8267E0BA447E6EAC4FFCB64 /* TaskCenter.swift */; };
+		7B4661916124794C4C1536F3 /* ScreenCaptureAuthorizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DAFC2BB57A91A940D9F7AA0 /* ScreenCaptureAuthorizationTests.swift */; };
+		7BD87C561DF8888B1C85A415 /* TranscriptDictionaryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD9608D399B9621BDCA8347 /* TranscriptDictionaryService.swift */; };
+		7D25EF21E4750C0D54E50A63 /* VisionOCRLanguageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAE74D7FCDE05454ED2D8E8 /* VisionOCRLanguageTests.swift */; };
+		7DAA5387409398EA8895878B /* KeyframeExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B009B885A273402D089BB4F0 /* KeyframeExtractor.swift */; };
+		7DD3CBECCEB0F6C40884A61A /* AccessibilityAuditUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C085780F24FA564509518630 /* AccessibilityAuditUITests.swift */; };
+		7EA91CCC92404D0550DE1EF3 /* RuntimeVerification.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4D2CB43D264D9B50C5F3857 /* RuntimeVerification.swift */; };
+		81B21117B9C413F35C33F14E /* SystemNotice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58C99A3F959051F7C853E4B7 /* SystemNotice.swift */; };
+		81BC57FAF35BF68A85829AFC /* AppExperience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 378D7CB91E1675F3A77E8C66 /* AppExperience.swift */; };
+		81F31A8DC76A8DEC2A4803B7 /* MicCaptureFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3EE0F2B57EA7AAB5730090 /* MicCaptureFileStore.swift */; };
+		83AB6DAA71C59558A67FC34C /* BackgroundWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B984DE1019C9B77DAD5E5274 /* BackgroundWorker.swift */; };
+		840BBE9B230427C235217A22 /* AnnotationOverlaySupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E571022E6E46AE366F6AD2EE /* AnnotationOverlaySupport.swift */; };
+		87ADCD330CF7FABE320FD706 /* MarkdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FB7E75FFA13453E861C5449 /* MarkdownView.swift */; };
+		8A2D533F1F1E64B1B5B8FFF4 /* EntryQueryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767FE66ED50575E106965B3 /* EntryQueryService.swift */; };
+		8B87A7D547CD0A057C8B9481 /* HotkeySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFDD9FEADF3689607DC82A7C /* HotkeySettingsView.swift */; };
+		8BDF8A53739F336EEF30FEDB /* TimeInterval+Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E37A9B674FE13A32343D43 /* TimeInterval+Formatting.swift */; };
+		8E88EC929654809F4A29C693 /* RemindersURLDiagnostic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7279C075A13CB368C3AE3803 /* RemindersURLDiagnostic.swift */; };
+		8F89595888224877BECAF609 /* ExportModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCB6251B97A8DC65A1AF955 /* ExportModifiers.swift */; };
+		8FB37C2588A78EE1085C4542 /* TSPhrases.txt in Resources */ = {isa = PBXBuildFile; fileRef = B0E68CE59CAE14A456729FA6 /* TSPhrases.txt */; };
+		906D165E7450171FDA72125F /* RecordingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5783EA896DDCCE27B76F39 /* RecordingDetailView.swift */; };
+		90EB6614E3D1A57E3089567C /* AnnotationToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03600BF0D860229BB3302DB6 /* AnnotationToolbar.swift */; };
+		92B63FD009D4D55D8F441E86 /* NoteSpeechView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64CFAF3A701B252028ABCB68 /* NoteSpeechView.swift */; };
+		940940037A83C8FD5E97E899 /* STPhrases.txt in Resources */ = {isa = PBXBuildFile; fileRef = EC1C0E712250D2001B7DE3FD /* STPhrases.txt */; };
+		94558DDA8ACE21077061D9B8 /* WhisperModelDownloadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8E326945CC497662555342 /* WhisperModelDownloadTests.swift */; };
+		95E98E119F9F81787987EE58 /* VoiceprintMergeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B9B3CCE6ECE876E5116057A /* VoiceprintMergeTests.swift */; };
+		96FBAD47D7F3934F55DD6FF2 /* ChineseConverterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 502AEBF4A530FBF5865BE92F /* ChineseConverterService.swift */; };
+		9BC4CA70A924CEEFE78F821E /* StartupBootstrapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AFF9463B91BAB359C11D8C2 /* StartupBootstrapTests.swift */; };
+		9C9003328EBA1C2C38AF13B5 /* WaveformService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65E3AD2834D53D2854743F9D /* WaveformService.swift */; };
+		9CE7B1DE049EE46F7649F926 /* VideoUnderstandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E5CAC426D180C1C5C29023E /* VideoUnderstandingView.swift */; };
+		9D8811DD7ECDA66D1E234FDD /* HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5205E7A43F91C3ACD47794A9 /* HelpView.swift */; };
+		9E9FB29599D9A54489BED520 /* RecordingSegmentTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEB3E6D8BF2EDB7F3AA49259 /* RecordingSegmentTimeline.swift */; };
+		9F1333AFC5C8CC5533F38762 /* sherpa-onnx-shared in Frameworks */ = {isa = PBXBuildFile; productRef = F2D37FE0D098A21185B7CA5A /* sherpa-onnx-shared */; };
+		9F151B7832F85B039ACA09CF /* TSCharacters.txt in Resources */ = {isa = PBXBuildFile; fileRef = 61A57B201FB0F418E466BCD2 /* TSCharacters.txt */; };
+		9F17F2D77400AD3927C7B8D9 /* MemoziaMCPHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD72EB748687DE95F615B897 /* MemoziaMCPHelper.swift */; };
+		9F356753D8C1458CA9BDCFCA /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1894ABD7D4122E2B35899DBA /* UITestSupport.swift */; };
+		A0AE6E1BF61D336AEF4A2CA7 /* GlobalHotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A839D9B325DA60A44F6D23C /* GlobalHotkeyManager.swift */; };
+		A2F71CF591E76BD4D9C6D39C /* PrivacyPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4C0D97854285B289F77B246 /* PrivacyPolicyTests.swift */; };
+		A3C573B6C43A2025394DD0A9 /* NoteSpeechTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C8C489C2E9955143E53FF1 /* NoteSpeechTests.swift */; };
+		A607CB7040371A7C01BEE86B /* MarkdownPDFRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 057017D09EC9558146AD8813 /* MarkdownPDFRenderer.swift */; };
+		A615F3B71741F2808A5228E8 /* MicMuteCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A6737467C4DD22F5C4F930D /* MicMuteCommand.swift */; };
+		A689EBF696DF71074A70194A /* AppCommandCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F8C1229316A9219309D98F2 /* AppCommandCatalogTests.swift */; };
+		A72A0734070536C2233268CE /* MicrophoneDeviceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6268E7FC0A8888B77365F888 /* MicrophoneDeviceRegistry.swift */; };
+		A776E4691A4046AA96AED182 /* TranscriptCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9410F4082A11D338B8C70BAF /* TranscriptCache.swift */; };
+		AA802D6BAC814F8C4A8F0E0B /* TodoExtractionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7A00F0B400FE0A0E53DC4F /* TodoExtractionServiceTests.swift */; };
+		AACA4B31819F8EF5A84247AB /* RecordingCaptureHealthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 886DFF49FFC46F97C78C4521 /* RecordingCaptureHealthTests.swift */; };
+		AAE51622A2C9FDBB01D5F880 /* TranscriptSegment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C3392252F518E6DC4E6C13 /* TranscriptSegment.swift */; };
+		AB02A39224436C9A32F05D13 /* UpdateInstallationCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9364176C01B11E5413130F0 /* UpdateInstallationCoordinatorTests.swift */; };
+		AC5E368E7E37174E80163F94 /* BackgroundTaskQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4281017E1169591AD0955588 /* BackgroundTaskQueueTests.swift */; };
+		AD195C2101800A6E094DE4B5 /* RecordingListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E1FB4D98AFECD9DFC81043B /* RecordingListView.swift */; };
+		ADBED96C37319D52C5FD4CE3 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54779C9E2CE0F757117894F8 /* TodoItem.swift */; };
+		ADD9FB7B8DE79EFFB275E223 /* MCPServerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D17C48FFF7CB8C452722824 /* MCPServerController.swift */; };
+		AFA0023C6E158EA2C4478322 /* WaveformAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520B70FD0BC7E4ED54A9B4B1 /* WaveformAnalyzerTests.swift */; };
+		B68F88DCC93A900F91756E72 /* QuickNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39F6E107AFE0D886522B61BC /* QuickNote.swift */; };
+		B7DA230BBBF2CA53897B6AB0 /* MemoziaSmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC90D61B8E84171A93E4078 /* MemoziaSmokeUITests.swift */; };
+		B852DEA1736C45E5647E1A51 /* PIIScrubService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E33AF3D8E2135B4FFAC8DF /* PIIScrubService.swift */; };
+		B98BA5D38ED65191ECD34293 /* AudioImportValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63F50F840698A164E6EF0B97 /* AudioImportValidator.swift */; };
+		BADAA314B44A8CD5C37BC7F8 /* ScreenshotNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D37A0CA3201313380D8E7E6 /* ScreenshotNotifications.swift */; };
+		BC8670BF32839319DE6578B3 /* SystemAudioCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D60C241C2043D250C30F339 /* SystemAudioCaptureService.swift */; };
+		BDA2E37B9D97EAF4F40C3452 /* OneClickPlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A276FED2777ABC6840654C3 /* OneClickPlanTests.swift */; };
+		BE972822944D7AFCA7270E5D /* AppExperienceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77FDBC45BA229C6E55C4AF84 /* AppExperienceTests.swift */; };
+		BF11C978F7F443427D5D5193 /* TranscriptionProgressEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E4BD87DD771EF076FE569F8 /* TranscriptionProgressEstimator.swift */; };
+		BFB993516017A8BFC57B471D /* STCharacters.txt in Resources */ = {isa = PBXBuildFile; fileRef = D4FAC9D7B319DF94AC986723 /* STCharacters.txt */; };
+		C1625E9B2AEF6B8A82C7E001 /* RecordingCaptureHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB76363C51B4651B905FABF /* RecordingCaptureHealth.swift */; };
+		C1B191F9F69AA6D5C776EB94 /* PinnedOCRTextPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BF065F8D95198736918DE3 /* PinnedOCRTextPanel.swift */; };
+		C23A3B4DCF38E1DA73EB493A /* ScreenshotManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8519DB362D9A7D2DF4E8D912 /* ScreenshotManager.swift */; };
+		C564A1C13975E8C36F2C53B8 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = D608E7CED307A29121F2787F /* README.md */; };
+		C5FCF625A072266DEE687616 /* LocalLLMCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BD3B0F5F02CC239616ABA01 /* LocalLLMCapabilities.swift */; };
+		C6BA1E80F744AF6819F77797 /* MemoziaContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CB81C21C52492D672594343 /* MemoziaContact.swift */; };
+		C882D0FF617C680F3CECAC0C /* CloudSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 220DAB088BEBE27AFBD9D170 /* CloudSyncService.swift */; };
+		CAFF24C205B30A3698430D2B /* MicCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4403D8D25C20BB4C86D2EC2 /* MicCaptureService.swift */; };
+		CB3FE9CD2F62DC46983A0F79 /* UpdatePermissionRepair.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15098E53C3E499643AA60F7 /* UpdatePermissionRepair.swift */; };
+		CCD759A203822C9940C3BC88 /* SpeechTextPreparer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D71CCF94C13DDB85B708F67 /* SpeechTextPreparer.swift */; };
+		CE0939D4AF98C812D6517F7A /* NIOHTTP1 in Frameworks */ = {isa = PBXBuildFile; productRef = E88ACE999D8D25FC37541D95 /* NIOHTTP1 */; };
+		CFBD6548739D76578AEC37AF /* LifecycleTasksModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3048EF1254C283ADC62CF9 /* LifecycleTasksModifier.swift */; };
+		D09FC45A0321FB33AC0B0933 /* RecordingViewModelSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 639CD34108A275942E5E9D97 /* RecordingViewModelSupport.swift */; };
+		D26BCE653217A605BF2DCA85 /* BackgroundTaskQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154996EBF74FB92C1892EB49 /* BackgroundTaskQueue.swift */; };
+		D6BDE322695302D5963AE5F6 /* TransientModeReadOnlyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C00C86537DC66D458852B95 /* TransientModeReadOnlyTests.swift */; };
+		D6D6178694729CE923EF79EC /* EchoReductionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC5F7DCC4118C6065D302EA3 /* EchoReductionService.swift */; };
+		D7A1DE579F4FF2CB6158343E /* MCPAccessStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C26133039BBBC11B720B79 /* MCPAccessStore.swift */; };
+		D7F47D82DA72D09426A37BC6 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 24AFBCB6F601957CAF8D81AF /* WhisperKit */; };
+		D9586C0DDC8E3F006D83AAD2 /* EchoCanceller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F394FEDD1BA5420F06DC68 /* EchoCanceller.swift */; };
+		DD966BF1FF3CB4BE4D997C72 /* PrivacyPolicyDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCBE8E05841FC91F07259233 /* PrivacyPolicyDetailView.swift */; };
+		DE2B18C229EB21EC7D53D9C3 /* LLMConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCEFB5F62EB65758A887444 /* LLMConfig.swift */; };
+		DF53C2C62F7B5FC8A0F91444 /* QueuePanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0E9517CBD747DFD6C4AD50 /* QueuePanelView.swift */; };
+		E26FDA95E870140445480ECA /* EntryMirrorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F780455B753C7E4C3DAC7844 /* EntryMirrorStore.swift */; };
+		E30CB2F52E2BF97F215ABED5 /* OverlayAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9551B5663CAD3E97FB423233 /* OverlayAnnotationView.swift */; };
+		E3284F43AF1109632D570C0E /* PromptSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 710CDB23762E14C1BC6D4C30 /* PromptSettingsView.swift */; };
+		E3F9FABB2B7651D707666736 /* RecordingMergeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BD3F22B4125E61DC10438F9 /* RecordingMergeService.swift */; };
+		E526AC57A248DE286D78024D /* EntryMirrorStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF47C98323FB976DB05FF877 /* EntryMirrorStoreTests.swift */; };
+		E592597396089150F78479A6 /* MCPSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3800E32F8F006EE07A909C3 /* MCPSettingsView.swift */; };
+		EB26E0A24FF82CBC27B6423A /* ImprovementRegressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 333CCF7C744E7DE28BEC2279 /* ImprovementRegressionTests.swift */; };
+		EBA59E856DFF987B61B86838 /* MCPReadOnlyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48B99383EDE3EA09BC2331AB /* MCPReadOnlyTests.swift */; };
+		EF1F0301B32F611F6D9FF462 /* SpeechSynthesisOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68601FD1A963213A9E8EEA6 /* SpeechSynthesisOptions.swift */; };
+		EFA6029CB8B38A9E62CBEBC4 /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20026AE98EE94D432C856194 /* FeedbackView.swift */; };
+		EFE68B2DB48545C9DFE978D0 /* VideoUnderstandingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4AB118B90FDF74E378EE026 /* VideoUnderstandingService.swift */; };
+		F09B53B5CA485626B45AA734 /* MicCaptureRestartTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13A591C9E3A3684A5F11C8B /* MicCaptureRestartTests.swift */; };
+		F191456A668FE74FD9662CB0 /* LLMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5064A14BF95CE1DF08F352AC /* LLMService.swift */; };
+		F3DC8681D738FE77E6B0BD05 /* MCP-LICENSES.txt in Resources */ = {isa = PBXBuildFile; fileRef = 252EDD7965868257D21EF1BE /* MCP-LICENSES.txt */; };
+		F42C500B4B3588E8225EC357 /* PortableBackupSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60C90CAE53148C2689D67BAA /* PortableBackupSection.swift */; };
+		F6BB916EFE54B19EAEE05DC2 /* AppMuteDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DF11CA04D05C842EB86F150 /* AppMuteDetector.swift */; };
+		F781F917D2A92FBBF755ABBF /* OneClickPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 859C6B87B7638FD3968B7901 /* OneClickPreviewView.swift */; };
+		FA5CB3A973BDEEEBA1840F06 /* RecordingSegmentTimelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9D4AA047362A455EADAFCD /* RecordingSegmentTimelineTests.swift */; };
+		FABC974ED37BEBDDD3C4D154 /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = 7D8F80CBEFC68BAC59B50051 /* MCP */; };
+		FB8474553A917ADF1BD17D7F /* MemoziaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59D1586B48BE493758C1CAE4 /* MemoziaApp.swift */; };
+		FE7EFD739327B3447ED38DEE /* VideoCleanupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30296031273AEB79B0C6F4CE /* VideoCleanupTests.swift */; };
+		FF3749E7A391D4FECA9942A0 /* MicMuteMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8537A42453F308D4944867C8 /* MicMuteMonitor.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		07DEFCAA5633FDDEB0B4D886 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5A50221BCA4E26D4DD6D94A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5F76D6896B1BCF73F1A518EF;
+			remoteInfo = MemoziaMCPHelper;
+		};
+		5613396FA217168066BF0215 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5A50221BCA4E26D4DD6D94A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 219422B3843660A856B866D0;
+			remoteInfo = Memozia;
+		};
+		731C138C065836DCA4364795 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B5A50221BCA4E26D4DD6D94A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 219422B3843660A856B866D0;
+			remoteInfo = Memozia;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		02981D39BD5B24999028665D /* LLMTitleGenerationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMTitleGenerationTests.swift; sourceTree = "<group>"; };
+		03600BF0D860229BB3302DB6 /* AnnotationToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationToolbar.swift; sourceTree = "<group>"; };
+		03C3392252F518E6DC4E6C13 /* TranscriptSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptSegment.swift; sourceTree = "<group>"; };
+		0411FC8A6054CDB310AFFA98 /* MemoziaMCPHelper */ = {isa = PBXFileReference; includeInIndex = 0; name = MemoziaMCPHelper; path = "memozia-mcp"; sourceTree = BUILT_PRODUCTS_DIR; };
+		05479F298456E5A8024D97DB /* SummaryHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryHistory.swift; sourceTree = "<group>"; };
+		0558BA5CC49BC9A98CD1D687 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
+		057017D09EC9558146AD8813 /* MarkdownPDFRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPDFRenderer.swift; sourceTree = "<group>"; };
+		06E37A9B674FE13A32343D43 /* TimeInterval+Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Formatting.swift"; sourceTree = "<group>"; };
+		09443FC097670B45C6E95798 /* RecordingCaptureReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingCaptureReportTests.swift; sourceTree = "<group>"; };
+		0B582F544ABC3F4630314E6E /* DiarizationSegmentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiarizationSegmentationTests.swift; sourceTree = "<group>"; };
+		0B8D5A74DCB967C371DF619C /* MarkdownPDFRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPDFRendererTests.swift; sourceTree = "<group>"; };
+		0D24691CE159ED8A2C42F7A6 /* TranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptView.swift; sourceTree = "<group>"; };
+		0DA0A29938B6812E4574EF9D /* DictionarySettingsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionarySettingsViews.swift; sourceTree = "<group>"; };
+		0E7A00F0B400FE0A0E53DC4F /* TodoExtractionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoExtractionServiceTests.swift; sourceTree = "<group>"; };
+		117F0191ECCEE2EDC0FB70E8 /* RecordingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingViewModel.swift; sourceTree = "<group>"; };
+		13ADF75D5823A732D0E8A0EA /* EchoCancellerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoCancellerTests.swift; sourceTree = "<group>"; };
+		154996EBF74FB92C1892EB49 /* BackgroundTaskQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskQueue.swift; sourceTree = "<group>"; };
+		18035331B5620C3D8BE99FD6 /* WhisperModelCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelCatalog.swift; sourceTree = "<group>"; };
+		1894ABD7D4122E2B35899DBA /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
+		1A6737467C4DD22F5C4F930D /* MicMuteCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicMuteCommand.swift; sourceTree = "<group>"; };
+		1C52F21491578AEE9F3DB393 /* SummaryChunking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryChunking.swift; sourceTree = "<group>"; };
+		1C9F8BDB4DE66CA6E47C8018 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1ECF352B2CFF978139513B21 /* PersistenceReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceReporting.swift; sourceTree = "<group>"; };
+		20026AE98EE94D432C856194 /* FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackView.swift; sourceTree = "<group>"; };
+		20F394FEDD1BA5420F06DC68 /* EchoCanceller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoCanceller.swift; sourceTree = "<group>"; };
+		21C26133039BBBC11B720B79 /* MCPAccessStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPAccessStore.swift; sourceTree = "<group>"; };
+		220DAB088BEBE27AFBD9D170 /* CloudSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncService.swift; sourceTree = "<group>"; };
+		252EDD7965868257D21EF1BE /* MCP-LICENSES.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "MCP-LICENSES.txt"; sourceTree = "<group>"; };
+		25BBAD92495AA63B97EB0A17 /* EndpointPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndpointPolicy.swift; sourceTree = "<group>"; };
+		2620EF4E2054B693FDA1EFA5 /* ScreenshotSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotSettingsView.swift; sourceTree = "<group>"; };
+		27A6AFF05B71CF5A01ACC7DB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		292AE0E0959F3F31FD0C456C /* MicCaptureRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicCaptureRecoveryTests.swift; sourceTree = "<group>"; };
+		29A63D5FFB1A535B7807DCE0 /* DiarizationCalibrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiarizationCalibrator.swift; sourceTree = "<group>"; };
+		2B9B3CCE6ECE876E5116057A /* VoiceprintMergeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceprintMergeTests.swift; sourceTree = "<group>"; };
+		2BFC5634A3BD43D7E845430D /* MemoziaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MemoziaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C00C86537DC66D458852B95 /* TransientModeReadOnlyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransientModeReadOnlyTests.swift; sourceTree = "<group>"; };
+		2D17C48FFF7CB8C452722824 /* MCPServerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPServerController.swift; sourceTree = "<group>"; };
+		2E5CAC426D180C1C5C29023E /* VideoUnderstandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoUnderstandingView.swift; sourceTree = "<group>"; };
+		30296031273AEB79B0C6F4CE /* VideoCleanupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCleanupTests.swift; sourceTree = "<group>"; };
+		30A5ED83B2476CB3FE627841 /* NoteSpeechViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteSpeechViewModel.swift; sourceTree = "<group>"; };
+		314FF03722A18F491FCCE7AF /* FullTextSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullTextSearch.swift; sourceTree = "<group>"; };
+		333CCF7C744E7DE28BEC2279 /* ImprovementRegressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImprovementRegressionTests.swift; sourceTree = "<group>"; };
+		33906E2787327F2AD5B53C81 /* AudioConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioConverter.swift; sourceTree = "<group>"; };
+		344086E347C6D8D9235860CD /* WaveformStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformStrip.swift; sourceTree = "<group>"; };
+		35A801AA0059815E0E2DCC0B /* MediaCleanupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCleanupTests.swift; sourceTree = "<group>"; };
+		3767FE66ED50575E106965B3 /* EntryQueryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryQueryService.swift; sourceTree = "<group>"; };
+		378D7CB91E1675F3A77E8C66 /* AppExperience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppExperience.swift; sourceTree = "<group>"; };
+		39F6E107AFE0D886522B61BC /* QuickNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickNote.swift; sourceTree = "<group>"; };
+		3A001927A5C7729DDCEDC6F7 /* MemoziaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoziaTests.swift; sourceTree = "<group>"; };
+		3A9D4AA047362A455EADAFCD /* RecordingSegmentTimelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingSegmentTimelineTests.swift; sourceTree = "<group>"; };
+		3BD3B0F5F02CC239616ABA01 /* LocalLLMCapabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalLLMCapabilities.swift; sourceTree = "<group>"; };
+		3ECACBBCB8DF4157320AAF95 /* FileSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSyncService.swift; sourceTree = "<group>"; };
+		40654482F6E659353B90E28E /* StorageSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageSessionTests.swift; sourceTree = "<group>"; };
+		41C93B104F316ABCD8EF9E40 /* RecordingMergeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMergeTests.swift; sourceTree = "<group>"; };
+		4281017E1169591AD0955588 /* BackgroundTaskQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskQueueTests.swift; sourceTree = "<group>"; };
+		453D16E2D3CAB1E5A7CD70CE /* QuickNoteDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickNoteDetailView.swift; sourceTree = "<group>"; };
+		47677CD1B9A6DC8EF23DB8D9 /* TodoSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoSettingsView.swift; sourceTree = "<group>"; };
+		487B48C035BEAE808C193ECF /* CurrentTimeServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentTimeServiceTests.swift; sourceTree = "<group>"; };
+		48B99383EDE3EA09BC2331AB /* MCPReadOnlyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPReadOnlyTests.swift; sourceTree = "<group>"; };
+		4A24E62BCAA3B77531BB741F /* AppUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
+		4CCEFB5F62EB65758A887444 /* LLMConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMConfig.swift; sourceTree = "<group>"; };
+		4D71CCF94C13DDB85B708F67 /* SpeechTextPreparer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechTextPreparer.swift; sourceTree = "<group>"; };
+		4DF11CA04D05C842EB86F150 /* AppMuteDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMuteDetector.swift; sourceTree = "<group>"; };
+		502AEBF4A530FBF5865BE92F /* ChineseConverterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChineseConverterService.swift; sourceTree = "<group>"; };
+		5064A14BF95CE1DF08F352AC /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
+		5205E7A43F91C3ACD47794A9 /* HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpView.swift; sourceTree = "<group>"; };
+		520B70FD0BC7E4ED54A9B4B1 /* WaveformAnalyzerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformAnalyzerTests.swift; sourceTree = "<group>"; };
+		52BF065F8D95198736918DE3 /* PinnedOCRTextPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinnedOCRTextPanel.swift; sourceTree = "<group>"; };
+		54779C9E2CE0F757117894F8 /* TodoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItem.swift; sourceTree = "<group>"; };
+		5499E4B97A9C06A6FA1343BA /* MicCaptureRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicCaptureRecovery.swift; sourceTree = "<group>"; };
+		550322D288B280595B0EF630 /* NativeSpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeSpeechService.swift; sourceTree = "<group>"; };
+		58C99A3F959051F7C853E4B7 /* SystemNotice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemNotice.swift; sourceTree = "<group>"; };
+		59D1586B48BE493758C1CAE4 /* MemoziaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoziaApp.swift; sourceTree = "<group>"; };
+		5AF8A44F2501190B9F5E9A1F /* RacingWatchdog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RacingWatchdog.swift; sourceTree = "<group>"; };
+		5B11B64D23A6D2B4BDCA64B9 /* MCPLoopbackListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPLoopbackListener.swift; sourceTree = "<group>"; };
+		5B24E03459D7207D1E8AAD17 /* RecordingCaptureReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingCaptureReport.swift; sourceTree = "<group>"; };
+		5B445EC76090DBC18397D1DE /* WindowPickOrderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowPickOrderTests.swift; sourceTree = "<group>"; };
+		5DB23251DB35B0B884D65069 /* PIIScanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PIIScanService.swift; sourceTree = "<group>"; };
+		5F5AD4280C023924A7038C1C /* STTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STTConfig.swift; sourceTree = "<group>"; };
+		60C90CAE53148C2689D67BAA /* PortableBackupSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortableBackupSection.swift; sourceTree = "<group>"; };
+		61A57B201FB0F418E466BCD2 /* TSCharacters.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = TSCharacters.txt; sourceTree = "<group>"; };
+		6268E7FC0A8888B77365F888 /* MicrophoneDeviceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicrophoneDeviceRegistry.swift; sourceTree = "<group>"; };
+		639CD34108A275942E5E9D97 /* RecordingViewModelSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingViewModelSupport.swift; sourceTree = "<group>"; };
+		63F50F840698A164E6EF0B97 /* AudioImportValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioImportValidator.swift; sourceTree = "<group>"; };
+		64CFAF3A701B252028ABCB68 /* NoteSpeechView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteSpeechView.swift; sourceTree = "<group>"; };
+		6524CD8E7BCD340A4835E227 /* EntryIdentityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryIdentityStore.swift; sourceTree = "<group>"; };
+		6594516071D94D1046A56F2F /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		65E3AD2834D53D2854743F9D /* WaveformService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformService.swift; sourceTree = "<group>"; };
+		667A8EC26549497D62635203 /* UpdateInstallationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateInstallationCoordinator.swift; sourceTree = "<group>"; };
+		66A27CE1311EBFCE4A97A2FD /* CurrentTimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentTimeService.swift; sourceTree = "<group>"; };
+		6707B5E3D520C8CB5FFE0DD8 /* RecordingElapsedLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingElapsedLabel.swift; sourceTree = "<group>"; };
+		69F1252EE9D5F78ACBDE71F0 /* EncryptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionService.swift; sourceTree = "<group>"; };
+		6A839D9B325DA60A44F6D23C /* GlobalHotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotkeyManager.swift; sourceTree = "<group>"; };
+		6AE7A7B4B51A82649458F8C6 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		6AFF9463B91BAB359C11D8C2 /* StartupBootstrapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupBootstrapTests.swift; sourceTree = "<group>"; };
+		6B3EE0F2B57EA7AAB5730090 /* MicCaptureFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicCaptureFileStore.swift; sourceTree = "<group>"; };
+		6C6FF36A4C04AFDB284A71C1 /* LLMPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMPreset.swift; sourceTree = "<group>"; };
+		6D0B186A914A27804B7AD979 /* Memozia.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Memozia.entitlements; sourceTree = "<group>"; };
+		6D37A0CA3201313380D8E7E6 /* ScreenshotNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotNotifications.swift; sourceTree = "<group>"; };
+		6D60C241C2043D250C30F339 /* SystemAudioCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAudioCaptureService.swift; sourceTree = "<group>"; };
+		6DB76363C51B4651B905FABF /* RecordingCaptureHealth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingCaptureHealth.swift; sourceTree = "<group>"; };
+		6F70F2CDA507ACE83E6E12A6 /* QuickNoteViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickNoteViewModel.swift; sourceTree = "<group>"; };
+		6F8C1229316A9219309D98F2 /* AppCommandCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommandCatalogTests.swift; sourceTree = "<group>"; };
+		710CDB23762E14C1BC6D4C30 /* PromptSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptSettingsView.swift; sourceTree = "<group>"; };
+		7279C075A13CB368C3AE3803 /* RemindersURLDiagnostic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersURLDiagnostic.swift; sourceTree = "<group>"; };
+		74F687E8CD6CFB516A78954B /* RemindersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersService.swift; sourceTree = "<group>"; };
+		751CE2AD97B1CAA467BB8E11 /* StorageSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageSession.swift; sourceTree = "<group>"; };
+		75BDA9656E769684F62BC8F3 /* TaskCenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCenterTests.swift; sourceTree = "<group>"; };
+		77FDBC45BA229C6E55C4AF84 /* AppExperienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppExperienceTests.swift; sourceTree = "<group>"; };
+		7BD3F22B4125E61DC10438F9 /* RecordingMergeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMergeService.swift; sourceTree = "<group>"; };
+		7D3048EF1254C283ADC62CF9 /* LifecycleTasksModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LifecycleTasksModifier.swift; sourceTree = "<group>"; };
+		7F30422A1926F29484FAB298 /* Sparkle-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Sparkle-LICENSE.txt"; sourceTree = "<group>"; };
+		7F5783EA896DDCCE27B76F39 /* RecordingDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingDetailView.swift; sourceTree = "<group>"; };
+		7FB7E75FFA13453E861C5449 /* MarkdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownView.swift; sourceTree = "<group>"; };
+		8081B8FC35CBC9C07EAD40A7 /* MCPReadOnlyServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPReadOnlyServer.swift; sourceTree = "<group>"; };
+		84887CF1B565FB3F57653751 /* MainActor+AssumeOnMainThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainActor+AssumeOnMainThread.swift"; sourceTree = "<group>"; };
+		8519DB362D9A7D2DF4E8D912 /* ScreenshotManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotManager.swift; sourceTree = "<group>"; };
+		8537A42453F308D4944867C8 /* MicMuteMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicMuteMonitor.swift; sourceTree = "<group>"; };
+		859C6B87B7638FD3968B7901 /* OneClickPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneClickPreviewView.swift; sourceTree = "<group>"; };
+		878646FA1EBF2E7E5215843A /* DiarizationAudioLoadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiarizationAudioLoadTests.swift; sourceTree = "<group>"; };
+		886DFF49FFC46F97C78C4521 /* RecordingCaptureHealthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingCaptureHealthTests.swift; sourceTree = "<group>"; };
+		898FD7D5544563638A667E6A /* ExportDocuments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportDocuments.swift; sourceTree = "<group>"; };
+		8BD9608D399B9621BDCA8347 /* TranscriptDictionaryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptDictionaryService.swift; sourceTree = "<group>"; };
+		8C7C8CDDB3BD3F064BFE7458 /* AudioRecording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecording.swift; sourceTree = "<group>"; };
+		8CB81C21C52492D672594343 /* MemoziaContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoziaContact.swift; sourceTree = "<group>"; };
+		8DAFC2BB57A91A940D9F7AA0 /* ScreenCaptureAuthorizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCaptureAuthorizationTests.swift; sourceTree = "<group>"; };
+		8DBCA91772199976A7B5DF29 /* RecordingProgressStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingProgressStatus.swift; sourceTree = "<group>"; };
+		8E1FB4D98AFECD9DFC81043B /* RecordingListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingListView.swift; sourceTree = "<group>"; };
+		91CA011EFF5AACD1FB9F848D /* KeyframeExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyframeExtractorTests.swift; sourceTree = "<group>"; };
+		9410F4082A11D338B8C70BAF /* TranscriptCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptCache.swift; sourceTree = "<group>"; };
+		94186112E470319B2D9B87BF /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		9551B5663CAD3E97FB423233 /* OverlayAnnotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayAnnotationView.swift; sourceTree = "<group>"; };
+		95E33AF3D8E2135B4FFAC8DF /* PIIScrubService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PIIScrubService.swift; sourceTree = "<group>"; };
+		99D9B04EC7EA0F5ADBD7D5F0 /* VoiceprintStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceprintStore.swift; sourceTree = "<group>"; };
+		9A276FED2777ABC6840654C3 /* OneClickPlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneClickPlanTests.swift; sourceTree = "<group>"; };
+		9AEE20FB3911A31BCA31DE8E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		9B4830979110C0A48CDCC706 /* PrivacyConsentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyConsentView.swift; sourceTree = "<group>"; };
+		9BC90D61B8E84171A93E4078 /* MemoziaSmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoziaSmokeUITests.swift; sourceTree = "<group>"; };
+		9C2577DD5712A1D1C7B89CC5 /* StartupBootstrap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupBootstrap.swift; sourceTree = "<group>"; };
+		9E4BD87DD771EF076FE569F8 /* TranscriptionProgressEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionProgressEstimator.swift; sourceTree = "<group>"; };
+		9F3A14721C6DF9E6AA3FADBB /* TodoExtractionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoExtractionService.swift; sourceTree = "<group>"; };
+		A07FDDC22DD9A96DCD5A8440 /* SpeakerDiarizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerDiarizationService.swift; sourceTree = "<group>"; };
+		A0BB2E0F1413D99D988EE6C3 /* RecordingConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingConfig.swift; sourceTree = "<group>"; };
+		A3800E32F8F006EE07A909C3 /* MCPSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCPSettingsView.swift; sourceTree = "<group>"; };
+		ABF560472B6744BCC4DD9786 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		AD77EAE4FAEAAFC92EF20DB2 /* MemoziaPrivacyPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoziaPrivacyPolicy.swift; sourceTree = "<group>"; };
+		AF65449138EECD8444005AC9 /* ScreenshotOverlayController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotOverlayController.swift; sourceTree = "<group>"; };
+		AFA136590F93D075F5728B2D /* UpdatePermissionRepairTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePermissionRepairTests.swift; sourceTree = "<group>"; };
+		AFB27CAC86FFA36E0A334F75 /* Memozia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Memozia.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B009B885A273402D089BB4F0 /* KeyframeExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyframeExtractor.swift; sourceTree = "<group>"; };
+		B0E68CE59CAE14A456729FA6 /* TSPhrases.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = TSPhrases.txt; sourceTree = "<group>"; };
+		B1CE65CC46528FEC2F9D227A /* VisionOCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionOCRService.swift; sourceTree = "<group>"; };
+		B42312B27188177F7E0AECB5 /* AppCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommand.swift; sourceTree = "<group>"; };
+		B46A7E159E1A6D4E70D7C73C /* VoiceprintLibraryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceprintLibraryViews.swift; sourceTree = "<group>"; };
+		B4AB118B90FDF74E378EE026 /* VideoUnderstandingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoUnderstandingService.swift; sourceTree = "<group>"; };
+		B5A030E9F923A6C56A754638 /* LLMSettingsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMSettingsViews.swift; sourceTree = "<group>"; };
+		B68601FD1A963213A9E8EEA6 /* SpeechSynthesisOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechSynthesisOptions.swift; sourceTree = "<group>"; };
+		B7470A05E48641F5A8809753 /* ScreenCaptureAuthorization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCaptureAuthorization.swift; sourceTree = "<group>"; };
+		B9364176C01B11E5413130F0 /* UpdateInstallationCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateInstallationCoordinatorTests.swift; sourceTree = "<group>"; };
+		B96C5123FAF1AC9A7341ED04 /* RootDeletionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootDeletionRequest.swift; sourceTree = "<group>"; };
+		B984DE1019C9B77DAD5E5274 /* BackgroundWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundWorker.swift; sourceTree = "<group>"; };
+		BC64B4798A3353FF1F9C29B2 /* SummaryHistoryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryHistoryButton.swift; sourceTree = "<group>"; };
+		BC8E326945CC497662555342 /* WhisperModelDownloadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelDownloadTests.swift; sourceTree = "<group>"; };
+		BCBE8E05841FC91F07259233 /* PrivacyPolicyDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyDetailView.swift; sourceTree = "<group>"; };
+		BD2A77F1BD14F0F1118FC81E /* PortableBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortableBackup.swift; sourceTree = "<group>"; };
+		BEB3E6D8BF2EDB7F3AA49259 /* RecordingSegmentTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingSegmentTimeline.swift; sourceTree = "<group>"; };
+		C085780F24FA564509518630 /* AccessibilityAuditUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityAuditUITests.swift; sourceTree = "<group>"; };
+		C15098E53C3E499643AA60F7 /* UpdatePermissionRepair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePermissionRepair.swift; sourceTree = "<group>"; };
+		C207E6ADF067A8AF36A0ECF6 /* MediaCleanupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCleanupService.swift; sourceTree = "<group>"; };
+		C21573225D6230BC10378DE2 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
+		C4D2CB43D264D9B50C5F3857 /* RuntimeVerification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeVerification.swift; sourceTree = "<group>"; };
+		C5C8C489C2E9955143E53FF1 /* NoteSpeechTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteSpeechTests.swift; sourceTree = "<group>"; };
+		C87DD4DA248C71EB0E1ACF6E /* WhisperAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperAPIService.swift; sourceTree = "<group>"; };
+		CA419D382128219F14180F2B /* WhisperLocalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperLocalService.swift; sourceTree = "<group>"; };
+		CBB280ED875D96E9A9CA2573 /* WindowCloseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowCloseTests.swift; sourceTree = "<group>"; };
+		CC5F7DCC4118C6065D302EA3 /* EchoReductionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoReductionService.swift; sourceTree = "<group>"; };
+		CD72EB748687DE95F615B897 /* MemoziaMCPHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoziaMCPHelper.swift; sourceTree = "<group>"; };
+		CDCB6251B97A8DC65A1AF955 /* ExportModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportModifiers.swift; sourceTree = "<group>"; };
+		CF47C98323FB976DB05FF877 /* EntryMirrorStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryMirrorStoreTests.swift; sourceTree = "<group>"; };
+		CF9C03B9F83317E85C5BA640 /* LocalizationSnapshotUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationSnapshotUITests.swift; sourceTree = "<group>"; };
+		D3BD6CFBAA69C6E211B6F4A7 /* SystemTranscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemTranscriptionService.swift; sourceTree = "<group>"; };
+		D3D581B3F7408565D6CB9745 /* MeetingRecorderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeetingRecorderService.swift; sourceTree = "<group>"; };
+		D3D61366CE367A6784D9D2CE /* StabilityRegressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StabilityRegressionTests.swift; sourceTree = "<group>"; };
+		D4FAC9D7B319DF94AC986723 /* STCharacters.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = STCharacters.txt; sourceTree = "<group>"; };
+		D608E7CED307A29121F2787F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		D833898B776A1C9D77B63BA1 /* PromptTemplate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptTemplate.swift; sourceTree = "<group>"; };
+		DC89F9835CBD4B466F792BFE /* TextFindReplace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFindReplace.swift; sourceTree = "<group>"; };
+		E101AE3221485FB5C49F9C2D /* ScreenVideoRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenVideoRecorder.swift; sourceTree = "<group>"; };
+		E13A591C9E3A3684A5F11C8B /* MicCaptureRestartTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicCaptureRestartTests.swift; sourceTree = "<group>"; };
+		E4BE88C531AA538F8A07AF41 /* SummarySources.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummarySources.swift; sourceTree = "<group>"; };
+		E4C0D97854285B289F77B246 /* PrivacyPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyPolicyTests.swift; sourceTree = "<group>"; };
+		E4C9B81ABB7607C7CFB3BD03 /* LLMConfigDraftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMConfigDraftTests.swift; sourceTree = "<group>"; };
+		E571022E6E46AE366F6AD2EE /* AnnotationOverlaySupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationOverlaySupport.swift; sourceTree = "<group>"; };
+		E7E45733F11279CB6F6991E5 /* AppUpdateSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateSettingsView.swift; sourceTree = "<group>"; };
+		E8267E0BA447E6EAC4FFCB64 /* TaskCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCenter.swift; sourceTree = "<group>"; };
+		EB589FEED0D78B270390BDB3 /* AnnotationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationModel.swift; sourceTree = "<group>"; };
+		EC1C0E712250D2001B7DE3FD /* STPhrases.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = STPhrases.txt; sourceTree = "<group>"; };
+		EE3697C7B27243A4C9251F51 /* StartupRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupRootView.swift; sourceTree = "<group>"; };
+		F2338732C9BAF82CEE634CE1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F2FD1B12B26B70110DE18036 /* RecordCountdownPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordCountdownPanel.swift; sourceTree = "<group>"; };
+		F4403D8D25C20BB4C86D2EC2 /* MicCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicCaptureService.swift; sourceTree = "<group>"; };
+		F4812EFC580936B7BE9A7299 /* WhisperModelDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperModelDownloader.swift; sourceTree = "<group>"; };
+		F4D349637BB6FA30A44FFDB2 /* RecordingMergeRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingMergeRequest.swift; sourceTree = "<group>"; };
+		F780455B753C7E4C3DAC7844 /* EntryMirrorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryMirrorStore.swift; sourceTree = "<group>"; };
+		F8B262A815D739FE936A6FCD /* PersistenceCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceCapability.swift; sourceTree = "<group>"; };
+		FB415E3FEAFAAF1B2F75CA4F /* MemoziaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MemoziaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FD0E9517CBD747DFD6C4AD50 /* QueuePanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueuePanelView.swift; sourceTree = "<group>"; };
+		FDAE74D7FCDE05454ED2D8E8 /* VisionOCRLanguageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionOCRLanguageTests.swift; sourceTree = "<group>"; };
+		FEDE4C450987D518C16533D6 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
+		FFDD9FEADF3689607DC82A7C /* HotkeySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeySettingsView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5B49303A109CD37EE47434CB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				780E2DFD84479661A192D589 /* MCP in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		900407BBEF90D5A91A324861 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				181989B4BE197F19EAA95236 /* MCP in Frameworks */,
+				5DC025A9E2CBC0037DEC4470 /* NIOCore in Frameworks */,
+				352531B06D72B5B541DAEABC /* NIOPosix in Frameworks */,
+				CE0939D4AF98C812D6517F7A /* NIOHTTP1 in Frameworks */,
+				3CE2020F802AFBAF92564AD2 /* Sparkle in Frameworks */,
+				D7F47D82DA72D09426A37BC6 /* WhisperKit in Frameworks */,
+				2017DA6B5BCE31984D7847EF /* KeychainAccess in Frameworks */,
+				9F1333AFC5C8CC5533F38762 /* sherpa-onnx-shared in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9C88E6FD96A60CE9A978585B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FABC974ED37BEBDDD3C4D154 /* MCP in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0225704C31E41861A1500C20 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F2338732C9BAF82CEE634CE1 /* Assets.xcassets */,
+				27A6AFF05B71CF5A01ACC7DB /* Info.plist */,
+				6594516071D94D1046A56F2F /* InfoPlist.xcstrings */,
+				9AEE20FB3911A31BCA31DE8E /* Localizable.xcstrings */,
+				252EDD7965868257D21EF1BE /* MCP-LICENSES.txt */,
+				6D0B186A914A27804B7AD979 /* Memozia.entitlements */,
+				1C9F8BDB4DE66CA6E47C8018 /* PrivacyInfo.xcprivacy */,
+				7F30422A1926F29484FAB298 /* Sparkle-LICENSE.txt */,
+				830DE7E6FE5A8467F0204D94 /* ChineseDictionary */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		2865F5BCA06577659E46DF57 /* Memozia */ = {
+			isa = PBXGroup;
+			children = (
+				59D1586B48BE493758C1CAE4 /* MemoziaApp.swift */,
+				A98A29D45A6351F00C53D9CB /* Models */,
+				0225704C31E41861A1500C20 /* Resources */,
+				5D5B4A100F6FA3471C4F781F /* Services */,
+				6D098611D5B0C0AE8B26D038 /* ViewModels */,
+				4CF6634EBEC78808CACCA09F /* Views */,
+			);
+			path = Memozia;
+			sourceTree = "<group>";
+		};
+		4CF6634EBEC78808CACCA09F /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				5205E7A43F91C3ACD47794A9 /* HelpView.swift */,
+				7FB7E75FFA13453E861C5449 /* MarkdownView.swift */,
+				64CFAF3A701B252028ABCB68 /* NoteSpeechView.swift */,
+				94186112E470319B2D9B87BF /* OnboardingView.swift */,
+				859C6B87B7638FD3968B7901 /* OneClickPreviewView.swift */,
+				9B4830979110C0A48CDCC706 /* PrivacyConsentView.swift */,
+				710CDB23762E14C1BC6D4C30 /* PromptSettingsView.swift */,
+				FD0E9517CBD747DFD6C4AD50 /* QueuePanelView.swift */,
+				453D16E2D3CAB1E5A7CD70CE /* QuickNoteDetailView.swift */,
+				7F5783EA896DDCCE27B76F39 /* RecordingDetailView.swift */,
+				8E1FB4D98AFECD9DFC81043B /* RecordingListView.swift */,
+				6AE7A7B4B51A82649458F8C6 /* RootView.swift */,
+				ABF560472B6744BCC4DD9786 /* SettingsView.swift */,
+				EE3697C7B27243A4C9251F51 /* StartupRootView.swift */,
+				BC64B4798A3353FF1F9C29B2 /* SummaryHistoryButton.swift */,
+				C21573225D6230BC10378DE2 /* SummaryView.swift */,
+				DC89F9835CBD4B466F792BFE /* TextFindReplace.swift */,
+				0D24691CE159ED8A2C42F7A6 /* TranscriptView.swift */,
+				2E5CAC426D180C1C5C29023E /* VideoUnderstandingView.swift */,
+				344086E347C6D8D9235860CD /* WaveformStrip.swift */,
+				DB174F989373D5ED641B2699 /* Root */,
+				5C12E21C2E05DBCD8A670E9B /* ScreenRecording */,
+				E7C012FCF80A556EB9831221 /* Screenshot */,
+				6D310193C9D6F69C203C722B /* Settings */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		5C12E21C2E05DBCD8A670E9B /* ScreenRecording */ = {
+			isa = PBXGroup;
+			children = (
+				F2FD1B12B26B70110DE18036 /* RecordCountdownPanel.swift */,
+			);
+			path = ScreenRecording;
+			sourceTree = "<group>";
+		};
+		5D5B4A100F6FA3471C4F781F /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				4DF11CA04D05C842EB86F150 /* AppMuteDetector.swift */,
+				4A24E62BCAA3B77531BB741F /* AppUpdateService.swift */,
+				33906E2787327F2AD5B53C81 /* AudioConverter.swift */,
+				154996EBF74FB92C1892EB49 /* BackgroundTaskQueue.swift */,
+				B984DE1019C9B77DAD5E5274 /* BackgroundWorker.swift */,
+				502AEBF4A530FBF5865BE92F /* ChineseConverterService.swift */,
+				220DAB088BEBE27AFBD9D170 /* CloudSyncService.swift */,
+				66A27CE1311EBFCE4A97A2FD /* CurrentTimeService.swift */,
+				29A63D5FFB1A535B7807DCE0 /* DiarizationCalibrator.swift */,
+				20F394FEDD1BA5420F06DC68 /* EchoCanceller.swift */,
+				CC5F7DCC4118C6065D302EA3 /* EchoReductionService.swift */,
+				69F1252EE9D5F78ACBDE71F0 /* EncryptionService.swift */,
+				25BBAD92495AA63B97EB0A17 /* EndpointPolicy.swift */,
+				6524CD8E7BCD340A4835E227 /* EntryIdentityStore.swift */,
+				F780455B753C7E4C3DAC7844 /* EntryMirrorStore.swift */,
+				3ECACBBCB8DF4157320AAF95 /* FileSyncService.swift */,
+				314FF03722A18F491FCCE7AF /* FullTextSearch.swift */,
+				6A839D9B325DA60A44F6D23C /* GlobalHotkeyManager.swift */,
+				B009B885A273402D089BB4F0 /* KeyframeExtractor.swift */,
+				5064A14BF95CE1DF08F352AC /* LLMService.swift */,
+				3BD3B0F5F02CC239616ABA01 /* LocalLLMCapabilities.swift */,
+				84887CF1B565FB3F57653751 /* MainActor+AssumeOnMainThread.swift */,
+				057017D09EC9558146AD8813 /* MarkdownPDFRenderer.swift */,
+				C207E6ADF067A8AF36A0ECF6 /* MediaCleanupService.swift */,
+				D3D581B3F7408565D6CB9745 /* MeetingRecorderService.swift */,
+				8CB81C21C52492D672594343 /* MemoziaContact.swift */,
+				AD77EAE4FAEAAFC92EF20DB2 /* MemoziaPrivacyPolicy.swift */,
+				FEDE4C450987D518C16533D6 /* MenuBarController.swift */,
+				6B3EE0F2B57EA7AAB5730090 /* MicCaptureFileStore.swift */,
+				5499E4B97A9C06A6FA1343BA /* MicCaptureRecovery.swift */,
+				F4403D8D25C20BB4C86D2EC2 /* MicCaptureService.swift */,
+				8537A42453F308D4944867C8 /* MicMuteMonitor.swift */,
+				6268E7FC0A8888B77365F888 /* MicrophoneDeviceRegistry.swift */,
+				550322D288B280595B0EF630 /* NativeSpeechService.swift */,
+				F8B262A815D739FE936A6FCD /* PersistenceCapability.swift */,
+				1ECF352B2CFF978139513B21 /* PersistenceReporting.swift */,
+				5DB23251DB35B0B884D65069 /* PIIScanService.swift */,
+				95E33AF3D8E2135B4FFAC8DF /* PIIScrubService.swift */,
+				BD2A77F1BD14F0F1118FC81E /* PortableBackup.swift */,
+				5AF8A44F2501190B9F5E9A1F /* RacingWatchdog.swift */,
+				7BD3F22B4125E61DC10438F9 /* RecordingMergeService.swift */,
+				74F687E8CD6CFB516A78954B /* RemindersService.swift */,
+				7279C075A13CB368C3AE3803 /* RemindersURLDiagnostic.swift */,
+				C4D2CB43D264D9B50C5F3857 /* RuntimeVerification.swift */,
+				B7470A05E48641F5A8809753 /* ScreenCaptureAuthorization.swift */,
+				8519DB362D9A7D2DF4E8D912 /* ScreenshotManager.swift */,
+				6D37A0CA3201313380D8E7E6 /* ScreenshotNotifications.swift */,
+				E101AE3221485FB5C49F9C2D /* ScreenVideoRecorder.swift */,
+				A07FDDC22DD9A96DCD5A8440 /* SpeakerDiarizationService.swift */,
+				4D71CCF94C13DDB85B708F67 /* SpeechTextPreparer.swift */,
+				9C2577DD5712A1D1C7B89CC5 /* StartupBootstrap.swift */,
+				751CE2AD97B1CAA467BB8E11 /* StorageSession.swift */,
+				1C52F21491578AEE9F3DB393 /* SummaryChunking.swift */,
+				05479F298456E5A8024D97DB /* SummaryHistory.swift */,
+				E4BE88C531AA538F8A07AF41 /* SummarySources.swift */,
+				6D60C241C2043D250C30F339 /* SystemAudioCaptureService.swift */,
+				D3BD6CFBAA69C6E211B6F4A7 /* SystemTranscriptionService.swift */,
+				E8267E0BA447E6EAC4FFCB64 /* TaskCenter.swift */,
+				9F3A14721C6DF9E6AA3FADBB /* TodoExtractionService.swift */,
+				9410F4082A11D338B8C70BAF /* TranscriptCache.swift */,
+				8BD9608D399B9621BDCA8347 /* TranscriptDictionaryService.swift */,
+				9E4BD87DD771EF076FE569F8 /* TranscriptionProgressEstimator.swift */,
+				667A8EC26549497D62635203 /* UpdateInstallationCoordinator.swift */,
+				C15098E53C3E499643AA60F7 /* UpdatePermissionRepair.swift */,
+				B4AB118B90FDF74E378EE026 /* VideoUnderstandingService.swift */,
+				B1CE65CC46528FEC2F9D227A /* VisionOCRService.swift */,
+				99D9B04EC7EA0F5ADBD7D5F0 /* VoiceprintStore.swift */,
+				65E3AD2834D53D2854743F9D /* WaveformService.swift */,
+				C87DD4DA248C71EB0E1ACF6E /* WhisperAPIService.swift */,
+				CA419D382128219F14180F2B /* WhisperLocalService.swift */,
+				F4812EFC580936B7BE9A7299 /* WhisperModelDownloader.swift */,
+				F14FC7ABABAF438910A41732 /* MCP */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		6D098611D5B0C0AE8B26D038 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				6C6FF36A4C04AFDB284A71C1 /* LLMPreset.swift */,
+				30A5ED83B2476CB3FE627841 /* NoteSpeechViewModel.swift */,
+				6F70F2CDA507ACE83E6E12A6 /* QuickNoteViewModel.swift */,
+				8DBCA91772199976A7B5DF29 /* RecordingProgressStatus.swift */,
+				117F0191ECCEE2EDC0FB70E8 /* RecordingViewModel.swift */,
+				639CD34108A275942E5E9D97 /* RecordingViewModelSupport.swift */,
+				0558BA5CC49BC9A98CD1D687 /* SettingsViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		6D310193C9D6F69C203C722B /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				E7E45733F11279CB6F6991E5 /* AppUpdateSettingsView.swift */,
+				0DA0A29938B6812E4574EF9D /* DictionarySettingsViews.swift */,
+				20026AE98EE94D432C856194 /* FeedbackView.swift */,
+				FFDD9FEADF3689607DC82A7C /* HotkeySettingsView.swift */,
+				B5A030E9F923A6C56A754638 /* LLMSettingsViews.swift */,
+				A3800E32F8F006EE07A909C3 /* MCPSettingsView.swift */,
+				60C90CAE53148C2689D67BAA /* PortableBackupSection.swift */,
+				BCBE8E05841FC91F07259233 /* PrivacyPolicyDetailView.swift */,
+				2620EF4E2054B693FDA1EFA5 /* ScreenshotSettingsView.swift */,
+				47677CD1B9A6DC8EF23DB8D9 /* TodoSettingsView.swift */,
+				B46A7E159E1A6D4E70D7C73C /* VoiceprintLibraryViews.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		830DE7E6FE5A8467F0204D94 /* ChineseDictionary */ = {
+			isa = PBXGroup;
+			children = (
+				D4FAC9D7B319DF94AC986723 /* STCharacters.txt */,
+				EC1C0E712250D2001B7DE3FD /* STPhrases.txt */,
+				61A57B201FB0F418E466BCD2 /* TSCharacters.txt */,
+				B0E68CE59CAE14A456729FA6 /* TSPhrases.txt */,
+			);
+			path = ChineseDictionary;
+			sourceTree = "<group>";
+		};
+		84BD124946165907C59F8181 = {
+			isa = PBXGroup;
+			children = (
+				2865F5BCA06577659E46DF57 /* Memozia */,
+				D77639314E9EF9D9CF0C48AB /* MemoziaMCPHelper */,
+				BC3897219C0DB8E114F9DA7D /* MemoziaTests */,
+				F008990C981C4560BAC5D011 /* MemoziaUITests */,
+				C52658F02A2375DFEA697F4D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A98A29D45A6351F00C53D9CB /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B42312B27188177F7E0AECB5 /* AppCommand.swift */,
+				378D7CB91E1675F3A77E8C66 /* AppExperience.swift */,
+				8C7C8CDDB3BD3F064BFE7458 /* AudioRecording.swift */,
+				898FD7D5544563638A667E6A /* ExportDocuments.swift */,
+				4CCEFB5F62EB65758A887444 /* LLMConfig.swift */,
+				1A6737467C4DD22F5C4F930D /* MicMuteCommand.swift */,
+				D833898B776A1C9D77B63BA1 /* PromptTemplate.swift */,
+				39F6E107AFE0D886522B61BC /* QuickNote.swift */,
+				6DB76363C51B4651B905FABF /* RecordingCaptureHealth.swift */,
+				5B24E03459D7207D1E8AAD17 /* RecordingCaptureReport.swift */,
+				A0BB2E0F1413D99D988EE6C3 /* RecordingConfig.swift */,
+				BEB3E6D8BF2EDB7F3AA49259 /* RecordingSegmentTimeline.swift */,
+				B68601FD1A963213A9E8EEA6 /* SpeechSynthesisOptions.swift */,
+				5F5AD4280C023924A7038C1C /* STTConfig.swift */,
+				06E37A9B674FE13A32343D43 /* TimeInterval+Formatting.swift */,
+				54779C9E2CE0F757117894F8 /* TodoItem.swift */,
+				03C3392252F518E6DC4E6C13 /* TranscriptSegment.swift */,
+				18035331B5620C3D8BE99FD6 /* WhisperModelCatalog.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		BC3897219C0DB8E114F9DA7D /* MemoziaTests */ = {
+			isa = PBXGroup;
+			children = (
+				6F8C1229316A9219309D98F2 /* AppCommandCatalogTests.swift */,
+				77FDBC45BA229C6E55C4AF84 /* AppExperienceTests.swift */,
+				4281017E1169591AD0955588 /* BackgroundTaskQueueTests.swift */,
+				487B48C035BEAE808C193ECF /* CurrentTimeServiceTests.swift */,
+				878646FA1EBF2E7E5215843A /* DiarizationAudioLoadTests.swift */,
+				0B582F544ABC3F4630314E6E /* DiarizationSegmentationTests.swift */,
+				13ADF75D5823A732D0E8A0EA /* EchoCancellerTests.swift */,
+				CF47C98323FB976DB05FF877 /* EntryMirrorStoreTests.swift */,
+				333CCF7C744E7DE28BEC2279 /* ImprovementRegressionTests.swift */,
+				91CA011EFF5AACD1FB9F848D /* KeyframeExtractorTests.swift */,
+				E4C9B81ABB7607C7CFB3BD03 /* LLMConfigDraftTests.swift */,
+				02981D39BD5B24999028665D /* LLMTitleGenerationTests.swift */,
+				0B8D5A74DCB967C371DF619C /* MarkdownPDFRendererTests.swift */,
+				48B99383EDE3EA09BC2331AB /* MCPReadOnlyTests.swift */,
+				35A801AA0059815E0E2DCC0B /* MediaCleanupTests.swift */,
+				3A001927A5C7729DDCEDC6F7 /* MemoziaTests.swift */,
+				292AE0E0959F3F31FD0C456C /* MicCaptureRecoveryTests.swift */,
+				E13A591C9E3A3684A5F11C8B /* MicCaptureRestartTests.swift */,
+				C5C8C489C2E9955143E53FF1 /* NoteSpeechTests.swift */,
+				9A276FED2777ABC6840654C3 /* OneClickPlanTests.swift */,
+				E4C0D97854285B289F77B246 /* PrivacyPolicyTests.swift */,
+				886DFF49FFC46F97C78C4521 /* RecordingCaptureHealthTests.swift */,
+				09443FC097670B45C6E95798 /* RecordingCaptureReportTests.swift */,
+				41C93B104F316ABCD8EF9E40 /* RecordingMergeTests.swift */,
+				3A9D4AA047362A455EADAFCD /* RecordingSegmentTimelineTests.swift */,
+				8DAFC2BB57A91A940D9F7AA0 /* ScreenCaptureAuthorizationTests.swift */,
+				D3D61366CE367A6784D9D2CE /* StabilityRegressionTests.swift */,
+				6AFF9463B91BAB359C11D8C2 /* StartupBootstrapTests.swift */,
+				40654482F6E659353B90E28E /* StorageSessionTests.swift */,
+				75BDA9656E769684F62BC8F3 /* TaskCenterTests.swift */,
+				0E7A00F0B400FE0A0E53DC4F /* TodoExtractionServiceTests.swift */,
+				2C00C86537DC66D458852B95 /* TransientModeReadOnlyTests.swift */,
+				B9364176C01B11E5413130F0 /* UpdateInstallationCoordinatorTests.swift */,
+				AFA136590F93D075F5728B2D /* UpdatePermissionRepairTests.swift */,
+				30296031273AEB79B0C6F4CE /* VideoCleanupTests.swift */,
+				FDAE74D7FCDE05454ED2D8E8 /* VisionOCRLanguageTests.swift */,
+				2B9B3CCE6ECE876E5116057A /* VoiceprintMergeTests.swift */,
+				520B70FD0BC7E4ED54A9B4B1 /* WaveformAnalyzerTests.swift */,
+				BC8E326945CC497662555342 /* WhisperModelDownloadTests.swift */,
+				CBB280ED875D96E9A9CA2573 /* WindowCloseTests.swift */,
+				5B445EC76090DBC18397D1DE /* WindowPickOrderTests.swift */,
+			);
+			path = MemoziaTests;
+			sourceTree = "<group>";
+		};
+		C52658F02A2375DFEA697F4D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AFB27CAC86FFA36E0A334F75 /* Memozia.app */,
+				0411FC8A6054CDB310AFFA98 /* MemoziaMCPHelper */,
+				FB415E3FEAFAAF1B2F75CA4F /* MemoziaTests.xctest */,
+				2BFC5634A3BD43D7E845430D /* MemoziaUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CBFF7F2011F5D8CC29664F34 /* Baselines */ = {
+			isa = PBXGroup;
+			children = (
+				D608E7CED307A29121F2787F /* README.md */,
+			);
+			path = Baselines;
+			sourceTree = "<group>";
+		};
+		D77639314E9EF9D9CF0C48AB /* MemoziaMCPHelper */ = {
+			isa = PBXGroup;
+			children = (
+				CD72EB748687DE95F615B897 /* MemoziaMCPHelper.swift */,
+			);
+			path = MemoziaMCPHelper;
+			sourceTree = "<group>";
+		};
+		DB174F989373D5ED641B2699 /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				63F50F840698A164E6EF0B97 /* AudioImportValidator.swift */,
+				CDCB6251B97A8DC65A1AF955 /* ExportModifiers.swift */,
+				7D3048EF1254C283ADC62CF9 /* LifecycleTasksModifier.swift */,
+				6707B5E3D520C8CB5FFE0DD8 /* RecordingElapsedLabel.swift */,
+				F4D349637BB6FA30A44FFDB2 /* RecordingMergeRequest.swift */,
+				B96C5123FAF1AC9A7341ED04 /* RootDeletionRequest.swift */,
+				58C99A3F959051F7C853E4B7 /* SystemNotice.swift */,
+			);
+			path = Root;
+			sourceTree = "<group>";
+		};
+		E7C012FCF80A556EB9831221 /* Screenshot */ = {
+			isa = PBXGroup;
+			children = (
+				EB589FEED0D78B270390BDB3 /* AnnotationModel.swift */,
+				E571022E6E46AE366F6AD2EE /* AnnotationOverlaySupport.swift */,
+				03600BF0D860229BB3302DB6 /* AnnotationToolbar.swift */,
+				9551B5663CAD3E97FB423233 /* OverlayAnnotationView.swift */,
+				52BF065F8D95198736918DE3 /* PinnedOCRTextPanel.swift */,
+				AF65449138EECD8444005AC9 /* ScreenshotOverlayController.swift */,
+			);
+			path = Screenshot;
+			sourceTree = "<group>";
+		};
+		F008990C981C4560BAC5D011 /* MemoziaUITests */ = {
+			isa = PBXGroup;
+			children = (
+				C085780F24FA564509518630 /* AccessibilityAuditUITests.swift */,
+				CF9C03B9F83317E85C5BA640 /* LocalizationSnapshotUITests.swift */,
+				9BC90D61B8E84171A93E4078 /* MemoziaSmokeUITests.swift */,
+				1894ABD7D4122E2B35899DBA /* UITestSupport.swift */,
+				CBFF7F2011F5D8CC29664F34 /* Baselines */,
+			);
+			path = MemoziaUITests;
+			sourceTree = "<group>";
+		};
+		F14FC7ABABAF438910A41732 /* MCP */ = {
+			isa = PBXGroup;
+			children = (
+				3767FE66ED50575E106965B3 /* EntryQueryService.swift */,
+				21C26133039BBBC11B720B79 /* MCPAccessStore.swift */,
+				5B11B64D23A6D2B4BDCA64B9 /* MCPLoopbackListener.swift */,
+				8081B8FC35CBC9C07EAD40A7 /* MCPReadOnlyServer.swift */,
+				2D17C48FFF7CB8C452722824 /* MCPServerController.swift */,
+			);
+			path = MCP;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		219422B3843660A856B866D0 /* Memozia */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BA2B59623D11011F5A3C2AAB /* Build configuration list for PBXNativeTarget "Memozia" */;
+			buildPhases = (
+				DE66C1B953CC1843F727F224 /* Fix Onnxruntime Framework Layout */,
+				188A5DB16648A6ADC24A60DE /* Sources */,
+				2723F4ECC34C414F49363634 /* Resources */,
+				900407BBEF90D5A91A324861 /* Frameworks */,
+				7FB381D579CD8355E53DFB9C /* Embed MCP Helper */,
+				241BEA248AD25834205CCCD1 /* Verify Embedded Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FCCF301B44473D958EBF1A05 /* PBXTargetDependency */,
+			);
+			name = Memozia;
+			packageProductDependencies = (
+				B977B1CD3FAE9021A008F140 /* MCP */,
+				6923B4FA10AC767C29A08E76 /* NIOCore */,
+				A5EEEF96CC154CB4A2E17467 /* NIOPosix */,
+				E88ACE999D8D25FC37541D95 /* NIOHTTP1 */,
+				E18EC5A565F605F6B75AEE15 /* Sparkle */,
+				24AFBCB6F601957CAF8D81AF /* WhisperKit */,
+				ED590D990689416989FD6BE9 /* KeychainAccess */,
+				F2D37FE0D098A21185B7CA5A /* sherpa-onnx-shared */,
+			);
+			productName = Memozia;
+			productReference = AFB27CAC86FFA36E0A334F75 /* Memozia.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5F76D6896B1BCF73F1A518EF /* MemoziaMCPHelper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 44060393BC12D9EBC44FABF8 /* Build configuration list for PBXNativeTarget "MemoziaMCPHelper" */;
+			buildPhases = (
+				CEE000548952AD3BB097BE7D /* Sources */,
+				5B49303A109CD37EE47434CB /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MemoziaMCPHelper;
+			packageProductDependencies = (
+				5B09F9390CBECE2E63D828EE /* MCP */,
+			);
+			productName = MemoziaMCPHelper;
+			productReference = 0411FC8A6054CDB310AFFA98 /* MemoziaMCPHelper */;
+			productType = "com.apple.product-type.tool";
+		};
+		B31B541A2C09D682BF305396 /* MemoziaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BC791492362C66DAB85F4452 /* Build configuration list for PBXNativeTarget "MemoziaTests" */;
+			buildPhases = (
+				40D01FE7F5A1A476E671B20F /* Sources */,
+				9C88E6FD96A60CE9A978585B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				86178BFF4956D6834474E878 /* PBXTargetDependency */,
+			);
+			name = MemoziaTests;
+			packageProductDependencies = (
+				7D8F80CBEFC68BAC59B50051 /* MCP */,
+			);
+			productName = MemoziaTests;
+			productReference = FB415E3FEAFAAF1B2F75CA4F /* MemoziaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E9A6ECC099CC8A28997DE1E5 /* MemoziaUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB27F8071DF10B284169E2E6 /* Build configuration list for PBXNativeTarget "MemoziaUITests" */;
+			buildPhases = (
+				20BAB7B71BC5E2BC6063A36A /* Sources */,
+				CEA3E3EFBF22B184DB5C95CB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9B13C221681BEDE4997D55E7 /* PBXTargetDependency */,
+			);
+			name = MemoziaUITests;
+			packageProductDependencies = (
+			);
+			productName = MemoziaUITests;
+			productReference = 2BFC5634A3BD43D7E845430D /* MemoziaUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B5A50221BCA4E26D4DD6D94A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2710;
+				TargetAttributes = {
+					E9A6ECC099CC8A28997DE1E5 = {
+						TestTargetID = 219422B3843660A856B866D0;
+					};
+				};
+			};
+			buildConfigurationList = 0B878850B06D3415C3F5A6BD /* Build configuration list for PBXProject "Memozia" */;
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				ar,
+				de,
+				en,
+				es,
+				fr,
+				hi,
+				id,
+				it,
+				ja,
+				ko,
+				nl,
+				pl,
+				pt,
+				ru,
+				sv,
+				th,
+				tr,
+				uk,
+				vi,
+				"zh-Hans",
+				"zh-Hant",
+			);
+			mainGroup = 84BD124946165907C59F8181;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9220887DB1A8E4B585002079 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
+				DD43610FC1A9735F5712AC44 /* XCRemoteSwiftPackageReference "swift-sdk" */,
+				A0926D5F8C9942F3D9FEAA6D /* XCRemoteSwiftPackageReference "sherpa-onnx" */,
+				61E007C8625946537A4DFB80 /* XCRemoteSwiftPackageReference "Sparkle" */,
+				24AF5F8A2BB3852B6C2CEF01 /* XCRemoteSwiftPackageReference "swift-nio" */,
+				115ABAA1BAEE5C2F9998B7DA /* XCRemoteSwiftPackageReference "argmax-oss-swift" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = C52658F02A2375DFEA697F4D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				219422B3843660A856B866D0 /* Memozia */,
+				5F76D6896B1BCF73F1A518EF /* MemoziaMCPHelper */,
+				B31B541A2C09D682BF305396 /* MemoziaTests */,
+				E9A6ECC099CC8A28997DE1E5 /* MemoziaUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2723F4ECC34C414F49363634 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				03C50B47F0B28313296D9105 /* Assets.xcassets in Resources */,
+				1D52ACB071BB3D8FB71EA392 /* InfoPlist.xcstrings in Resources */,
+				506F64EFA21C170FD5CDFB27 /* Localizable.xcstrings in Resources */,
+				F3DC8681D738FE77E6B0BD05 /* MCP-LICENSES.txt in Resources */,
+				11CE86067995151FAA7BAAD3 /* PrivacyInfo.xcprivacy in Resources */,
+				BFB993516017A8BFC57B471D /* STCharacters.txt in Resources */,
+				940940037A83C8FD5E97E899 /* STPhrases.txt in Resources */,
+				424265F8DCA604066E334DE1 /* Sparkle-LICENSE.txt in Resources */,
+				9F151B7832F85B039ACA09CF /* TSCharacters.txt in Resources */,
+				8FB37C2588A78EE1085C4542 /* TSPhrases.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CEA3E3EFBF22B184DB5C95CB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C564A1C13975E8C36F2C53B8 /* README.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		241BEA248AD25834205CCCD1 /* Verify Embedded Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Verify Embedded Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n# 动态框架产物收尾与校验（构建后执行）：\n# 1. 使用与 App 一致的身份重签构建产物目录下的动态 framework。Xcode 运行/测试时\n#    会把 CONFIGURATION_BUILD_DIR 注入 DYLD_LIBRARY_PATH，优先加载这里的副本；\n#    pre-build 的 install_name_tool 会使上游签名失效，如果只签 App 内的嵌入副本，\n#    测试宿主会在建立 XCTest 连接前被 AMFI 终止。\n# 2. 确认所有可能被加载的 SherpaOnnxC 不再引用\n#    @rpath/libonnxruntime.dylib，且它引用的 onnxruntime.framework 确实存在。\n#\n# 背景：上游产物引用 libonnxruntime.dylib，若 Scripts/fix_onnxruntime_framework.sh\n# 没找到产物目录（或 install_name_tool 失败），构建照样成功，但应用启动即\n# “Library not loaded: @rpath/libonnxruntime.dylib” 崩溃——只有在跑测试/装包时才发现。\n# 这里把校验放在构建链末段：宁可构建失败，也不要产出不可启动的 App。\n#\n# 注意：SwiftPM 会同时产生 CONFIGURATION_BUILD_DIR 副本与 App 嵌入副本。\n# 普通启动主要使用 App 内副本，Xcode 调试/测试可能由 DYLD_LIBRARY_PATH 优先加载\n# 构建目录副本，因此存在的两份都必须检查。\nset -u\n\nBUILD_PRODUCTS=\"${CONFIGURATION_BUILD_DIR:-}\"\nif [ -z \"$BUILD_PRODUCTS\" ]; then\n    BUILD_PRODUCTS=\"${BUILD_DIR:-}/${CONFIGURATION:-Debug}\"\nfi\nAPP=\"$BUILD_PRODUCTS/Memozia.app\"\n\n# 非 App 构建（仅编译依赖等）无需校验\nif [ ! -d \"$APP\" ]; then\n    exit 0\nfi\n\n# 就地修复「构建产物目录」里可能陈旧的 SherpaOnnxC dylib 引用。\n#\n# 背景：预构建脚本修补的是 SourcePackages/artifacts 里的**源产物**；但 Xcode 认为\n# Build/Products/<Config>/SherpaOnnxC.framework 已经是「最新构建产物」，不会因为源被改\n# 而重新拷贝（它的 time check 不一定覆盖这种修改），于是这里会长期残留对\n# @rpath/libonnxruntime.dylib 的旧引用——应用启动即 \"Library not loaded\" 崩溃。\n# 预构建脚本只能删「App 内嵌副本」（它在链接之后才生成）；此处这个副本由包目标先产出，\n# 在我们的预构建阶段删除会导致链接缺输入，因此只能在这一步就地重写引用。\n# 重写成功后再由下面的重签逻辑恢复签名；若改不动，紧随其后的链接校验仍会失败。\nif [ -f \"$BUILD_PRODUCTS/SherpaOnnxC.framework/Versions/A/SherpaOnnxC\" ] &&\n   otool -L \"$BUILD_PRODUCTS/SherpaOnnxC.framework/Versions/A/SherpaOnnxC\" 2>/dev/null \\\n       | grep -q \"libonnxruntime\\.dylib\"; then\n    if install_name_tool -change \"@rpath/libonnxruntime.dylib\" \\\n        \"@rpath/onnxruntime.framework/Versions/A/onnxruntime\" \\\n        \"$BUILD_PRODUCTS/SherpaOnnxC.framework/Versions/A/SherpaOnnxC\" 2>/dev/null; then\n        echo \"Repaired stale SherpaOnnxC dylib reference in build products\"\n    else\n        echo \"error: 无法修复构建产物中 SherpaOnnxC 的 libonnxruntime.dylib 引用\" >&2\n        exit 1\n    fi\nfi\n\n# 确保 App 内嵌副本存在且引用正确。\n# Xcode 的「Embed Frameworks」不会因为上游产物被改写而重新拷贝（它认为输出已是最新），\n# 预构建阶段删掉旧副本后也不会自动补回（Debug 使用 debug dylib 时尤其明显），\n# 结果是 App 缺失 SherpaOnnxC、启动即 “Library not loaded”。这里直接从已修正的\n# 构建产物副本整体覆盖，保证 bundle 完整。\nAPP_FW=\"$APP/Contents/Frameworks/SherpaOnnxC.framework\"\nPROD_FW=\"$BUILD_PRODUCTS/SherpaOnnxC.framework\"\nif [ -d \"$PROD_FW\" ]; then\n    need_copy=0\n    if [ ! -f \"$APP_FW/Versions/A/SherpaOnnxC\" ]; then\n        need_copy=1\n    elif otool -L \"$APP_FW/Versions/A/SherpaOnnxC\" 2>/dev/null | grep -q \"libonnxruntime\\.dylib\"; then\n        need_copy=1\n    fi\n    if [ \"$need_copy\" -eq 1 ]; then\n        rm -rf \"$APP_FW\"\n        if /usr/bin/ditto \"$PROD_FW\" \"$APP_FW\"; then\n            echo \"Refreshed embedded SherpaOnnxC.framework in app bundle\"\n        else\n            echo \"error: 无法刷新 App 内嵌的 SherpaOnnxC.framework\" >&2\n            exit 1\n        fi\n    fi\nfi\n\n# 修改过 Mach-O 后上游签名已失效。App 内副本由 Xcode 自动重签，但构建目录副本不会；\n# 后者却会在 Xcode Run/Test 时被优先加载，所以必须显式重签。\nif [ \"${CODE_SIGNING_ALLOWED:-YES}\" != \"NO\" ]; then\n    signing_identity=\"${EXPANDED_CODE_SIGN_IDENTITY:-${CODE_SIGN_IDENTITY:-}}\"\n    if [ -n \"$signing_identity\" ]; then\n        # ProcessXCFramework 有时早于应用 target 的 pre-build 脚本执行，因此当次的\n        # 构建目录副本仍可能保留上游的根目录 Modules。在签名前再幂等地规范一次。\n        runtime_framework=\"$BUILD_PRODUCTS/onnxruntime.framework\"\n        if [ -d \"$runtime_framework/Versions/A\" ]; then\n            if [ ! -L \"$runtime_framework/Versions/Current\" ]; then\n                rm -rf \"$runtime_framework/Versions/Current\"\n                ln -s A \"$runtime_framework/Versions/Current\"\n            fi\n            for name in onnxruntime Headers Resources Modules; do\n                if [ -e \"$runtime_framework/$name\" ] && [ ! -L \"$runtime_framework/$name\" ]; then\n                    if [ ! -e \"$runtime_framework/Versions/A/$name\" ]; then\n                        mv \"$runtime_framework/$name\" \"$runtime_framework/Versions/A/$name\"\n                    else\n                        rm -rf \"$runtime_framework/$name\"\n                    fi\n                fi\n                if [ -e \"$runtime_framework/Versions/A/$name\" ] && [ ! -L \"$runtime_framework/$name\" ]; then\n                    rm -rf \"$runtime_framework/$name\"\n                    ln -s \"Versions/Current/$name\" \"$runtime_framework/$name\"\n                fi\n            done\n        fi\n\n        timestamp_option=\"--timestamp=none\"\n        if [ \"${CONFIGURATION:-}\" = \"Release\" ] && [ \"$signing_identity\" != \"-\" ]; then\n            timestamp_option=\"--timestamp\"\n        fi\n        for product_framework in \"$BUILD_PRODUCTS/SherpaOnnxC.framework\" \\\n                                 \"$BUILD_PRODUCTS/onnxruntime.framework\" \\\n                                 \"$APP/Contents/Frameworks/SherpaOnnxC.framework\"; do\n            [ -d \"$product_framework\" ] || continue\n            if ! /usr/bin/codesign --force --sign \"$signing_identity\" \\\n                --options runtime \"$timestamp_option\" \"$product_framework\"; then\n                echo \"error: 无法重签构建产物中的动态框架：$product_framework\" >&2\n                exit 1\n            fi\n        done\n    else\n        echo \"error: 已启用代码签名，但未获得 EXPANDED_CODE_SIGN_IDENTITY/CODE_SIGN_IDENTITY\" >&2\n        exit 1\n    fi\nfi\n\nsherpa_frameworks=()\nfor candidate in \"$APP/Contents/Frameworks/SherpaOnnxC.framework\" \\\n                 \"$BUILD_PRODUCTS/SherpaOnnxC.framework\"; do\n    [ -f \"$candidate/Versions/A/SherpaOnnxC\" ] && sherpa_frameworks+=(\"$candidate\")\ndone\n\nif [ \"${#sherpa_frameworks[@]}\" -eq 0 ]; then\n    cat >&2 <<EOF\nerror: 未找到 SherpaOnnxC.framework（已查找 ${APP}/Contents/Frameworks 与 ${BUILD_PRODUCTS}）：\n       说话人分离将不可用，应用也可能无法启动。\n       请检查 sherpa-onnx 依赖是否解析成功、preBuildScripts 是否被跳过。\nEOF\n    exit 1\nfi\n\nfor framework in \"${sherpa_frameworks[@]}\"; do\n    BIN=\"$framework/Versions/A/SherpaOnnxC\"\n    links=\"$(otool -L \"$BIN\" 2>/dev/null || true)\"\n\n    if printf '%s\\n' \"$links\" | grep -q \"libonnxruntime\\.dylib\"; then\n        cat >&2 <<EOF\nerror: SherpaOnnxC 仍引用 @rpath/libonnxruntime.dylib（${BIN}），应用启动会因\n       \"Library not loaded\" 崩溃。\n       请检查构建日志中 \"Fix Onnxruntime Framework Layout\" 阶段是否输出\n       \"Fixed dylib reference\"，以及 Scripts/fix_onnxruntime_framework.sh 是否能\n       在本次 DerivedData 的 SourcePackages/artifacts 下找到产物。\nEOF\n        exit 1\n    fi\n\n    # 引用 onnxruntime.framework 时，同一加载位置必须有对应框架。\n    if printf '%s\\n' \"$links\" | grep -q \"@rpath/onnxruntime\\.framework\"; then\n        if [[ \"$framework\" == \"$APP/Contents/Frameworks/\"* ]]; then\n            runtime=\"$APP/Contents/Frameworks/onnxruntime.framework/Versions/A/onnxruntime\"\n        else\n            runtime=\"$BUILD_PRODUCTS/onnxruntime.framework/Versions/A/onnxruntime\"\n        fi\n        if [ ! -f \"$runtime\" ]; then\n            echo \"error: SherpaOnnxC 引用 @rpath/onnxruntime.framework，但同一加载位置没有该框架（${BIN}）\" >&2\n            exit 1\n        fi\n    fi\n\n    if [ \"${CODE_SIGNING_ALLOWED:-YES}\" != \"NO\" ] && \\\n       ! /usr/bin/codesign --verify --strict \"$framework\"; then\n        echo \"error: 动态框架签名无效：$framework\" >&2\n        exit 1\n    fi\n\n    echo \"Verified dynamic framework: SherpaOnnxC linkage and signature OK (${framework})\"\ndone\n\n# AVKit 加载命令校验（防回归）：\n# SwiftUI VideoPlayer 的实现位于 _AVKit_SwiftUI 垫片框架，其表示类型的 ObjC 父类在 AVKit；\n# macOS 27 SDK 起仅 import AVKit 不再自动链接 AVKit.framework，若加载命令缺失，首帧构建\n# VideoPlayer 时 Swift 运行时在 getSuperclassMetadata 解析不到父类而 fatalError abort\n#（见 BUG.txt）。这里断言主可执行文件带有 AVKit 加载命令，避免构建参数改动后“修好又改回去”。\n# Debug 构建下 Contents/MacOS/Memozia 只是 Xcode 的 debug dylib 桩（仅链接\n# Memozia.debug.dylib），真正包含应用代码与框架依赖的是 Memozia.debug.dylib；\n# Release 才把代码放进主可执行文件。因此检查「含代码的那个二进制」。\nAPP_EXEC=\"$APP/Contents/MacOS/Memozia\"\n[ -f \"$APP/Contents/MacOS/Memozia.debug.dylib\" ] && APP_EXEC=\"$APP/Contents/MacOS/Memozia.debug.dylib\"\nif [ -f \"$APP_EXEC\" ]; then\n    app_links=\"$(otool -L \"$APP_EXEC\" 2>/dev/null || true)\"\n    avkit_lines=\"$(printf '%s\\n' \"$app_links\" | grep -i -E \"AVKit\" || true)\"\n    echo \"----- AVKit-related dependencies of ${APP_EXEC} -----\"\n    printf '%s\\n' \"${avkit_lines:-(none)}\"\n    echo \"-----------------------------------------------------\"\n\n    if ! printf '%s\\n' \"$avkit_lines\" | grep -q \"AVKit\\.framework\"; then\n        if printf '%s\\n' \"$app_links\" | grep -q \"_AVKit_SwiftUI\\.framework\"; then\n            cat >&2 <<EOF\nerror: 应用代码未链接 AVKit.framework（${APP_EXEC}），但仍链接了 _AVKit_SwiftUI。\n       说明产物里仍是 SwiftUI VideoPlayer（它由 _AVKit_SwiftUI 垫片实现，运行时才需要\n       AVKit 的父类元数据）。即本次构建没有产出「画面」页改用 AVPlayerView 后的二进制，\n       通常是增量构建复用了陈旧产物。请 clean 后重建：\n         DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild \\\n           -project Memozia.xcodeproj -scheme Memozia -configuration Debug \\\n           -destination 'platform=macOS' clean build\nEOF\n        else\n            cat >&2 <<EOF\nerror: 应用代码未链接 AVKit.framework（${APP_EXEC}）。\n       上方已打印实际依赖列表。若 AVKit 与 _AVKit_SwiftUI 均未出现，说明链接参数未生效，请确认：\n       1) 已运行 xcodegen generate（OTHER_LDFLAGS 在生成时才写入工程）；\n       2) project.yml 的 OTHER_LDFLAGS 含 \"-Xlinker -needed_framework -Xlinker AVKit\"\n          （注意：Swift 目标的链接驱动是 swiftc，它不接受 clang 的 \"-Wl,\" 写法）；\n       3) 已 clean 重建。\nEOF\n        fi\n        exit 1\n    fi\n    echo \"Verified AVKit linkage: OK (${APP_EXEC})\"\nfi\n";
+		};
+		7FB381D579CD8355E53DFB9C /* Embed MCP Helper */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Embed MCP Helper";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\nset -eu\n\n# Xcode target dependency 保证 helper 已构建、已签名，再嵌入主应用。\nhelper_source=\"${BUILT_PRODUCTS_DIR}/memozia-mcp\"\nhelper_destination=\"${TARGET_BUILD_DIR}/${CONTENTS_FOLDER_PATH}/Helpers\"\ntest -x \"$helper_source\"\nmkdir -p \"$helper_destination\"\nditto \"$helper_source\" \"${helper_destination}/memozia-mcp\"\n";
+		};
+		DE66C1B953CC1843F727F224 /* Fix Onnxruntime Framework Layout */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Fix Onnxruntime Framework Layout";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/bash\n# 修复 sherpa-onnx shared 产物的两个上游打包问题（构建前执行，幂等）：\n# 1. csukuangfj/onnxruntime-libs 的 shared xcframework 用实体目录/文件复制代替标准\n#    符号链接（Versions/Current 为实体目录、顶层存在重复的二进制与 Info.plist），\n#    Xcode 嵌入后 codesign --verify --strict 会报 \"invalid Info.plist\"；\n# 2. SherpaOnnxC 二进制引用 @rpath/libonnxruntime.dylib，而实际嵌入的是\n#    onnxruntime.framework（install name 为 @rpath/onnxruntime.framework/Versions/A/onnxruntime），\n#    导致启动时 dyld 报 Library missing 崩溃。\n#\n# 产物目录只定位「本次构建所用的」DerivedData：BUILD_DIR / BUILD_ROOT 均为\n# …/DerivedData/<工程>/Build/Products（**不含**配置目录），故 SourcePackages/artifacts\n# 是其兄弟目录，路径为 ../../SourcePackages/artifacts。旧实现写 ../../../、多退一级后\n# 落到 DerivedData 根，自定义 DerivedData 与 CI 上会静默找不到产物（应用照旧嵌错引用），\n# 当时靠遍历 ~/Library/Developer/Xcode/DerivedData/* 兜底，代价是会扫描并改写其他工程的\n# 产物，现改为只认本次构建目录 + 仓库内 .packages（-packageCachePath 场景）。\nset -eu\nshopt -s nullglob\n\nroots=()\nadd_root() {\n    local candidate=\"$1\"\n    [ -n \"$candidate\" ] && [ -d \"$candidate\" ] || return 0\n    for existing in \"${roots[@]:-}\"; do\n        [ \"$existing\" = \"$candidate\" ] && return 0\n    done\n    roots+=(\"$candidate\")\n}\n\n# 发布脚本显式传入的本次 SwiftPM 路径；不扫描其他项目的缓存。\nif [ -n \"${MEMOZIA_PACKAGE_CACHE_PATH:-}\" ]; then\n    add_root \"$MEMOZIA_PACKAGE_CACHE_PATH/artifacts\"\nfi\n\n# 仓库内产物（构建时指定 -packageCachePath .packages 的场景）\nadd_root \"${SRCROOT:-}/.packages/artifacts\"\n# 本次构建的 DerivedData：BUILD_DIR / BUILD_ROOT 指向 …/Build/Products，\n# OBJROOT 指向 …/Build/Intermediates.noindex，两者上溯两级即 DerivedData 工程目录\nadd_root \"${BUILD_DIR:-}/../../SourcePackages/artifacts\"\nadd_root \"${BUILD_ROOT:-}/../../SourcePackages/artifacts\"\nadd_root \"${OBJROOT:-}/../../SourcePackages/artifacts\"\n\nif [ \"${#roots[@]}\" -eq 0 ]; then\n    echo \"WARNING: 未找到 SourcePackages/artifacts 产物目录，跳过产物修复；后续 'Verify Embedded Frameworks' 阶段会校验嵌入结果\" >&2\nfi\n\nlayout_fixed=0\ndylib_fixed=0\ndylib_failed=0\n\nfor root in \"${roots[@]:-}\"; do\n    for fw in \"$root\"/onnxruntime-libs/*/onnxruntime.xcframework/*/onnxruntime.framework \\\n              \"$root\"/extract/onnxruntime-libs/*/onnxruntime.xcframework/*/onnxruntime.framework; do\n        [ -d \"$fw/Versions/A\" ] || continue\n        changed=0\n        if [ ! -L \"$fw/Versions/Current\" ]; then\n            rm -rf \"$fw/Versions/Current\"\n            ln -s A \"$fw/Versions/Current\"\n            changed=1\n        fi\n        for name in onnxruntime Headers Resources Modules; do\n            # 上游的 Modules 只在 framework 根目录，而其他内容可能在\n            # 根目录和 Versions/A 同时存在。先把唯一副本移入 A，再统一建立符号链接。\n            if [ -e \"$fw/$name\" ] && [ ! -L \"$fw/$name\" ]; then\n                if [ ! -e \"$fw/Versions/A/$name\" ]; then\n                    mv \"$fw/$name\" \"$fw/Versions/A/$name\"\n                else\n                    rm -rf \"$fw/$name\"\n                fi\n                changed=1\n            fi\n            if [ -e \"$fw/Versions/A/$name\" ]; then\n                if [ ! -L \"$fw/$name\" ]; then\n                    rm -rf \"$fw/$name\"\n                    ln -s \"Versions/Current/$name\" \"$fw/$name\"\n                    changed=1\n                fi\n            fi\n        done\n        if [ \"$changed\" -eq 1 ]; then\n            layout_fixed=$((layout_fixed + 1))\n            echo \"Normalized framework layout: $fw\"\n        fi\n    done\n\n    # 修复 SherpaOnnxC 对 libonnxruntime.dylib 的错误引用（指向 onnxruntime.framework 的真实路径）\n    for fw in \"$root\"/sherpa-onnx/*/sherpa-onnx.xcframework/*/SherpaOnnxC.framework \\\n              \"$root\"/extract/sherpa-onnx/*/sherpa-onnx.xcframework/*/SherpaOnnxC.framework; do\n        bin=\"$fw/Versions/A/SherpaOnnxC\"\n        [ -f \"$bin\" ] || continue\n        if otool -L \"$bin\" 2>/dev/null | grep -q \"libonnxruntime.dylib\"; then\n            if install_name_tool -change \"@rpath/libonnxruntime.dylib\" \\\n                \"@rpath/onnxruntime.framework/Versions/A/onnxruntime\" \"$bin\" 2>/dev/null; then\n                dylib_fixed=$((dylib_fixed + 1))\n                echo \"Fixed dylib reference: $bin\"\n            else\n                # 改不动就必须让构建失败：继续下去会产出一个启动即崩溃的 App，\n                # 旧实现只打 WARNING 并 exit 0\n                echo \"error: install_name_tool 修复失败，产物仍引用 libonnxruntime.dylib: $bin\" >&2\n                dylib_failed=$((dylib_failed + 1))\n            fi\n        fi\n    done\ndone\n\nif [ \"$dylib_failed\" -gt 0 ]; then\n    echo \"error: $dylib_failed 个 SherpaOnnxC 产物的 dylib 引用未能修复，中止构建\" >&2\n    exit 1\nfi\n\necho \"onnxruntime 产物修复完成：规范布局 $layout_fixed 个，dylib 引用 $dylib_fixed 个，产物目录 ${#roots[@]} 个\"\n\n# 注意：这里**不再删除** App 内嵌副本。\n# 实测 Xcode 的「Embed Frameworks」不会仅仅因为该文件被删除就重新拷贝（它认为输出已是\n# 最新，Debug 使用 debug dylib 时尤其明显），删除反而会让 App 缺失 SherpaOnnxC、\n# 启动即 “Library not loaded”。内嵌副本的刷新与重签统一交给构建末段的\n# Verify Embedded Frameworks 阶段处理（那里能拿到签名身份，也能一并做校验）。\n\nexit 0\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		188A5DB16648A6ADC24A60DE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47ED45580B92E6DC4DDA40D9 /* AnnotationModel.swift in Sources */,
+				840BBE9B230427C235217A22 /* AnnotationOverlaySupport.swift in Sources */,
+				90EB6614E3D1A57E3089567C /* AnnotationToolbar.swift in Sources */,
+				0BE4BC669D62FDDAB9E5B66B /* AppCommand.swift in Sources */,
+				81BC57FAF35BF68A85829AFC /* AppExperience.swift in Sources */,
+				F6BB916EFE54B19EAEE05DC2 /* AppMuteDetector.swift in Sources */,
+				2FC709293F5D7519429D4F34 /* AppUpdateService.swift in Sources */,
+				4EC68BC5350DAE80F1BF7AE7 /* AppUpdateSettingsView.swift in Sources */,
+				1E8D405EE3BDB6F61D7853FD /* AudioConverter.swift in Sources */,
+				B98BA5D38ED65191ECD34293 /* AudioImportValidator.swift in Sources */,
+				061F57C30692364C804570FB /* AudioRecording.swift in Sources */,
+				D26BCE653217A605BF2DCA85 /* BackgroundTaskQueue.swift in Sources */,
+				83AB6DAA71C59558A67FC34C /* BackgroundWorker.swift in Sources */,
+				96FBAD47D7F3934F55DD6FF2 /* ChineseConverterService.swift in Sources */,
+				C882D0FF617C680F3CECAC0C /* CloudSyncService.swift in Sources */,
+				3310B48B3298B20963B39846 /* CurrentTimeService.swift in Sources */,
+				2A614F3E711367D9EFDE111E /* DiarizationCalibrator.swift in Sources */,
+				5561B499E053EEA26068143C /* DictionarySettingsViews.swift in Sources */,
+				D9586C0DDC8E3F006D83AAD2 /* EchoCanceller.swift in Sources */,
+				D6D6178694729CE923EF79EC /* EchoReductionService.swift in Sources */,
+				117E07B7418901848870A67E /* EncryptionService.swift in Sources */,
+				457D57E46F34ADC5BB39DD65 /* EndpointPolicy.swift in Sources */,
+				2078965CA138A087C29970A5 /* EntryIdentityStore.swift in Sources */,
+				E26FDA95E870140445480ECA /* EntryMirrorStore.swift in Sources */,
+				8A2D533F1F1E64B1B5B8FFF4 /* EntryQueryService.swift in Sources */,
+				355A17DEC93764D3BA63CA2B /* ExportDocuments.swift in Sources */,
+				8F89595888224877BECAF609 /* ExportModifiers.swift in Sources */,
+				EFA6029CB8B38A9E62CBEBC4 /* FeedbackView.swift in Sources */,
+				25E0891856DE89D637AF13AD /* FileSyncService.swift in Sources */,
+				123E46EB317DAEDF250A68F1 /* FullTextSearch.swift in Sources */,
+				A0AE6E1BF61D336AEF4A2CA7 /* GlobalHotkeyManager.swift in Sources */,
+				9D8811DD7ECDA66D1E234FDD /* HelpView.swift in Sources */,
+				8B87A7D547CD0A057C8B9481 /* HotkeySettingsView.swift in Sources */,
+				7DAA5387409398EA8895878B /* KeyframeExtractor.swift in Sources */,
+				DE2B18C229EB21EC7D53D9C3 /* LLMConfig.swift in Sources */,
+				481987C632DE9663188DE97B /* LLMPreset.swift in Sources */,
+				F191456A668FE74FD9662CB0 /* LLMService.swift in Sources */,
+				4D16A2103870EAEE7BD535ED /* LLMSettingsViews.swift in Sources */,
+				CFBD6548739D76578AEC37AF /* LifecycleTasksModifier.swift in Sources */,
+				C5FCF625A072266DEE687616 /* LocalLLMCapabilities.swift in Sources */,
+				D7A1DE579F4FF2CB6158343E /* MCPAccessStore.swift in Sources */,
+				2DF77522B8658CB9D276B310 /* MCPLoopbackListener.swift in Sources */,
+				47BF1EF5434BB742C199FD4A /* MCPReadOnlyServer.swift in Sources */,
+				ADD9FB7B8DE79EFFB275E223 /* MCPServerController.swift in Sources */,
+				E592597396089150F78479A6 /* MCPSettingsView.swift in Sources */,
+				2B1D3B76A927FE8A597B3C15 /* MainActor+AssumeOnMainThread.swift in Sources */,
+				A607CB7040371A7C01BEE86B /* MarkdownPDFRenderer.swift in Sources */,
+				87ADCD330CF7FABE320FD706 /* MarkdownView.swift in Sources */,
+				0A96DB9FFC1247E13B849BE4 /* MediaCleanupService.swift in Sources */,
+				61A159D5215871CA2F3172C8 /* MeetingRecorderService.swift in Sources */,
+				FB8474553A917ADF1BD17D7F /* MemoziaApp.swift in Sources */,
+				C6BA1E80F744AF6819F77797 /* MemoziaContact.swift in Sources */,
+				189B00A62419FCF69B25CB0D /* MemoziaPrivacyPolicy.swift in Sources */,
+				6A1A4599439EF12FD28BDEC2 /* MenuBarController.swift in Sources */,
+				81F31A8DC76A8DEC2A4803B7 /* MicCaptureFileStore.swift in Sources */,
+				113AAF1692C3AF6B0B5DF8BE /* MicCaptureRecovery.swift in Sources */,
+				CAFF24C205B30A3698430D2B /* MicCaptureService.swift in Sources */,
+				A615F3B71741F2808A5228E8 /* MicMuteCommand.swift in Sources */,
+				FF3749E7A391D4FECA9942A0 /* MicMuteMonitor.swift in Sources */,
+				A72A0734070536C2233268CE /* MicrophoneDeviceRegistry.swift in Sources */,
+				10954510663F86AC6677B708 /* NativeSpeechService.swift in Sources */,
+				92B63FD009D4D55D8F441E86 /* NoteSpeechView.swift in Sources */,
+				171A25DDD35D1D73CF3C39BB /* NoteSpeechViewModel.swift in Sources */,
+				73EE2E76433836FF4309CF61 /* OnboardingView.swift in Sources */,
+				F781F917D2A92FBBF755ABBF /* OneClickPreviewView.swift in Sources */,
+				E30CB2F52E2BF97F215ABED5 /* OverlayAnnotationView.swift in Sources */,
+				2B9ED70DC3FAE832525477DF /* PIIScanService.swift in Sources */,
+				B852DEA1736C45E5647E1A51 /* PIIScrubService.swift in Sources */,
+				5C020368E677BBE22D6690FB /* PersistenceCapability.swift in Sources */,
+				1C32D624444E1EBC9CA6C680 /* PersistenceReporting.swift in Sources */,
+				C1B191F9F69AA6D5C776EB94 /* PinnedOCRTextPanel.swift in Sources */,
+				4413FF5293F0A357709144A9 /* PortableBackup.swift in Sources */,
+				F42C500B4B3588E8225EC357 /* PortableBackupSection.swift in Sources */,
+				260B0B3D2584D2191E47D874 /* PrivacyConsentView.swift in Sources */,
+				DD966BF1FF3CB4BE4D997C72 /* PrivacyPolicyDetailView.swift in Sources */,
+				E3284F43AF1109632D570C0E /* PromptSettingsView.swift in Sources */,
+				4D7BCB917B4D32326DAB62C0 /* PromptTemplate.swift in Sources */,
+				DF53C2C62F7B5FC8A0F91444 /* QueuePanelView.swift in Sources */,
+				B68F88DCC93A900F91756E72 /* QuickNote.swift in Sources */,
+				0E11CDD907739D909741601D /* QuickNoteDetailView.swift in Sources */,
+				769A7894F8D9CA7A1CA4DD0C /* QuickNoteViewModel.swift in Sources */,
+				0A06A626208E68D61ABBA38D /* RacingWatchdog.swift in Sources */,
+				016D3ABD396A5ACFB6BDD8C6 /* RecordCountdownPanel.swift in Sources */,
+				C1625E9B2AEF6B8A82C7E001 /* RecordingCaptureHealth.swift in Sources */,
+				52DA8A1E2D165E69018F92FC /* RecordingCaptureReport.swift in Sources */,
+				0EAD69AB36978D84ABCB3C71 /* RecordingConfig.swift in Sources */,
+				906D165E7450171FDA72125F /* RecordingDetailView.swift in Sources */,
+				25535D411197B9BD56747ABE /* RecordingElapsedLabel.swift in Sources */,
+				AD195C2101800A6E094DE4B5 /* RecordingListView.swift in Sources */,
+				6D4F7DA7754846C3D3F6FE39 /* RecordingMergeRequest.swift in Sources */,
+				E3F9FABB2B7651D707666736 /* RecordingMergeService.swift in Sources */,
+				1607789CF05266CD01539553 /* RecordingProgressStatus.swift in Sources */,
+				9E9FB29599D9A54489BED520 /* RecordingSegmentTimeline.swift in Sources */,
+				31C6AC06659E4C5539889CE2 /* RecordingViewModel.swift in Sources */,
+				D09FC45A0321FB33AC0B0933 /* RecordingViewModelSupport.swift in Sources */,
+				28E1CA83464608B8CE0E9A64 /* RemindersService.swift in Sources */,
+				8E88EC929654809F4A29C693 /* RemindersURLDiagnostic.swift in Sources */,
+				10E1DABB3BB5E6D1EB6F0F0A /* RootDeletionRequest.swift in Sources */,
+				7386483A7D0B86E440470724 /* RootView.swift in Sources */,
+				7EA91CCC92404D0550DE1EF3 /* RuntimeVerification.swift in Sources */,
+				289910B463A22BF8EF8C7670 /* STTConfig.swift in Sources */,
+				222659AAB94E37EAC222ACB8 /* ScreenCaptureAuthorization.swift in Sources */,
+				4B2F9382FEDC0FCB160890B2 /* ScreenVideoRecorder.swift in Sources */,
+				C23A3B4DCF38E1DA73EB493A /* ScreenshotManager.swift in Sources */,
+				BADAA314B44A8CD5C37BC7F8 /* ScreenshotNotifications.swift in Sources */,
+				170EE6FE8709B28FC071E543 /* ScreenshotOverlayController.swift in Sources */,
+				06347745AFEE6A064952D00F /* ScreenshotSettingsView.swift in Sources */,
+				3DF39C041C2D619F156BB0F1 /* SettingsView.swift in Sources */,
+				0F842E1C14A97A63ADF4A6EF /* SettingsViewModel.swift in Sources */,
+				47CF4182338E5B9431092CA4 /* SpeakerDiarizationService.swift in Sources */,
+				EF1F0301B32F611F6D9FF462 /* SpeechSynthesisOptions.swift in Sources */,
+				CCD759A203822C9940C3BC88 /* SpeechTextPreparer.swift in Sources */,
+				452ADF52A950D09C6A5C53E2 /* StartupBootstrap.swift in Sources */,
+				1531C25C4A79BF11DCE1E4AF /* StartupRootView.swift in Sources */,
+				08666D3D5F41CAD20F3151CB /* StorageSession.swift in Sources */,
+				47FA78492C14D21F7288AE76 /* SummaryChunking.swift in Sources */,
+				225874EEA52557A25DDF1E25 /* SummaryHistory.swift in Sources */,
+				74B67353D003EC8436469ED6 /* SummaryHistoryButton.swift in Sources */,
+				229B401AD5E175BBF9500799 /* SummarySources.swift in Sources */,
+				3A254A7CDE4FDF32DEEA484B /* SummaryView.swift in Sources */,
+				BC8670BF32839319DE6578B3 /* SystemAudioCaptureService.swift in Sources */,
+				81B21117B9C413F35C33F14E /* SystemNotice.swift in Sources */,
+				09256B51E4E16132A88DA390 /* SystemTranscriptionService.swift in Sources */,
+				7B32B8C545EE6B373C8ADA98 /* TaskCenter.swift in Sources */,
+				5B00251F447A468F3780AAF7 /* TextFindReplace.swift in Sources */,
+				8BDF8A53739F336EEF30FEDB /* TimeInterval+Formatting.swift in Sources */,
+				12CEA9A3153A445911C2583C /* TodoExtractionService.swift in Sources */,
+				ADBED96C37319D52C5FD4CE3 /* TodoItem.swift in Sources */,
+				4A39703F3A262229358E4B94 /* TodoSettingsView.swift in Sources */,
+				A776E4691A4046AA96AED182 /* TranscriptCache.swift in Sources */,
+				7BD87C561DF8888B1C85A415 /* TranscriptDictionaryService.swift in Sources */,
+				AAE51622A2C9FDBB01D5F880 /* TranscriptSegment.swift in Sources */,
+				39C921CCE73EF842EAF99EE9 /* TranscriptView.swift in Sources */,
+				BF11C978F7F443427D5D5193 /* TranscriptionProgressEstimator.swift in Sources */,
+				4F0BD2345B85CF4B8A769D81 /* UpdateInstallationCoordinator.swift in Sources */,
+				CB3FE9CD2F62DC46983A0F79 /* UpdatePermissionRepair.swift in Sources */,
+				EFE68B2DB48545C9DFE978D0 /* VideoUnderstandingService.swift in Sources */,
+				9CE7B1DE049EE46F7649F926 /* VideoUnderstandingView.swift in Sources */,
+				2CB29B355FB5B38308CBD28B /* VisionOCRService.swift in Sources */,
+				4C5AFFC284EA1173D2D1C0CB /* VoiceprintLibraryViews.swift in Sources */,
+				793C858A6DFA8CDBE7BAA38A /* VoiceprintStore.swift in Sources */,
+				9C9003328EBA1C2C38AF13B5 /* WaveformService.swift in Sources */,
+				2E34431B0E7700D2F7C0F926 /* WaveformStrip.swift in Sources */,
+				16D2B6FB7AA9F8735456E434 /* WhisperAPIService.swift in Sources */,
+				6734DA80BA8F4F5CDAB45AA8 /* WhisperLocalService.swift in Sources */,
+				22362746B2AC5F766EA91595 /* WhisperModelCatalog.swift in Sources */,
+				58A25EC0E72990FEB51C7C93 /* WhisperModelDownloader.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		20BAB7B71BC5E2BC6063A36A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7DD3CBECCEB0F6C40884A61A /* AccessibilityAuditUITests.swift in Sources */,
+				708D859F694B3E784B9FA469 /* LocalizationSnapshotUITests.swift in Sources */,
+				B7DA230BBBF2CA53897B6AB0 /* MemoziaSmokeUITests.swift in Sources */,
+				9F356753D8C1458CA9BDCFCA /* UITestSupport.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		40D01FE7F5A1A476E671B20F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A689EBF696DF71074A70194A /* AppCommandCatalogTests.swift in Sources */,
+				BE972822944D7AFCA7270E5D /* AppExperienceTests.swift in Sources */,
+				AC5E368E7E37174E80163F94 /* BackgroundTaskQueueTests.swift in Sources */,
+				75096E0D20CFFCA04A9F08BB /* CurrentTimeServiceTests.swift in Sources */,
+				2E704FAB8588B0301A9D7AC0 /* DiarizationAudioLoadTests.swift in Sources */,
+				121CEF8B000E25E3D2CA2454 /* DiarizationSegmentationTests.swift in Sources */,
+				0CF987C12AAA05C4CF4306F5 /* EchoCancellerTests.swift in Sources */,
+				E526AC57A248DE286D78024D /* EntryMirrorStoreTests.swift in Sources */,
+				EB26E0A24FF82CBC27B6423A /* ImprovementRegressionTests.swift in Sources */,
+				626AE8C59F7647CA454AA56C /* KeyframeExtractorTests.swift in Sources */,
+				69B4E7503500236E8855157D /* LLMConfigDraftTests.swift in Sources */,
+				3D75D032E22CBC2FDB91D72A /* LLMTitleGenerationTests.swift in Sources */,
+				EBA59E856DFF987B61B86838 /* MCPReadOnlyTests.swift in Sources */,
+				752DA55A20C9BC51BCA961AC /* MarkdownPDFRendererTests.swift in Sources */,
+				6D723966CFA03E94A1B67274 /* MediaCleanupTests.swift in Sources */,
+				6E77337A0E9538971D230C66 /* MemoziaTests.swift in Sources */,
+				651CDE46EF471D2EA892A7C9 /* MicCaptureRecoveryTests.swift in Sources */,
+				F09B53B5CA485626B45AA734 /* MicCaptureRestartTests.swift in Sources */,
+				A3C573B6C43A2025394DD0A9 /* NoteSpeechTests.swift in Sources */,
+				BDA2E37B9D97EAF4F40C3452 /* OneClickPlanTests.swift in Sources */,
+				A2F71CF591E76BD4D9C6D39C /* PrivacyPolicyTests.swift in Sources */,
+				AACA4B31819F8EF5A84247AB /* RecordingCaptureHealthTests.swift in Sources */,
+				593A665362A5335C3FF68ADE /* RecordingCaptureReportTests.swift in Sources */,
+				4D3529BE5C2C60C44AB9EB1B /* RecordingMergeTests.swift in Sources */,
+				FA5CB3A973BDEEEBA1840F06 /* RecordingSegmentTimelineTests.swift in Sources */,
+				7B4661916124794C4C1536F3 /* ScreenCaptureAuthorizationTests.swift in Sources */,
+				6D393CD38B42C4DCF95E6321 /* StabilityRegressionTests.swift in Sources */,
+				9BC4CA70A924CEEFE78F821E /* StartupBootstrapTests.swift in Sources */,
+				0EF72706F1C2A84B72F1FA72 /* StorageSessionTests.swift in Sources */,
+				55C5AD8ADE4014B161CB9624 /* TaskCenterTests.swift in Sources */,
+				AA802D6BAC814F8C4A8F0E0B /* TodoExtractionServiceTests.swift in Sources */,
+				D6BDE322695302D5963AE5F6 /* TransientModeReadOnlyTests.swift in Sources */,
+				AB02A39224436C9A32F05D13 /* UpdateInstallationCoordinatorTests.swift in Sources */,
+				2C75EB346DB24C4912B8C74C /* UpdatePermissionRepairTests.swift in Sources */,
+				FE7EFD739327B3447ED38DEE /* VideoCleanupTests.swift in Sources */,
+				7D25EF21E4750C0D54E50A63 /* VisionOCRLanguageTests.swift in Sources */,
+				95E98E119F9F81787987EE58 /* VoiceprintMergeTests.swift in Sources */,
+				AFA0023C6E158EA2C4478322 /* WaveformAnalyzerTests.swift in Sources */,
+				94558DDA8ACE21077061D9B8 /* WhisperModelDownloadTests.swift in Sources */,
+				4585EDFD810FF8A974C07B16 /* WindowCloseTests.swift in Sources */,
+				42B682254200129267059AAC /* WindowPickOrderTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CEE000548952AD3BB097BE7D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9F17F2D77400AD3927C7B8D9 /* MemoziaMCPHelper.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		86178BFF4956D6834474E878 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 219422B3843660A856B866D0 /* Memozia */;
+			targetProxy = 5613396FA217168066BF0215 /* PBXContainerItemProxy */;
+		};
+		9B13C221681BEDE4997D55E7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 219422B3843660A856B866D0 /* Memozia */;
+			targetProxy = 731C138C065836DCA4364795 /* PBXContainerItemProxy */;
+		};
+		FCCF301B44473D958EBF1A05 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5F76D6896B1BCF73F1A518EF /* MemoziaMCPHelper */;
+			targetProxy = 07DEFCAA5633FDDEB0B4D886 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2ABF2D68B953A051C25BAA5E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "app.memozia.mcp-helper";
+				PRODUCT_NAME = "memozia-mcp";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		32E00E49F699CA2DBB0A6C49 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.memozia.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Memozia.app/Contents/MacOS/Memozia";
+			};
+			name = Release;
+		};
+		63EDDBF1F769E49BAF892CF6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.memozia.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = Memozia;
+			};
+			name = Release;
+		};
+		72E8E99363BE4DCAA7D5E53E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "app.memozia.mcp-helper";
+				PRODUCT_NAME = "memozia-mcp";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		876CFB9E60A900FB33952976 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 152;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 9.6.8;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		9233ABA397B13FD8CE5CF483 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.memozia.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Memozia.app/Contents/MacOS/Memozia";
+			};
+			name = Debug;
+		};
+		BF9CC1F88E2AD5ABA043684A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Memozia/Resources/Memozia.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Memozia/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Memozia;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "闻墨集 需要访问麦克风以录制会议音频";
+				INFOPLIST_KEY_NSRemindersUsageDescription = "闻墨集 需要访问提醒事项以将 AI 拆解的待办写入系统提醒事项";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "闻墨集 需要访问语音识别以在本地将会议录音转成文字";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/Frameworks",
+				);
+				MEMOZIA_CONTACT_EMAIL = "";
+				MEMOZIA_UNNOTARIZED_BUILD = NO;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					AVKit,
+					"-Xlinker",
+					"-needed_framework",
+					"-Xlinker",
+					AVKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.memozia;
+				PRODUCT_NAME = Memozia;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		C29485D807839D437A62C4B1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.memozia.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = Memozia;
+			};
+			name = Debug;
+		};
+		E2FD22840684DD1607AA8690 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 152;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 9.6.8;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		FC0488ABD8E4B1DF917ABEA2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Memozia/Resources/Memozia.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Memozia/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Memozia;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsLocalNetworking = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "闻墨集 需要访问麦克风以录制会议音频";
+				INFOPLIST_KEY_NSRemindersUsageDescription = "闻墨集 需要访问提醒事项以将 AI 拆解的待办写入系统提醒事项";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "闻墨集 需要访问语音识别以在本地将会议录音转成文字";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/Frameworks",
+				);
+				MEMOZIA_CONTACT_EMAIL = "";
+				MEMOZIA_UNNOTARIZED_BUILD = NO;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-framework",
+					AVKit,
+					"-Xlinker",
+					"-needed_framework",
+					"-Xlinker",
+					AVKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.memozia;
+				PRODUCT_NAME = Memozia;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0B878850B06D3415C3F5A6BD /* Build configuration list for PBXProject "Memozia" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E2FD22840684DD1607AA8690 /* Debug */,
+				876CFB9E60A900FB33952976 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		44060393BC12D9EBC44FABF8 /* Build configuration list for PBXNativeTarget "MemoziaMCPHelper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2ABF2D68B953A051C25BAA5E /* Debug */,
+				72E8E99363BE4DCAA7D5E53E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BA2B59623D11011F5A3C2AAB /* Build configuration list for PBXNativeTarget "Memozia" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BF9CC1F88E2AD5ABA043684A /* Debug */,
+				FC0488ABD8E4B1DF917ABEA2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BB27F8071DF10B284169E2E6 /* Build configuration list for PBXNativeTarget "MemoziaUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C29485D807839D437A62C4B1 /* Debug */,
+				63EDDBF1F769E49BAF892CF6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BC791492362C66DAB85F4452 /* Build configuration list for PBXNativeTarget "MemoziaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9233ABA397B13FD8CE5CF483 /* Debug */,
+				32E00E49F699CA2DBB0A6C49 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		115ABAA1BAEE5C2F9998B7DA /* XCRemoteSwiftPackageReference "argmax-oss-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/argmax-oss-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
+		24AF5F8A2BB3852B6C2CEF01 /* XCRemoteSwiftPackageReference "swift-nio" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-nio";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.65.0;
+			};
+		};
+		61E007C8625946537A4DFB80 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = exactVersion;
+				version = 2.10.0;
+			};
+		};
+		9220887DB1A8E4B585002079 /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.2.2;
+			};
+		};
+		A0926D5F8C9942F3D9FEAA6D /* XCRemoteSwiftPackageReference "sherpa-onnx" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/k2-fsa/sherpa-onnx";
+			requirement = {
+				kind = revision;
+				revision = 1cb484af5e69d3c7803c1eb0b3b5ab8041e0e911;
+			};
+		};
+		DD43610FC1A9735F5712AC44 /* XCRemoteSwiftPackageReference "swift-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/modelcontextprotocol/swift-sdk";
+			requirement = {
+				kind = exactVersion;
+				version = 0.12.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		24AFBCB6F601957CAF8D81AF /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 115ABAA1BAEE5C2F9998B7DA /* XCRemoteSwiftPackageReference "argmax-oss-swift" */;
+			productName = WhisperKit;
+		};
+		5B09F9390CBECE2E63D828EE /* MCP */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD43610FC1A9735F5712AC44 /* XCRemoteSwiftPackageReference "swift-sdk" */;
+			productName = MCP;
+		};
+		6923B4FA10AC767C29A08E76 /* NIOCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 24AF5F8A2BB3852B6C2CEF01 /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIOCore;
+		};
+		7D8F80CBEFC68BAC59B50051 /* MCP */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD43610FC1A9735F5712AC44 /* XCRemoteSwiftPackageReference "swift-sdk" */;
+			productName = MCP;
+		};
+		A5EEEF96CC154CB4A2E17467 /* NIOPosix */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 24AF5F8A2BB3852B6C2CEF01 /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIOPosix;
+		};
+		B977B1CD3FAE9021A008F140 /* MCP */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD43610FC1A9735F5712AC44 /* XCRemoteSwiftPackageReference "swift-sdk" */;
+			productName = MCP;
+		};
+		E18EC5A565F605F6B75AEE15 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 61E007C8625946537A4DFB80 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+		E88ACE999D8D25FC37541D95 /* NIOHTTP1 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 24AF5F8A2BB3852B6C2CEF01 /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIOHTTP1;
+		};
+		ED590D990689416989FD6BE9 /* KeychainAccess */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9220887DB1A8E4B585002079 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			productName = KeychainAccess;
+		};
+		F2D37FE0D098A21185B7CA5A /* sherpa-onnx-shared */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A0926D5F8C9942F3D9FEAA6D /* XCRemoteSwiftPackageReference "sherpa-onnx" */;
+			productName = "sherpa-onnx-shared";
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B5A50221BCA4E26D4DD6D94A /* Project object */;
+}
