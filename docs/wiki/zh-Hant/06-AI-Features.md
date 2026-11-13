@@ -4,25 +4,27 @@
 
 本篇覆蓋 LLM 相關服務：流式總結、標題生成、多模態圖片分析、待辦提取、系統提醒事項寫入、PII 脫敏。
 
+六項改造的相容邊界與驗收步驟見 [改造說明](../../IMPROVEMENTS.md)。總結編輯和重新生成前由 `SummaryHistory` 保留加密歷史；待辦來源欄位為可選值，AI 生成後預設待核對，不能視為事實已確認。
+
 ## 1. LLMService — LLM 呼叫核心
 
 原始碼：[LLMService.swift](../../../Memozia/Services/LLMService.swift)（靜態方法 + `LLMConfigSnapshot` 值快照）
 
-支援任意 OpenAI 相容介面（OpenAI / LM Studio / Ollama / 其他相容閘道器），區分本地/雲端（`isLocal`）驅動 PII 與 URL 校驗策略。
+支援 OpenAI 相容介面（OpenAI / LM Studio / Ollama / 其他相容閘道器）。`isLocal` 用於推理服務適配，不再賦予傳輸或脫敏豁免：`EndpointPolicy` 按實際地址區分迴環、私有 IPv4 和遠端；內網明文需獨立授權，公網必須 HTTPS。LLM 請求拒絕自動重定向。
 
 ### 1.1 生成入口
 
 | 方法 | 用途 |
 |------|------|
 | `generateSummary(...)` | 轉寫文字 → Markdown 總結（錄音/快捷筆記共用） |
-| `generateTitle(from:config:)` | 內容 → 簡短標題（總結完成後自動命名錄音/筆記） |
+| `generateTitle(from:config:)` | 內容 → 簡短標題（自動命名與右鍵潤色標題；本地流式、雲端非流式） |
 | `generateSummaryFromImage(...)` | 圖片 → 總結（快捷筆記圖片，需配置 `supportsVision`） |
 | `generateVisualNotes(frames:config:...)` | 影片關鍵幀 → 按時間軸的「畫面要點」 |
 | `detectMeeting(transcript:config:)` | 轉寫文字 → 是否會議（無模板按鈕入口自動呼叫，如守護程序續跑 / 一鍵處理；單條總結由使用者雙按鈕顯式選擇） |
 
 ### 1.2 generateSummary 主流程
 
-1. **輸入預處理**：轉寫文字超長裁剪（字元數上限防超上下文）
+1. **輸入預處理**：錄音提示詞由 `SummarySources` 附上應用生成的片段時間連結；超過 `SummaryChunking.inputBudget` 的文字順序分段壓縮並歸併，所有輸入均參與，不再僅保留字首。預算按字元而非精確 token 計算；壓縮失敗或無法收斂明確報錯，分段摘要仍有資訊損失風險。
 2. **會議/概要雙模板（使用者顯式選擇）**：錄音/影片條目總結頁提供「會議總結/概要總結」兩按鈕（已有總結時變為「重新生成會議總結/重新生成概要總結」），模板隨任務寫入 `AudioRecording.isMeeting`/`meetingJudgedBy`（manual）並隨 `.summary` 佇列條目攜帶，守護程序續跑不重新判定；舊佇列條目無欄位時用持久化判定，再無則 `detectMeeting` 文字分類兌底（保守會議，僅無按鈕入口會自動分類，如守護程序續跑 / 一鍵處理）；轉寫完成時持久化判定失效。圖片/文字筆記不變，統一走概要模板（`forceOverview`）。
    模板選擇：會議→`systemPrompt`；非會議純音訊→`overviewSystemPrompt`；非會議影片且已有畫面要點→`videoOverviewSystemPrompt`（主題模組式內容大綱：按主題聚塊保留 mm:ss 時間錨點，禁止時間線流水複述；`overviewSystemPrompt` 同步按“核心結論+主題分組”提煉重組，兩套概要模板均明確禁止“首先…接著…”式複述、按重要性取捨不追求覆蓋）。影片條目若已生成「畫面要點」（`visualSummary`），作為同時間軸佐證塊注入總結輸入（會議→視聽對照紀要）；**不會為總結自動抽幀上雲**（未經確認不傳送畫面），頁籤順序「轉寫→畫面→總結」即引導；待辦拆解跟隨條目判定欄位，非會議內容追加約束條款
 3. **本地/雲端分支** + **重試策略**：重試前呼叫 `onAttemptStart` 回撥——呼叫方**必須先清空已展示的部分結果**，否則新舊 token 重複拼接
@@ -39,6 +41,10 @@ max_tokens：剋制預設值（非模型理論上限）
 ```
 
 SSE 解析：`URLSession.shared.bytes` 逐行讀取 → 識別 `data:` 字首 → 解析 `choices[0].delta.content` → 合批迴調 `onToken` → 累積完整返回文字。
+
+標題請求由 `generateTitle` 使用獨立 URLSession：本地模型複用 `LocalLLMCapabilities` 探測，僅在模型宣告允許關閉思考時傳送 `reasoning_effort: "none"`，並透過 SSE 接收（相容服務忽略 `stream`、返回完整 JSON）；空閒超時 180 秒、單次請求總時限 600 秒，取消會中斷能力探測與推理連線。雲端保持非流式與 60 秒空閒超時。舊路徑將本地標題請求也設為 60 秒非流式，預設開啟思考的模型可能在正文生成前就被客戶端斷開，單純增加 `max_tokens` 無法解決此超時。
+
+標題只取最終正文，忽略 `reasoning_content` / `reasoning` 並剝離正文開頭的舊式 `<think>` 塊；僅有思考、輸出截斷或缺少結束標記的斷流均報錯，不覆蓋原標題。只有真正的空返回重試一次，網路與推理失敗不自動重試。診斷僅記錄耗時、結束原因、正文長度和是否收到思考，不記錄內容原文。
 
 ### 1.4 LLMConfigSnapshot
 
@@ -92,17 +98,17 @@ SSE 解析：`URLSession.shared.bytes` 逐行讀取 → 識別 `data:` 字首 �
 
 原始碼：[RemindersURLDiagnostic.swift](../../../Memozia/Services/RemindersURLDiagnostic.swift)
 
-一次性診斷工具（開發/排查用）：`defaults write app.memozia reminders_url_diagnostic -bool true` 觸發，下次啟動只以合成提醒與 example.com 位址驗證 URL 寫入，不讀取或改寫現有待辦；結果只記錄成功狀態，寫 `~/Documents/Memozia/url_diagnostic.txt` 後自動清除標記。
+一次性診斷工具（開發/排查用）：`defaults write app.memozia reminders_url_diagnostic -bool true` 觸發，下次啟動僅用合成提醒和 example.com 地址驗證 URL 寫入，不讀取或改寫現有待辦；結果只記錄成功狀態，寫 `~/Documents/Memozia/url_diagnostic.txt` 後自動清除標記。
 
 ## 5. PIIScrubService — PII 去標識化
 
 原始碼：[PIIScrubService.swift](../../../Memozia/Services/PIIScrubService.swift)
 
-**目的**：總結/待辦送**雲端**大模型前脫敏（公司名/人名/手機號等），返回後自動還原。本地模型不處理（資料不出機）。
+**目的**：總結、標題、待辦的文字在發往非迴環端點前按開關脫敏（公司名/人名/手機號等），返回後還原。模型標記為本地不代表資料留在本機；圖片和影片幀不做文字脫敏。
 
 ### 5.1 生效條件
 
-開關 `enablePIIScrub`（設定 → 詞典 → 去標識化，預設開）**且**當前 LLM 配置 `isLocal == false`。
+有效 `enablePIIScrub` 開關開啟，且 `LLMConfigSnapshot.shouldScrubText` 為真。非迴環端點（含內網）預設需要文字脫敏；迴環端點由獨立的 `scrubLoopbackText` 控制。
 
 ### 5.2 兩層檢測
 
@@ -139,13 +145,13 @@ restore(TodoDocument, mapping)          # 待辦 JSON 返回後逐欄位還原
 
 原始碼：[PIIScanService.swift](../../../Memozia/Services/PIIScanService.swift)
 
-用**本地大模型**（僅 `isLocal` 配置可用——防敏感資訊外傳的雞生蛋問題）逐條分析全部已完成轉寫，提取公司名/人名等敏感詞，帶 `#去标识化` 標記寫入詞典。觸發入口：設定 → 詞典 → 更新去標識化。
+用**本機迴環大模型**（必須同時滿足 `isLocal` 和實際迴環地址）逐條分析已完成轉寫，提取公司名/人名等敏感詞，帶 `#去标识化` 標記寫入詞典。掃描不因模型標記放行內網或公網端點，且拒絕自動重定向。觸發入口：設定 → 詞典 → 更新去標識化。
 
 ## 7. 端到端資料流（總結 + 待辦）
 
 ```
-recording.transcriptMarkdown（解密拼接）
-  ↓ [雲端 LLM 且 enablePIIScrub]
+SummarySources.markdown（嚴格解密拼接，附原始片段時間連結）
+  ↓ [shouldScrubText 且有效 enablePIIScrub]
 PIIScrubService.scrub → (scrubbedText, mapping)
   ↓
 LLMService.generateSummary(onToken: 流式渲染)
@@ -176,10 +182,10 @@ RemindersService → EKReminder（回填 reminderIdentifier/status）
 
 ### 8.1 清理影片（只刪原件，保留畫面產物）
 
-入口在「畫面」Tab 播放器下方（`VideoUnderstandingView`，僅原件存在時可見），確認彈框給出將釋放的體積與保留清單，由 `RecordingViewModel.cleanupVideo` 執行。
+入口在「畫面」Tab 播放器下方（`VideoUnderstandingView`，僅原件存在時可見），確認彈框給出將釋放的體積與保留清單；`RecordingViewModel.cleanupVideo` 委託 `MediaCleanupService` 執行。列表右鍵統一為單選/多選「清理源件」，包括所選條目的音訊、圖片和影片，共用影片關鍵幀前置條件。
 
 - **前置條件**：`VideoUnderstandingService.hasReusableFrameCache` 要求幀快取版本標記與當前抽幀策略一致且目錄裡確有幀。不滿足則拋 `frameCacheMissing`，拒絕刪除並不碰任何檔案——原件一走就再也抽不出幀，刪了等於把畫面鏈路一起刪掉。
-- **刪除範圍**：`cleanupOriginalVideo` 只對 `videoFileURL` 那一個路徑 `removeItem`，不按字尾掃目錄也不遞迴刪；`frames/`、`visual.md`、分析檢查點、音訊與轉寫均保留（單測逐條核對，見 `VideoCleanupTests`）。刪失敗向上報錯，不假裝已清理。
+- **刪除範圍**：`MediaCleanupService.removeOriginalFile` 只對 `videoFileURL` 那一個普通檔案路徑刪除，不按字尾掃目錄也不遞迴刪；`frames/`、`visual.md`、分析檢查點、音訊與轉寫均保留（單測逐條核對，見 `MediaCleanupTests`、`VideoCleanupTests`）。刪失敗向上報錯，不假裝已清理。
 - **刪後狀態**：`videoFileName` 隨磁碟事實置空（它按 `{base}_video.{ext}` 檔名約定識別，原件不在時磁碟掃描再也推不回），因此「畫面」Tab 的可見性改由 `AudioRecording.hasVisualArtifacts`（關鍵幀或 `visual.md` 還在）決定；`loadOrExtractFrames` 接受 `videoURL: nil` 並命中幀快取，所以繼續分析與換模型重新分析都照常，只有「抽取關鍵幀」在原件不在時置灰。
 
 ```

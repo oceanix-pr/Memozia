@@ -13,6 +13,8 @@
 
 `.packages/` 目錄是 SPM 本地快取（checkouts），非工程內容。
 
+本機 MCP 新增 **MCP Swift SDK**（固定 0.12.1，MCP 產品）及 **SwiftNIO**（from 2.65.0，NIOCore/NIOPosix/NIOHTTP1 產品）；解析結果由 Package.resolved 鎖定。SDK 為 MIT/Apache-2.0 過渡許可，SwiftNIO 為 Apache-2.0 及附帶第三方宣告，宣告隨應用資源分發。它們用於 JSON-RPC、HTTP 解析和本機傳輸；無新模型資源。SDK/NIO 會增加原生程式碼體積，另有一份獨立 stdio helper，精確體積隨最終 Release 構建測量，不以 Debug 體積代替釋出估算。入口和使用方式見 [MCP](../../MCP.md)。
+
 ### SherpaOnnx 的特殊構建處理
 
 `Scripts/fix_onnxruntime_framework.sh`（preBuild 指令碼）：上游 onnxruntime shared xcframework 佈局非標準（實體目錄替代符號連結），構建前規範為標準 framework 佈局 + 修正 dylib 引用，否則嵌入後 CodeSign 嚴格校驗失敗。

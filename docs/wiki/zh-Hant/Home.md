@@ -19,6 +19,7 @@ Memozia 使用 Swift 6、SwiftUI、SwiftData，核心鏈路為：
 - macOS 整合選單欄、全域性截圖熱鍵、麥克風與會議應用靜音檢測、Dock 顯隱。
 - 本地檔案為權威資料，SwiftData 為索引；文字加密與雲端 PII 處理有各自邊界，詳見安全篇。
 - 工程為 macOS 單平臺應用與測試；iOS 支援（含 iOS Share Extension）已取消。
+- [本機 MCP](../../MCP.md) 預設關閉，按客戶端授權提供只讀的資料查詢與檢索；程序執行、隱私確認和持久化啟動就緒後可用。
 
 ## 文件導航
 

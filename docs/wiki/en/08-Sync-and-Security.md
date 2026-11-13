@@ -82,6 +82,14 @@ Exports use the same device key without asking for a password. The key does not 
 
 Legacy unencrypted exports without API keys remain readable. Import uses throwing `decrypt(_:)`, not `decryptSafely(_:)`, so an external undecipherable file does not trigger the global alarm that local keys changed. `LLMConfig.transferPayload` temporarily contains plaintext API keys in memory; encrypt before passing bytes to the save panel. Synchronizable Keychain would change the security model and has not been adopted.
 
+### 3.6 Memonta history and primary-key changes
+
+New writes use the device key stored under `app.memozia.encryption` / `encryption_key`. After AES-GCM authentication fails, text and binary-file decryption first tries an archived original Memozia key in `previous_encryption_key`, then the same Mac's Memonta key in `com.Memonta.encryption` / `encryption_key`. Lookup errors remain errors; missing keys and corrupted ciphertext retain the existing failure warnings. Successful fallback keys are cached in memory under the existing lock.
+
+The app does not automatically rotate the primary key or modify Memonta Keychain items. A user-directed primary-key replacement must first archive the original Memozia key in Keychain and read it back successfully, then update and verify the primary key. Never overwrite a different archived key. Restart the application after a manual key change to refresh its in-memory cache. Key values must never enter source control, logs, plaintext files, or distribution packages.
+
+macOS may request permission to access historical Keychain items. This compatibility does not move data folders or import API keys: select the appropriate history folder in settings. Without the historical key, or on another Mac, use a password-protected portable backup instead.
+
 ## 4. Deletion protocol
 
 1. Confirm single or bulk deletion.

@@ -8,6 +8,11 @@
 
 `Memozia`, Swift Testing target `MemoziaTests`, and XCUITest target `MemoziaUITests` are macOS-only. iOS and its sharing extension were removed.
 
+### Application display name
+
+The application file and system display name are always `Memozia`. Keep `PRODUCT_NAME` and `INFOPLIST_KEY_CFBundleDisplayName` in `project.yml` consistent with `CFBundleName` and `CFBundleDisplayName` in `InfoPlist.xcstrings`. Simplified and Traditional Chinese localizations must not override the Finder or Dock name. Verify the built app's base Info.plist and localized InfoPlist.strings, rather than only source configuration.
+
+
 ## 2. Build and test
 
 Run from the repository root. Adjust `DEVELOPER_DIR` if Xcode is installed elsewhere; an `xcode-select` pointing only to Command Line Tools does not provide the full SDK.

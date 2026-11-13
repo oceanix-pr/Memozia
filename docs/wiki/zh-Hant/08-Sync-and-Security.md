@@ -106,7 +106,15 @@
 - 匯入側保留明文相容：舊版未加密匯出（不含 Key）仍可直接解析。判據沿用既有語義 —— 非 Base64 內容即明文（同 `decryptSafely` / `decryptFileOrPlaintext`）。注意匯入用的是會拋錯的 `decrypt(_:)` 而非 `decryptSafely(_:)`：後者會把"解不開的 Base64"記成解密失敗並觸發全域性「金鑰可能已更改」告警，而外來檔案不該驚動本機資料。
 - 明文負載（`LLMConfig.transferPayload` 的產物）含 API Key，只允許在記憶體中短暫存在，匯出路徑必須先加密再交給儲存面板。
 
-要跨 Mac 遷移又不想輸密碼，只有讓金鑰跟著 Apple ID 走（Keychain `synchronizable`）這一條幹淨路線；那會改變現有加密資料的安全模型，未採用。
+上述配置匯出仍不跨裝置，也未啟用 Keychain `synchronizable`。條目資料另提供**使用者口令保護的遷移備份**：設定中的 `PortableBackupSection` 呼叫 `PortableBackup`，先讀取條目檔案，以 PBKDF2-HMAC-SHA256 派生口令金鑰、AES-GCM 分塊認證加密為 `.memoziabackup` 目錄包；不匯出裝置金鑰和 API Key。
+
+恢復預檢路徑及認證資料塊，在獨立目錄中以目標裝置金鑰重加密條目文字，不覆蓋當前庫；提醒事項的外部標識與同步狀態會重置。核對後由使用者手動選擇恢復根目錄並重啟。備份不是資料庫事務快照，建立期間必須停止錄音、處理和編輯；不包含配置、詞典、聲紋、模型或佇列。口令遺失無法恢復。完整格式、限制和恢復演練步驟見 [改造說明](../../IMPROVEMENTS.md)。
+
+### 3.6 Memonta 歷史資料相容
+
+Memozia 的新資料仍使用 `app.memozia.encryption` 中的裝置金鑰。AES-GCM 認證失敗時，文字與檔案解密先嚐試當前服務中 `previous_encryption_key` 儲存的舊 Memozia 金鑰，再只讀嘗試同一 Mac 上 `com.Memonta.encryption` 的 `encryption_key`，用於開啟歷史密文。應用不會自動輪換當前金鑰，也不會建立、刪除或修改 Memonta 的鑰匙串條目；舊金鑰僅在記憶體中快取，不寫入倉庫、日誌或釋出包。使用者明確要求將 Memozia 主金鑰改為 Memonta 金鑰時，必須先將原 Memozia 金鑰安全儲存到 Keychain 的 `previous_encryption_key` 並讀回確認，再更新主金鑰並讀回驗證；不得覆蓋不同的已歸檔金鑰。執行中的應用須重啟以重新整理記憶體金鑰快取。
+
+Keychain 可能要求使用者允許 Memozia 訪問舊條目；拒絕、讀取失敗、金鑰不存在或密文損壞時保留現有失敗告警，不將密文作為明文接受。此相容不遷移目錄、不讀取 API Key；歷史條目仍需位於使用者為 Memozia 選擇的儲存目錄。同機舊金鑰缺失或跨裝置時，仍需透過口令保護的遷移備份恢復。
 
 ## 4. 資料刪除協議（安全刪除順序）
 
@@ -115,3 +123,7 @@
 1. 刪除確認對話方塊（單刪/批刪均彈），使用者確認後繼續
 2. **先載入**依賴被刪資料夾的側資料（TodoDocument）→ 清理外部系統殘留（提醒事項中已寫入的 EKReminder）
 3. **先刪磁碟資料夾**，後刪 DB 記錄——檔案刪除失敗時保留 DB 記錄，防止下次磁碟同步"復活"
+
+媒體原件清理由 [MediaCleanupService](../../../Memozia/Services/MediaCleanupService.swift) 單獨處理：確認載荷固定目標與路徑，只刪除相應的音訊、圖片或影片單個檔案，不刪除條目資料夾、索引或提醒事項。清理前先儲存資料庫、內容映象與身份後設資料；轉寫走 `EntryMirrorStore.writeTranscriptNow`，總結與畫面要點走 `writeNow`，確認成功後才刪除原件。音訊清理意圖先落盤，避免崩潰恢復用遺留分片復活已清理音訊；圖片保留 `hasImageSource`，OCR 寫入加密 `ocr.txt`。磁碟重建可以恢復無音訊條目和無原圖的圖片條目，包括標題、身份、時長與已有文字內容。
+
+清理與錄製、處理任務、磁碟掃描和錄音合併互斥；清理期間阻止更新安裝，正常退出等待清理收尾。列表右鍵統一收集所選條目中的音訊、圖片與影片原始檔；圖片索引缺失或失效時按磁碟事實核對 `source.png`，同一路徑去重。批次清理逐條執行，反饋實際刪除數量、檔案體積、無源件跳過數量與全部失敗條目及原因。定向驗證見 `MediaCleanupTests`（含 40 筆圖片、部分右鍵上下文、舊目錄與失效索引）及 `VideoCleanupTests`。

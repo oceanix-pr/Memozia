@@ -34,7 +34,6 @@ SwiftUI 檢視層，NavigationSplitView 雙欄佈局。`@Observable` VM + SwiftD
 ```
 body = dialogLayers                      // 彈窗/確認/匯出/分享
   .overlay(progressOverlay)              // 錄音中/匯入中的底部進度條
-  .contextMenu(forSelectionType: ListItem.self)  // 列表上下文選單
   .modifier(ExportModifiers)             // 轉寫/總結匯出（.md + .pdf）+ 錄音分享
   .modifier(LifecycleTasksModifier)      // 啟動任務鏈（序列）
 ```
@@ -51,22 +50,28 @@ body = dialogLayers                      // 彈窗/確認/匯出/分享
 - **一鍵處理三入口**：列表右鍵選單、錄音/錄屏詳情**播放條右側**按鈕、快捷筆記「拆解待辦」**旁**按鈕，均走 `presentOneClickPreview(_:)` → `OneClickPreviewView` 預覽 → `enqueueOneClick(_:plan:)` 入隊，鏈路為「轉寫（預設跳過已完成的，只有顯式勾選「重新轉寫」才重跑並先備份手動編輯）→ 畫面分析（錄屏 / 匯入影片）→ 總結 → 拆解待辦」；文字/圖片筆記無音軌，鏈路為「總結 → 拆解待辦」。錄音/錄屏預設會議總結，文字/圖片筆記按概要總結，**待辦只落盤不寫入提醒事項**。入隊後頂部橫幅提供「檢視佇列」入口（通知 `openTaskQueuePanel` 由工具欄按鈕響應）
 - **`ListItem` 選中模型**：`.recording(AudioRecording)` / `.quickNote(QuickNote)` 聯合型別，支援 macOS List 多選（批次刪除/匯出）
 - **匯出子選單**：轉寫與總結各自可匯出 `.md` 或 `.pdf`（另保留複製文字與匯出原始錄音）。`.pdf` 走 `MarkdownPDFRenderer` 後臺排版，排完再彈 `fileExporter`：排版不頂主執行緒，失敗也能在使用者選路徑前彈錯
+- **合併錄音**：專業模式僅多選至少兩筆純錄音時顯示右鍵入口，混選影片或筆記不顯示。`RecordingMergeRequest` 固定確認文案，明確合併目標與刪除行為；執行時顯示進度、暫時禁用內容操作，完成後選中最新錄音。詳情播放器以音訊 URL 重建，原條目 ID 不變也能播放新檔案。
+- **媒體清理**：專業模式在錄音詳情播放欄提供「清理錄音」、圖片詳情提供「清理圖片」，右鍵統一為「清理源件」。選單直接掛在持有選中繫結的 `RecordingListView` 的 List 上；右鍵命中已選條目時用完整選中集合，點選中範圍外的行則只作用於該行。`MediaCleanupRequest` 固定各類原始檔、數量、預計體積與不可撤銷後果，RootView 的提示框點選「確定」後才執行。結果用可滾動視窗列出全部失敗原因與無源件跳過數量，大批次顯示進度。清理後停止播放器、禁用重新轉寫、關閉原圖全屏預覽，保留圖片型別與 OCR 閱讀；條目和待辦不刪除。
 
 ## 3. RecordingListView — 側邊欄列表
 
 | 能力 | 說明 |
 |------|------|
 | 主體佈局 | `.listStyle(.sidebar)` + **列表頂部自定義搜尋框** + toolbar + `selectedListItems` 多選繫結 |
-| 自定義搜尋框 | 釘在列表頂部，**替代系統 `.searchable`**（後者在 macOS 會併入視窗工具欄右上角按鈕同區）。macOS 26+（macOS 27 同款設計語言）用 Liquid Glass（`glassEffect(.regular.interactive())`）懸浮玻璃面，舊系統回退 `.quaternary` 半透明填充 + 圓角；⌘F 聚焦、Esc 先清空再退出焦點；過濾、300ms 防抖與 `.id("filter-…")` 強制重建邏輯保持不變 |
-| 視窗標題 | `navigationTitle` 恢復為「Memozia 聞墨達」 |
+| 自定義搜尋框 | 釘在列表頂部，**替代系統 `.searchable`**（後者在 macOS 會併入視窗工具欄右上角按鈕同區）。macOS 26+（macOS 27 同款設計語言）用 Liquid Glass（`glassEffect(.regular.interactive())`）懸浮玻璃面，舊系統回退 `.quaternary` 半透明填充 + 圓角；⌘F 聚焦、Esc 先清空再退出焦點；搜尋保持 300ms 防抖，過濾後的列表內容身份決定是否重建 |
+| 全文搜尋 | `FullTextSearch` 後臺讀取轉寫、總結、筆記文字/OCR、畫面要點和待辦；僅記憶體解密，不建立明文持久索引。命中顯示片段，帶錄音時間的結果可定位播放；部分讀取失敗明確提示，舊任務取消或過期後不釋出結果。大庫效能需實測。 |
+| 視窗標題 | `navigationTitle` 恢復為「Memozia · 聞墨集」 |
 | 月份分組 | 按月分組展示，`expandedBinding` 控制摺疊/展開 |
+| 列表重新整理 | `listContentIdentity` 包含月份及組內有序條目 ID；增刪、替換、重排和過濾結果變化時重建原生 List，避免舊行內容疊在新行上。選中項、搜尋文字和月份摺疊狀態由列表外持有；標題、狀態、待辦數量變化不重建 List |
 | 行元件 | `deletableRenamableRow`：內聯重新命名 + 滑動刪除 + 狀態角標（轉寫中/已完成/失敗） |
 
 ## 4. RecordingDetailView — 錄音詳情
 
-工具欄（播放控制、匯出、刪除）+ 音訊播放器（AVAudioPlayer 封裝，進度條/跳轉）+ Tab 切換 **TranscriptView / SummaryView**；匯入過原影片的**專業模式**條目額外顯示 **VideoUnderstandingView**「畫面」Tab（普通模式不展示該頁籤，規則見 `RecordingDetailView.availableTabs(experience:hasVideoAttachment:)`）。頁籤欄下方渲染共享 `LLMModelSelectorBar`（僅總結/畫面頁籤顯示，轉寫用 STT 配置不展示），取代此前兩個子檢視各畫一份的同狀態選擇條（曾被誤讀為“兩個下拉框”）；頁內改選會寫回全域性活動大模型配置並持久化。**播放條右側**提供「一鍵處理」按鈕，點選先彈出 `OneClickPreviewView` 預覽，確認後由宿主投遞到處理佇列。macOS 佈局適配（引數順序見 RootView 呼叫處）。
+工具欄（播放控制、匯出、刪除）+ 音訊播放器（`AudioPlayerState` 封裝 AVPlayer，進度條/跳轉）+ Tab 切換 **TranscriptView / SummaryView**；匯入過原影片的**專業模式**條目額外顯示 **VideoUnderstandingView**「畫面」Tab（普通模式不展示該頁籤，規則見 `RecordingDetailView.availableTabs(experience:hasVideoAttachment:)`）。播放進度條下方的 `WaveformStrip` 用 `WaveformAnalyzer` 在本機提取的峰值顯示有聲與靜音區間，支援點選/拖動跳轉；分析中與讀取失敗分別顯示狀態，音訊原件缺失時不顯示聲波圖。頁籤欄下方渲染共享 `LLMModelSelectorBar`（僅總結/畫面頁籤顯示，轉寫用 STT 配置不展示），取代此前兩個子檢視各畫一份的同狀態選擇條（曾被誤讀為“兩個下拉框”）；頁內改選會寫回全域性活動大模型配置並持久化。**播放條右側**提供「一鍵處理」按鈕，點選先彈出 `OneClickPreviewView` 預覽，確認後由宿主投遞到處理佇列。macOS 佈局適配（引數順序見 RootView 呼叫處）。
 
 錄音儲存完成後，RootView 複用重新整理結果的非模態橫幅，按資訊/提醒顯示圖示，8 秒後收起；「檢視詳情」定位相應條目並展開 `captureReportSection`。錄音詳情從目錄中的 `capture_report.json` 恢復音軌中斷區間、恢復狀態與靜音證據；讀取失敗明確顯示，不能當成無異常。錄音中未恢復問題使用常駐橫幅及「檢查裝置」，實際儲存失敗保留錯誤對話方塊與 Finder 入口。
+
+正常格式協商自動重試成功、且沒有采集影響記錄時，只收起恢復橫幅，不額外顯示“已恢復”提醒。停錄自動修復併成功合入的 PCM 分片透過報告的可選 `repairedSegments` 記錄，詳情顯示自動處理結果；它本身是資訊提示，不能抵消既有中斷或降級警告。舊報告缺少該欄位時仍可讀取。
 
 ## 5. TranscriptView — 轉寫檢視
 
@@ -123,7 +128,7 @@ sidebar（分組列表，頂部帶「設定與命令」搜尋框）+ detail（�
 | dictionary 詞典 | 詞條視覺化管理（新建/編輯/刪除）、**從聲紋同步**、**更新去標識化**（PIIScanService） |
 | voiceprints 聲紋 | 聲紋庫管理（檢視/刪除） |
 | data 資料 | 儲存目錄、磁碟同步；iCloud 同步當前未啟用（無狀態入口） |
-| about 關於 | 版本、隱私政策與同意管理、開源授權；配置更新來源後顯示更新控制 |
+| about 關於 | 版本、隱私政策與同意管理、開源許可；配置更新源後顯示更新控制 |
 
 ### 9.3 普通模式的漸進披露
 

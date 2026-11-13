@@ -44,6 +44,7 @@ enum ProcessingStatus: String, Codable {
 | `fileExtension` | String | 副檔名（m4a 等） |
 | `duration` | TimeInterval | 時長秒 |
 | `storedFileName` | String | 磁碟檔名（UUID 命名防衝突） |
+| `audioRemovedAt` | Date? | 僅清理音訊原件的時間；路徑和時長隨 meta.json 保留，檔案缺失時仍能從磁碟重建條目與文字內容 |
 | `folderName` | String | 所屬磁碟資料夾（`yyyyMMddHHmmss[-N]`） |
 | `videoFileName` | String? | 影片匯入時留存的原始影片檔名（`{base}_video.{ext}`）；純錄音為 nil，由磁碟掃描按檔名約定重建；「清理影片」後置空 |
 | `hasVideoSource` | Bool | 是否為影片條目（錄屏 / 匯入影片）。與 `videoFileName` 解耦：清理原影片後檔名必須置空（不讓模型指向不存在的檔案），但該標記保留，列表圖示與型別文案不退回「錄音」。隨 `meta.json` 落盤；舊資料由磁碟掃描按影片檔案是否還在補位 |
@@ -77,7 +78,7 @@ var segments: [TranscriptSegment]
 | `transcriptMarkdown` | 片段拼接為 Markdown（含時間戳/說話人） |
 | `decryptedSummary` | 解密 summary |
 | `formattedDuration` | 時長格式化（`01:23:45`） |
-| `saveMetaToFolder()` | 把標題、隱藏狀態與 `hasVideoSource` 寫盤為 `meta.json` |
+| `saveMetaToFolder()` | 把標題、隱藏狀態、條目型別、媒體路徑與時長、原件清理時間寫盤為 `meta.json` |
 | `mediaKind` | 條目型別（錄音 / 錄屏）：列表圖示與型別文案的唯一判據；錄屏與匯入影片不區分，由 `hasVideoSource` 派生，清理原影片後不回退成錄音 |
 | `folderIndicatesVideoSource(folderURL:files:)` / `folderHasVisualArtifacts(folderURL:)` | 按資料夾判定影片證據（留存原影片或畫面產物），供磁碟掃描與歷史條目修復複用 |
 
@@ -144,6 +145,7 @@ var segments: [TranscriptSegment]
 | `id` / `title` / `createdAt` | — | 基礎後設資料 |
 | 文字內容 | String? | **加密**（磁碟映象 `source.txt`） |
 | 圖片檔名 | String? | `source.png` |
+| `hasImageSource` | Bool? | 圖片來源標記，相容舊庫；清理原圖後保留，`isImageNote` 據此維持圖片型別與圖示 |
 | `ocrText` | String? | 圖片 OCR 結果（**加密**） |
 | AI 總結 | String? | **加密**（磁碟映象 `summary.md`） |
 | 總結處理狀態 | ProcessingStatus | `summaryStatus`，供佇列面板重啟後恢復展示 |

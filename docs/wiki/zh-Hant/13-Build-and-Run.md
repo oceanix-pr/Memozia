@@ -10,6 +10,11 @@
 
 `Memozia`、`MemoziaTests`（Swift Testing 單元測試）與 `MemoziaUITests`（XCUITest）均為 macOS target（工程已取消 iOS 支援，iOS 分享擴充套件 target 與相關程式碼已刪除）。
 
+### 應用顯示名稱
+
+應用檔名與系統顯示名統一為英文 `Memozia`。`project.yml` 的 `PRODUCT_NAME`、`INFOPLIST_KEY_CFBundleDisplayName` 與 `InfoPlist.xcstrings` 的 `CFBundleName` / `CFBundleDisplayName` 必須一致；不能讓簡體或繁體本地化把 Finder、Dock 名稱覆蓋為其他品牌名。打包後檢查最終 `.app` 的基礎 Info.plist 及各語言 InfoPlist.strings，而不只核對原始碼配置。
+
+
 ## 2. 構建與測試命令
 
 在專案目錄執行；若 Xcode 安裝位置不同，替換 `DEVELOPER_DIR`。這也避免 `xcode-select` 指向 Command Line Tools 時找不到完整 SDK。
@@ -46,7 +51,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project Mem
 
 | 指令碼 | 用途 |
 |---|---|
-| [fix_onnxruntime_framework.sh](../../../Scripts/fix_onnxruntime_framework.sh) | preBuild 修復動態 framework 佈局和引用，避免嵌入簽名/啟動失敗 |
+| [fix_onnxruntime_framework.sh](../../../Scripts/fix_onnxruntime_framework.sh) | scheme build pre-action 提前修復佈局，target preBuild 再次修復動態 framework 佈局和引用 |
 | [verify_embedded_frameworks.sh](../../../Scripts/verify_embedded_frameworks.sh) | postBuild 重籤 Xcode Run/Test 會優先載入的構建目錄框架，並校驗 `SherpaOnnxC` 引用與簽名 |
 | [bump_build_number.sh](../../../Scripts/bump_build_number.sh) | 釋出前手動分配構建號，不在構建階段執行 |
 | [bump_version.sh](../../../Scripts/bump_version.sh) | 釋出時手動 `patch` / `minor` / `major` 更新營銷版本，之後重生成工程 |
@@ -54,6 +59,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project Mem
 **ONNX Runtime 產物修復與校驗**（啟動崩潰防線）：
 
 - 上游 sherpa-onnx/onnxruntime 動態產物有兩個打包問題：framework 用實體目錄替代符號連結（嵌入後簽名嚴格校驗失敗），以及 `SherpaOnnxC` 引用 `@rpath/libonnxruntime.dylib`（該 dylib 並不隨包，啟動即 `Library not loaded`）。
+- `Versions/Current` 為實體目錄還會在 Xcode 生成構建計劃時觸發 `Couldn't resolve framework symlink`，早於 target preBuild。`Memozia` scheme 的 build pre-action 因此先執行同一冪等修復指令碼；保留 target 階段兜底，檔案操作失敗立即報錯。命令列也應使用 `-scheme Memozia`。
 - 修復指令碼只定位**本次構建**的產物：`BUILD_DIR` / `BUILD_ROOT` 都是 `…/DerivedData/<工程>/Build/Products`（不含配置目錄），`SourcePackages/artifacts` 位於其上級目錄（`../../`）；另支援釋出指令碼顯式傳入的 `MEMOZIA_PACKAGE_CACHE_PATH`、`OBJROOT` 與倉庫內 `.packages`（自定義 packageCachePath）。它不再遍歷其他工程的 DerivedData；`install_name_tool` 修復失敗會直接讓構建失敗。
 - SwiftPM 會同時生成 `$(CONFIGURATION_BUILD_DIR)` 副本與 App 嵌入副本。Xcode Run/Test 會透過 `DYLD_LIBRARY_PATH` 優先載入前者；`install_name_tool` 又會使上游簽名失效，因此 postBuild 需用與 App 一致的身份重籤構建目錄副本。校驗指令碼同時檢查兩處的引用與簽名，防止「構建成功、除錯或測試啟動即被 AMFI 終止」。
 - `Memozia` target 明確關閉 `ENABLE_USER_SCRIPT_SANDBOXING`：上述指令碼必須修改 SwiftPM 動態 hash 路徑下的二進位制產物，並讓 `codesign` 遞迴讀取 framework 及其擴充套件屬性，無法用固定的 Run Script Input/Output 列表完整宣告。該設定隻影響構建指令碼的執行沙箱，不會關閉 App Hardened Runtime 或最終程式碼簽名。
@@ -69,7 +75,9 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project Mem
 - [KeyframeExtractorTests.swift](../../../MemoziaTests/KeyframeExtractorTests.swift)：代表幀跨時間窗判重與名額回填、`LLMService.visualChunks` 分段送幀（與上一行的分工：本檔案只測這兩個不變式）。
 - [StabilityRegressionTests.swift](../../../MemoziaTests/StabilityRegressionTests.swift)：看門狗、可取消門閘、流式合批、超時預算、磁碟節拍、臨時目錄唯一性、失敗報告、詞典掃描等。
 - [WhisperModelDownloadTests.swift](../../../MemoziaTests/WhisperModelDownloadTests.swift)：模型檔位名（glob 唯一性/精確倉庫目錄名）、下載源端點與預設值、`HF_ENDPOINT` 寫入、三件套就緒判定與檔位隔離（均為純邏輯，不聯網）。
+- [LLMTitleGenerationTests.swift](../../../MemoziaTests/LLMTitleGenerationTests.swift)：本地標題的能力協商、流式/完整 JSON 相容、思考隔離、斷流、超時與取消；預設僅離線測試。真實本地服務驗證需設定 `TEST_RUNNER_MEMOZIA_VERIFY_LOCAL_TITLE=1`、`TEST_RUNNER_MEMOZIA_LOCAL_TITLE_URL`（本地 Base URL）和 `TEST_RUNNER_MEMOZIA_LOCAL_TITLE_MODEL`（模型 ID），並用 `-only-testing:MemoziaTests/LLMTitleGenerationTests` 執行；僅傳送合成文字。
 - 不在文件維護測試數量或“永久透過”結論；以當前原始碼及實際執行結果為準。
+- `RecordingMergeTests` 用真實音訊檢查拼接順序、不同取樣率、轉寫偏移、待辦與映象保留、目錄原子交換/回滾及失敗不刪原件。測試可設定 `TEST_RUNNER_MEMOZIA_EPHEMERAL_TEST_ENCRYPTION=1` 使用程序內隨機測試金鑰（僅 Debug 測試宿主生效，不訪問使用者 Keychain）；密文測試產物只適用於該程序。完整合並/刪除/磁碟對賬用例另需 `TEST_RUNNER_MEMOZIA_VERIFY_RECORDING_MERGE=1`，必須以 `-only-testing:MemoziaTests/RecordingMergeTests` 單獨執行，避免非同步儲存根覆蓋影響其他 suite。
 - 型別檢查不覆蓋連結、簽名和執行時；音訊裝置、許可權、Keychain、視窗、恢復及 worker 需按 [迴歸場景](../../TECH_DEBT.md) 選擇實測。
 
 ## 6. SDK 相容經驗
@@ -91,6 +99,6 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project Mem
 | 熱鍵/語言不生效 | 檢查使用者熱鍵配置、系統衝突；語言設定寫 AppleLanguages 後重啟 |
 | TCC 除錯 | 僅明確的開發排障使用 DEBUG 清理路徑，不在釋出版自動重置授權 |
 
-獨立發佈前須配置更新來源、公鑰、簽署與有效聯絡管道；驗收見 [發佈檢查](../../RELEASE_CHECKLIST.md)。
+獨立釋出前須配置更新源、公鑰、簽名與有效聯絡渠道；驗收見 [釋出檢查](../../RELEASE_CHECKLIST.md)。
 
 釋出、許可證與開源準備統一見 [釋出檢查](../../RELEASE_CHECKLIST.md)。

@@ -31,15 +31,18 @@ macOS 選單欄常駐控制中心（`NSStatusBar.system.statusItem`），在主�
 
 | 方法 | 職責 |
 |------|------|
-| `showMainWindow()` | 冪等恢復主視窗：makeKeyAndOrderFront + deminiaturize 最小化視窗；維護 `mainWindows` 列表 |
+| `showMainWindow()` | 取消待完成的隱藏請求，冪等恢復主視窗：makeKeyAndOrderFront + deminiaturize 最小化視窗；維護 `mainWindows` 列表 |
+| `hideMainWindow()` | 透過 `HideOnCloseWindowDelegate` 先退出全屏 Space 再隱藏；全部視窗完成後才切 accessory 隱藏 Dock |
 | `applyInterfaceLanguage(_:)` | 語言切換：空 = 跟隨系統（清 AppleLanguages）；寫偏好後詢問重啟 |
 | `availableLanguages` | 語言清單見原始碼與本地化資源，選單顯示各語言自稱 |
 
-狀態圖示：以 03「折角紙頁 + 聲波」製作自訂 SF Symbol（Regular Small / Medium / Large），`image?.isTemplate = true` 適配深淺色，形狀與顏色均由系統處理；錄音狀態由選單項文字表達（錄音中／錄屏中／靜音），錄屏時切換項顯示「停止錄製」。
+狀態圖示：使用 [MemoziaMenuBar.symbolset](../../../Memozia/Resources/Assets.xcassets/MemoziaMenuBar.symbolset) 中的自定義 SF Symbol（03「折角紙頁 + 聲波」的單色線稿，Regular 字重，提供 Small / Medium / Large 三種比例），以 18pt 單色模板顯示。`MenuBarController.menuBarImage` 快取影象，`isTemplate = true` 讓系統適配深淺色、高亮與對比度；資源缺失時記錄錯誤並回退到系統波形圖示。錄音狀態由選單項文字表達（錄音中／錄屏中／靜音），錄屏時切換項顯示「停止錄製」。PRD 的 FR-12.1 仍寫著隨狀態切換圖示形態，與當前固定圖示的實現有差異，本次保留現有狀態表達方式。
 
 ### 1.4 Dock 圖示顯隱
 
 `NSApp.setActivationPolicy(.regular / .accessory)` 切換；配合 AppDelegate 的 reopen/becomeActive 兜底（見 [02-整體架構](02-Architecture.md) §3）實現"點 Dock 圖示即可恢復"。
+
+紅色關閉按鈕仍只隱藏視窗。全屏時不能直接 `orderOut`，否則會留下沒有視窗的黑色全屏 Space；`HideOnCloseWindowDelegate` 等待進入/退出全屏動畫完成，在 `windowDidExitFullScreen` 後的主佇列下一輪隱藏，並繼續轉發 SwiftUI 原委託回撥。恢復視窗會取消待隱藏請求；退出全屏失敗時保留視窗並記錄錯誤，允許重試。
 
 ## 2. GlobalHotkeyManager — 全域性熱鍵
 
@@ -114,11 +117,13 @@ macOS entitlements（[Memozia.entitlements](../../../Memozia/Resources/Memozia.e
 
 ## 6. 應用更新
 
-原始碼：[AppUpdateService.swift](../../../Memozia/Services/AppUpdateService.swift)、[UpdateInstallationCoordinator.swift](../../../Memozia/Services/UpdateInstallationCoordinator.swift)。
+原始碼：[AppUpdateService.swift](../../../Memozia/Services/AppUpdateService.swift)、[UpdateInstallationCoordinator.swift](../../../Memozia/Services/UpdateInstallationCoordinator.swift)、[UpdatePermissionRepair.swift](../../../Memozia/Services/UpdatePermissionRepair.swift)。
 
 - Sparkle 更新器只在主應用已獲隱私同意並取得持久化容器後啟動；worker、單元測試和 UI 測試不啟動更新器。
-- 目前副本未配置更新來源與公鑰，更新器不會啟動，選單和「設定 → 關於」不顯示檢查入口。配置可信更新來源後，自動檢查仍預設關閉，安裝仍須確認。
+- 當前副本未配置更新源與公鑰，更新器不會啟動，選單和「設定 → 關於」隱藏檢查入口。配置可信更新源後，自動檢查仍預設關閉，安裝仍需確認。
 - 安裝前檢查錄音、錄屏、截圖、匯入、磁碟對賬及處理任務資源，儲存 ModelContext、停止舊 worker 並等待 `EntryMirrorStore.flush()`；非同步等待後再次檢查空閒。失敗會取消退出並提示稍後重試。
 - 更新退出不會拉起舊 worker，新版按既有啟動協議接管；退出仍使用 `_exit` 規避 ONNX 靜態析構。
-- 獨立發佈時須配置並驗證 stable 更新頻道；目前副本未建立更新頻道。
-- 完整的兩版本替換、重啟與許可權連續性需要實際升級驗收；構建與單元測試不能替代這一步。發佈前配置與驗收見 [發佈檢查](../../RELEASE_CHECKLIST.md)。
+- 獨立釋出時只配置 stable 更新頻道；當前副本未建立任何更新頻道。
+- 按使用者要求，明確標記為未公證更新包的臨時簽名版本，首次持久化主應用啟動會清理本應用舊 TCC 授權。`UpdatePermissionRepair` 用實際程式碼簽名雜湊和構建號去重，只執行固定的 `tccutil reset All app.memozia`；首次安裝建立基線，穩定簽名和同一程式碼身份重啟不重複清理。開發除錯構建、worker、測試、臨時模式或仍有采集資源時不執行。5 秒超時/取消會結束子程序，失敗不標為成功並顯示提示。
+- `StartupRootView` 在主介面開放前等待授權修復；隱私同意後啟動任務鏈及錄音/捕獲入口複用同一執行體。清理後仍由系統彈窗徵求授權，不用歷史標記冒充已授權。正常退出等待修復收尾，更新安裝也檢查該資源。定向測試不執行真實 TCC 重置。
+- 完整的兩版本替換、重啟與許可權連續性需要實際升級驗收；構建與單元測試不能替代這一步。釋出前配置與驗收見 [釋出檢查](../../RELEASE_CHECKLIST.md)。

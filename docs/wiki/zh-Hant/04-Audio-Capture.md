@@ -42,6 +42,8 @@ MeetingRecorderService（總控，@MainActor @Observable 單例）
 
 ### 1.4 易迴歸約束
 
+停錄合併檢查分片時，遇到不可播放的 CAF/WAV 會先呼叫 `FileSyncService.repairedPCMContainerCopy(at:)`：複製到隱藏的獨立臨時檔案，修補容器頭並重新驗證，成功後按原片的時間軸位置參與合併。原片保持不變並留存；匯出結束清理修復副本，後續崩潰重建也尊重報告中的原片保留標記。`RecordingCaptureReport.repairedSegments` 僅登記最終成功合入的原片檔名，單軌回退只登記實際消費的聲軌，不能把嘗試過修復當成修復成功。沒有採集到的聲音仍無法補回，相關中斷證據保留。
+
 控制代碼峰值、PCM 容器、磁碟閾值、序列寫入與 SDK 分支統一見 [專案實踐](../../../DEVELOPMENT_GUIDE.md) §1；恢復讀錯不可誤刪原件見 §3。
 
 ## 2. MicCaptureService — 麥克風採集
@@ -59,6 +61,8 @@ MeetingRecorderService（總控，@MainActor @Observable 單例）
 | 寫失敗成因分流 | tap 寫入拋錯也分兩種成因：**引擎已停、剛處理過裝置配置變化（5s 內路由尚未穩定）、或輸入節點格式已與當前分片不一致** → 屬於裝置切換症狀，按 `deviceUnavailable` 處理並觸發恢復；只有引擎在跑、格式一致且遠離配置變化時的寫失敗才報「寫入失敗……建議停止後重新錄製」。判定抽成純函式 `MicCaptureService.writeFailureIsDeviceTransition`，閾值 `deviceTransitionWindow`。判定必須在主執行緒讀「當下」引擎狀態，故 `reportWriteError` 先回主執行緒再分流。 |
 
 **許可權**（`start(to:)` 為 `async`）：只做只讀預檢不行——系統只在 App **主動請求**後才把應用登記進「麥克風」面板，只讀判定會把「未決」當成「拒絕」直接報錯，全新機器上既不會彈授權框、也無從手工授權（分發到新機器表現為面板裡沒有 Memozia）。因此未決時調 `AVAudioApplication.requestRecordPermission()`（macOS 14+）/ `AVCaptureDevice.requestAccess(for:)` 並等待；已拒絕時重複呼叫不會再次彈窗，直接按錯誤上報（文案指向系統設定）。
+
+**格式協商自愈**：啟動引擎或安裝 tap 時 `com.apple.coreaudio.avfaudio/-10868` 只作為內部重試的中間結果，日誌用 debug；它本身不發 `deviceUnavailable`，因而下一次首包寫入成功後不會留下“採集中斷、需修復”的歷史警告。仍復用現有輸入節點與同一恢復預算；首包超時、預算耗盡或其他真實採集失敗照常登記和上報。純格式協商恢復無影響記錄時，ViewModel 只收起橫幅。
 
 **寫入格式**：Linear PCM、取樣率和聲道數取自當前輸入裝置、16-bit、非浮點、非 big-endian、非 interleaved。檔案處理格式必須與 tap 緩衝匹配；輸入裝置格式變化時不能繼續寫入舊格式的分片。
 
@@ -85,7 +89,7 @@ MeetingRecorderService（總控，@MainActor @Observable 單例）
 
 原始碼：[SystemAudioCaptureService.swift](../../../Memozia/Services/SystemAudioCaptureService.swift)
 
-基於 **ScreenCaptureKit**（錄系統音訊也需要"螢幕錄製"許可權，需重啟生效）。
+基於 **ScreenCaptureKit**（錄系統音訊也需要"螢幕錄製"許可權，系統要求時需重啟生效）。`ScreenCaptureAuthorization` 保留 Core Graphics 無彈窗預檢作診斷，但啟動以 ScreenCaptureKit 的實際授權結果為準，不能在預檢為 false 時發起申請後立即報錯。授權等待支援取消和 60 秒上限；遲到結果不啟動採集。混合錄音先完成此授權，再啟動麥克風；系統音訊服務的啟動預約按代次隔離，舊授權請求返回後不能釋放或接管新請求。
 
 | 方法 | 職責 |
 |------|------|
