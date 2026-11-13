@@ -21,4 +21,6 @@
 5. 公开 Release 后运行 `python3 Scripts/publish_update_feed.py <tag>` 只读验包，再运行同命令加 `--publish` 推进 `updates` 分支。脚本匿名下载公开附件，验证 ZIP 完整性、SHA-256、Ed25519、Bundle 版本与更新配置，并拒绝同构建替换或版本倒退；写入使用旧 blob SHA 防止并发覆盖。网络和权限错误必须停止，不能当作空 feed。
 6. 匿名读取 stable feed 并核对版本、签名、URL 和包长度。未完成 feed 更新时，不宣称自动更新已发布。保留发布 ZIP、appcast、SHA256SUMS、构建与测试日志。
 
+大附件网络较慢时，发布 feed 可加 `--verified-archive <实际下载的草稿 ZIP>`：复用已下载字节，但仍核对 GitHub 为公开附件计算的 SHA-256，匿名读取公开 ZIP 的字节范围和总长度，并完成全部本地验签。不能使用未与实际附件核对的构建目录文件。
+
 9.7.0 是恢复更新源的首次引导版本：手动安装后才能接收后续版本。当前仅提供 arm64 预览包，不承诺 Intel 支持或 Apple 公证。

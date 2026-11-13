@@ -38,12 +38,15 @@ def fetch(url):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('tag')
+    parser.add_argument('--verified-archive', type=pathlib.Path,
+                        help='Reuse the actual downloaded draft ZIP, checking the public asset digest and range')
     parser.add_argument('--publish', action='store_true', help='Advance updates branch after verification')
     args = parser.parse_args()
     assert re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+', args.tag)
     release = gh('api', f'repos/{REPO}/releases/tags/{args.tag}')
     assert not release['draft'], 'Publish Release before updating feed'
-    assets = {a['name']: a['browser_download_url'] for a in release['assets']}
+    asset_records = {a['name']: a for a in release['assets']}
+    assets = {name: a['browser_download_url'] for name, a in asset_records.items()}
     feed = fetch(assets['appcast.xml'])
     checksums = dict(line.split()[::-1] for line in fetch(assets['SHA256SUMS']).decode().splitlines())
     assert hashlib.sha256(feed).hexdigest() == checksums['appcast.xml']
@@ -54,7 +57,19 @@ def main():
     assert enclosure is not None
     archive_name = f'Memozia-{args.tag}-{build}-arm64.zip'
     assert enclosure.get('url') == assets[archive_name]
-    archive = fetch(assets[archive_name])
+    if args.verified_archive:
+        archive = args.verified_archive.read_bytes()
+        digest = hashlib.sha256(archive).hexdigest()
+        assert asset_records[archive_name].get('digest') == 'sha256:' + digest
+        request = urllib.request.Request(assets[archive_name], headers={'Range': 'bytes=0-1023'})
+        with urllib.request.urlopen(request, timeout=120) as response:
+            assert response.read(1024) == archive[:1024]
+            total = (response.headers.get('Content-Range') or '').rsplit('/', 1)[-1]
+            if not total:
+                total = response.headers.get('Content-Length')
+            assert int(total) == len(archive)
+    else:
+        archive = fetch(assets[archive_name])
     assert len(archive) == int(enclosure.get('length'))
     assert hashlib.sha256(archive).hexdigest() == checksums[archive_name]
     config = (ROOT / 'project.yml').read_text()
