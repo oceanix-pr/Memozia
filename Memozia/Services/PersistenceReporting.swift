@@ -35,7 +35,7 @@ enum PersistenceReporting {
     @discardableResult
     static func saveOrReport(
         scene: String = #function,
-        file: String = #filePath,
+        file: String = #fileID,
         line: Int = #line,
         save: () throws -> Void
     ) -> Bool {
@@ -53,7 +53,7 @@ enum PersistenceReporting {
     static func reportSaveFailure(
         _ error: any Error,
         scene: String = #function,
-        file: String = #filePath,
+        file: String = #fileID,
         line: Int = #line
     ) {
         let isFirst = ledger.record(scene: scene)

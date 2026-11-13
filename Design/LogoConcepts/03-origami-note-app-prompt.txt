@@ -1,0 +1,15 @@
+Memozia app icon — generation and export notes
+
+Tool: built-in image_gen (image edit), followed by native CoreGraphics export.
+Reference: the original icon.png from the initial repository commit.
+
+Final image generation prompt:
+Use case: precise-object-edit. Asset type: final production Memozia macOS app icon, with pre-rounded iOS-style outer silhouette explicitly requested by the user. Use the supplied image as the edit target. Preserve its exact brand concept: warm ivory/apricot origami note with a folded top-right corner and central burnt-orange audio waveform, gently textured paper and flowing peach lower fold. Recompose the icon with a larger outer background panel and a modest, elegant centered emblem. Outer panel: a warm off-white/ivory continuous rounded-square squircle, almost filling the canvas (96% width and height), iOS-style curved corners about 22% radius, real transparent pixels ONLY outside the outer rounded-square panel. The panel should be evenly centered with about 2% clear canvas space around its silhouette, without a hard border or external drop shadow. Inner origami-note emblem: preserve the original proportions and original colors, centered optically, about 64% of total canvas width and 70% height (roughly two-thirds); generous balanced ivory breathing space between note and rounded-square panel edges on all sides. Keep audio waveform bold and legible. The goal is an enlarged calm outer rounded tile framing an appropriately sized central note, not a full-bleed enlarged note. Preserve the original warm cream background color INSIDE the outer panel; do not replace it with an orange background. Do not crop the note or waveform. No text, no letters, no extra icon objects, no decorative border, no mockup, no checkerboard drawn into image. Output a single square icon PNG with genuine transparent outer corners, clean symmetrical outer clipping, and refined balanced spacing.
+
+Final deterministic export:
+The generated output had edge artifacts. CoreGraphics was used to remove them with an antialiased rounded rectangle at (32, 32), size 960 x 960, corner radius 220 on a 1024 x 1024 canvas. The ivory background underneath the artwork uses sRGB (0.979, 0.963, 0.947). Corners outside the mask are transparent. This is a user-requested pre-rounded macOS asset, not an App Store iOS icon submission.
+
+Outputs:
+- icon.png and 03-origami-note-app-master.png: 1024 x 1024.
+- AppIcon asset: 16, 32, 64, 128, 256, 512, 1024 pixels.
+- Logo asset: 256 x 256.
