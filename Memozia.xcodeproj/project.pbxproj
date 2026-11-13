@@ -251,7 +251,7 @@
 		02981D39BD5B24999028665D /* LLMTitleGenerationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMTitleGenerationTests.swift; sourceTree = "<group>"; };
 		03600BF0D860229BB3302DB6 /* AnnotationToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationToolbar.swift; sourceTree = "<group>"; };
 		03C3392252F518E6DC4E6C13 /* TranscriptSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptSegment.swift; sourceTree = "<group>"; };
-		0411FC8A6054CDB310AFFA98 /* MemoziaMCPHelper */ = {isa = PBXFileReference; includeInIndex = 0; name = MemoziaMCPHelper; path = "memozia-mcp"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0411FC8A6054CDB310AFFA98 /* MemoziaMCPHelper */ = {isa = PBXFileReference; includeInIndex = 0; path = MemoziaMCPHelper; sourceTree = BUILT_PRODUCTS_DIR; };
 		05479F298456E5A8024D97DB /* SummaryHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryHistory.swift; sourceTree = "<group>"; };
 		0558BA5CC49BC9A98CD1D687 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		057017D09EC9558146AD8813 /* MarkdownPDFRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownPDFRenderer.swift; sourceTree = "<group>"; };
@@ -269,7 +269,7 @@
 		1894ABD7D4122E2B35899DBA /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
 		1A6737467C4DD22F5C4F930D /* MicMuteCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicMuteCommand.swift; sourceTree = "<group>"; };
 		1C52F21491578AEE9F3DB393 /* SummaryChunking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryChunking.swift; sourceTree = "<group>"; };
-		1C9F8BDB4DE66CA6E47C8018 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1C9F8BDB4DE66CA6E47C8018 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1ECF352B2CFF978139513B21 /* PersistenceReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceReporting.swift; sourceTree = "<group>"; };
 		20026AE98EE94D432C856194 /* FeedbackView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackView.swift; sourceTree = "<group>"; };
 		20F394FEDD1BA5420F06DC68 /* EchoCanceller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoCanceller.swift; sourceTree = "<group>"; };
@@ -1433,7 +1433,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 152;
+				CURRENT_PROJECT_VERSION = 153;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1449,7 +1449,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.6.8;
+				MARKETING_VERSION = 9.6.9;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1570,7 +1570,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 152;
+				CURRENT_PROJECT_VERSION = 153;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1592,7 +1592,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.6.8;
+				MARKETING_VERSION = 9.6.9;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1612,7 +1612,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Memozia/Resources/Memozia.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
