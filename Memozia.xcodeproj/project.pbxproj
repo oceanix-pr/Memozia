@@ -98,10 +98,12 @@
 		5B00251F447A468F3780AAF7 /* TextFindReplace.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89F9835CBD4B466F792BFE /* TextFindReplace.swift */; };
 		5C020368E677BBE22D6690FB /* PersistenceCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B262A815D739FE936A6FCD /* PersistenceCapability.swift */; };
 		5DC025A9E2CBC0037DEC4470 /* NIOCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6923B4FA10AC767C29A08E76 /* NIOCore */; };
+		5F6D68B00AAA93010C6BB968 /* MenuBarIconRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FFF72154C0609A405DED829 /* MenuBarIconRendererTests.swift */; };
 		61A159D5215871CA2F3172C8 /* MeetingRecorderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D581B3F7408565D6CB9745 /* MeetingRecorderService.swift */; };
 		626AE8C59F7647CA454AA56C /* KeyframeExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91CA011EFF5AACD1FB9F848D /* KeyframeExtractorTests.swift */; };
 		651CDE46EF471D2EA892A7C9 /* MicCaptureRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292AE0E0959F3F31FD0C456C /* MicCaptureRecoveryTests.swift */; };
 		6734DA80BA8F4F5CDAB45AA8 /* WhisperLocalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA419D382128219F14180F2B /* WhisperLocalService.swift */; };
+		6967A75B465F2334BCAB9407 /* MenuBarIconRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C61FC567C5F1CFB874DC35E9 /* MenuBarIconRenderer.swift */; };
 		69B4E7503500236E8855157D /* LLMConfigDraftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4C9B81ABB7607C7CFB3BD03 /* LLMConfigDraftTests.swift */; };
 		6A1A4599439EF12FD28BDEC2 /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDE4C450987D518C16533D6 /* MenuBarController.swift */; };
 		6D393CD38B42C4DCF95E6321 /* StabilityRegressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D61366CE367A6784D9D2CE /* StabilityRegressionTests.swift */; };
@@ -329,6 +331,7 @@
 		5B445EC76090DBC18397D1DE /* WindowPickOrderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowPickOrderTests.swift; sourceTree = "<group>"; };
 		5DB23251DB35B0B884D65069 /* PIIScanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PIIScanService.swift; sourceTree = "<group>"; };
 		5F5AD4280C023924A7038C1C /* STTConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STTConfig.swift; sourceTree = "<group>"; };
+		5FFF72154C0609A405DED829 /* MenuBarIconRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIconRendererTests.swift; sourceTree = "<group>"; };
 		60C90CAE53148C2689D67BAA /* PortableBackupSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortableBackupSection.swift; sourceTree = "<group>"; };
 		61A57B201FB0F418E466BCD2 /* TSCharacters.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = TSCharacters.txt; sourceTree = "<group>"; };
 		6268E7FC0A8888B77365F888 /* MicrophoneDeviceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicrophoneDeviceRegistry.swift; sourceTree = "<group>"; };
@@ -423,6 +426,7 @@
 		C21573225D6230BC10378DE2 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		C4D2CB43D264D9B50C5F3857 /* RuntimeVerification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeVerification.swift; sourceTree = "<group>"; };
 		C5C8C489C2E9955143E53FF1 /* NoteSpeechTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteSpeechTests.swift; sourceTree = "<group>"; };
+		C61FC567C5F1CFB874DC35E9 /* MenuBarIconRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIconRenderer.swift; sourceTree = "<group>"; };
 		C87DD4DA248C71EB0E1ACF6E /* WhisperAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperAPIService.swift; sourceTree = "<group>"; };
 		CA419D382128219F14180F2B /* WhisperLocalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhisperLocalService.swift; sourceTree = "<group>"; };
 		CBB280ED875D96E9A9CA2573 /* WindowCloseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowCloseTests.swift; sourceTree = "<group>"; };
@@ -599,6 +603,7 @@
 				8CB81C21C52492D672594343 /* MemoziaContact.swift */,
 				AD77EAE4FAEAAFC92EF20DB2 /* MemoziaPrivacyPolicy.swift */,
 				FEDE4C450987D518C16533D6 /* MenuBarController.swift */,
+				C61FC567C5F1CFB874DC35E9 /* MenuBarIconRenderer.swift */,
 				6B3EE0F2B57EA7AAB5730090 /* MicCaptureFileStore.swift */,
 				5499E4B97A9C06A6FA1343BA /* MicCaptureRecovery.swift */,
 				F4403D8D25C20BB4C86D2EC2 /* MicCaptureService.swift */,
@@ -746,6 +751,7 @@
 				48B99383EDE3EA09BC2331AB /* MCPReadOnlyTests.swift */,
 				35A801AA0059815E0E2DCC0B /* MediaCleanupTests.swift */,
 				3A001927A5C7729DDCEDC6F7 /* MemoziaTests.swift */,
+				5FFF72154C0609A405DED829 /* MenuBarIconRendererTests.swift */,
 				292AE0E0959F3F31FD0C456C /* MicCaptureRecoveryTests.swift */,
 				E13A591C9E3A3684A5F11C8B /* MicCaptureRestartTests.swift */,
 				C5C8C489C2E9955143E53FF1 /* NoteSpeechTests.swift */,
@@ -1157,6 +1163,7 @@
 				C6BA1E80F744AF6819F77797 /* MemoziaContact.swift in Sources */,
 				189B00A62419FCF69B25CB0D /* MemoziaPrivacyPolicy.swift in Sources */,
 				6A1A4599439EF12FD28BDEC2 /* MenuBarController.swift in Sources */,
+				6967A75B465F2334BCAB9407 /* MenuBarIconRenderer.swift in Sources */,
 				81F31A8DC76A8DEC2A4803B7 /* MicCaptureFileStore.swift in Sources */,
 				113AAF1692C3AF6B0B5DF8BE /* MicCaptureRecovery.swift in Sources */,
 				CAFF24C205B30A3698430D2B /* MicCaptureService.swift in Sources */,
@@ -1285,6 +1292,7 @@
 				752DA55A20C9BC51BCA961AC /* MarkdownPDFRendererTests.swift in Sources */,
 				6D723966CFA03E94A1B67274 /* MediaCleanupTests.swift in Sources */,
 				6E77337A0E9538971D230C66 /* MemoziaTests.swift in Sources */,
+				5F6D68B00AAA93010C6BB968 /* MenuBarIconRendererTests.swift in Sources */,
 				651CDE46EF471D2EA892A7C9 /* MicCaptureRecoveryTests.swift in Sources */,
 				F09B53B5CA485626B45AA734 /* MicCaptureRestartTests.swift in Sources */,
 				A3C573B6C43A2025394DD0A9 /* NoteSpeechTests.swift in Sources */,
@@ -1441,7 +1449,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 158;
+				CURRENT_PROJECT_VERSION = 159;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1457,7 +1465,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.7.3;
+				MARKETING_VERSION = 9.7.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1580,7 +1588,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 158;
+				CURRENT_PROJECT_VERSION = 159;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1602,7 +1610,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.7.3;
+				MARKETING_VERSION = 9.7.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

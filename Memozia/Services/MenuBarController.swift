@@ -34,16 +34,10 @@ final class MenuBarController: NSObject {
             logger.error("菜单栏自定义符号资源缺失，回退为系统波形图标")
             source = NSImage(systemSymbolName: "waveform.circle.fill", accessibilityDescription: "Memozia")
         }
-        // 自定义 Symbol 的字号不等于可见轮廓高度：26pt 对应约 18pt 的图形，
-        // 与常见系统菜单栏图标一致。保留原生向量及模板着色。
-        let configuration = NSImage.SymbolConfiguration(pointSize: 26, weight: .regular)
-        let image = source?.withSymbolConfiguration(configuration)
-        if let image {
-            // 独立状态项按完整图像框居中，不沿用面向文字排版的符号基线留白。
-            image.alignmentRect = NSRect(origin: .zero, size: image.size)
+        guard let source, let image = MenuBarIconRenderer.makeTemplate(from: source) else {
+            logger.error("菜单栏图标模板生成失败")
+            return nil
         }
-        image?.isTemplate = true
-        image?.accessibilityDescription = "Memozia"
         return image
     }()
 
