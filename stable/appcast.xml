@@ -3,27 +3,24 @@
     <channel>
         <title>Memozia</title>
         <item>
-            <title>9.7.1</title>
-            <pubDate>Sat, 14 Nov 2026 07:57:43 +0800</pubDate>
-            <sparkle:version>156</sparkle:version>
-            <sparkle:shortVersionString>9.7.1</sparkle:shortVersionString>
+            <title>9.7.2</title>
+            <pubDate>Sat, 14 Nov 2026 08:23:35 +0800</pubDate>
+            <sparkle:version>157</sparkle:version>
+            <sparkle:shortVersionString>9.7.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Memozia 9.7.1（156）
+            <description sparkle:format="markdown"><![CDATA[# Memozia 9.7.2（157）
 
-- 使用已去除白边和边缘杂点的图稿更新应用图标与设置页 Logo。
-- 裁掉图稿四周的透明留边，纸张和声波主体撑满图标画布；保留右上自然折角及其透明外轮廓。
-- 同步 16–1024 像素的 macOS 应用图标资源，继续使用 Memozia 独立的签名 stable 更新源。
-- 使用 macOS 原生 Icon Composer 资源，避免系统将旧格式图标缩入灰色底框；折角后的底色与纸张保持暖色协调。
-- 菜单栏自定义 SF Symbol 改为单色线条风格：圆角折角纸张搭配连续声波曲线，与新 Logo 保持一致。
+- 菜单栏采用用户选定的 A 版「柔角折页」自定义 SF Symbol：圆角折角纸张搭配简洁连续声波，保持单色线条风格。
+- 校正图标可见外轮廓的水平与垂直中心，并同步将声波对齐纸张中心；提供 Small / Medium / Large 符号轮廓，由系统适配菜单栏明暗与高亮。
 
-适用于 Apple Silicon（arm64）、macOS 15 或以上。本包沿用现有 ad-hoc 签名的未公证预览分发，未经 Apple Developer ID 签名和公证，包含本地签名所需的单应用库加载例外；更新 ZIP 另经 Sparkle Ed25519 签名。首次打开可能需要在「系统设置 → 隐私与安全性」允许。
+本包适用于 Apple Silicon（arm64）、macOS 15 或以上，沿用现有 ad-hoc 签名的未公证预览分发，未经 Apple Developer ID 签名和公证；保留本地签名所需的单应用库加载例外，更新 ZIP 另经 Sparkle Ed25519 签名。
 
-9.7.0 用户可通过应用内「检查更新」获取本版本。9.6.10 及更早版本未配置更新源，需要手动解压 ZIP 并将 `Memozia.app` 复制到「应用程序」替换旧版。
+9.7.0 及以上版本可通过应用内「检查更新」获取；更早的未配置更新源版本需要手动解压 ZIP，将 `Memozia.app` 复制到「应用程序」替换旧版。首次打开可能需要在「系统设置 → 隐私与安全性」允许。
 
-发布验证包括完整 macOS 单元测试、Release 构建、实际附件 SHA-256 与 Ed25519 验签、解包后的代码签名和启动检查，以及公开 stable 更新源的版本发现检查。未覆盖真实录音中的跨版本安装和系统权限衔接的全部人工回归。
+发布验证包括完整 macOS 单元测试（媒体清理 suite 隔离运行）、Release 构建、实际草稿附件的 SHA-256 与 Ed25519 验签、解包后签名和启动检查、菜单栏符号渲染，以及公开 stable 更新源的版本发现。真实录音期间的跨版本安装和系统权限衔接未完成全部人工回归。
 ]]></description>
-            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.7.1/Memozia-v9.7.1-156-arm64.zip" length="36513935" type="application/octet-stream" sparkle:edSignature="YaorBykoIXgqOtQplgt3WneivhkDyEAGb/cXviYl1tCZnoNY640Gjlyf65ev5P4xTX1JoHP/pUGPZKX9EAm3Bg=="/>
+            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.7.2/Memozia-v9.7.2-157-arm64.zip" length="36511845" type="application/octet-stream" sparkle:edSignature="xL3lRx0uVucgL7VHFsBmFaisg2dcmDSlMPrRbVULLBg1B5y/TKtLfzL+nONpdgnzCSfUii3I2mH8eDLnVxzvDw=="/>
         </item>
     </channel>
 </rss>
