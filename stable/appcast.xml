@@ -3,26 +3,27 @@
     <channel>
         <title>Memozia</title>
         <item>
-            <title>9.7.0</title>
-            <pubDate>Fri, 13 Nov 2026 23:38:57 +0800</pubDate>
-            <sparkle:version>155</sparkle:version>
-            <sparkle:shortVersionString>9.7.0</sparkle:shortVersionString>
+            <title>9.7.1</title>
+            <pubDate>Sat, 14 Nov 2026 07:57:43 +0800</pubDate>
+            <sparkle:version>156</sparkle:version>
+            <sparkle:shortVersionString>9.7.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Memozia 9.7.0（155）
+            <description sparkle:format="markdown"><![CDATA[# Memozia 9.7.1（156）
 
-- 更新应用图标：纸张和声波铺满图标，保留自然弯曲的右上折角。
-- 恢复应用内更新：使用 Memozia 独立的 GitHub stable 更新源与 Ed25519 签名验证；默认自动检查，安装需要确认。
-- 保留录音、录屏、后台处理与文件保存期间的安装保护，关闭系统画像和静默安装。
-- 隐私政策升级至 7.0，说明更新检查与安装包下载；升级后需重新同意，更新器才会启动。
+- 使用已去除白边和边缘杂点的图稿更新应用图标与设置页 Logo。
+- 裁掉图稿四周的透明留边，纸张和声波主体撑满图标画布；保留右上自然折角及其透明外轮廓。
+- 同步 16–1024 像素的 macOS 应用图标资源，继续使用 Memozia 独立的签名 stable 更新源。
+- 使用 macOS 原生 Icon Composer 资源，避免系统将旧格式图标缩入灰色底框；折角后的底色与纸张保持暖色协调。
+- 菜单栏自定义 SF Symbol 改为单色线条风格：圆角折角纸张搭配连续声波曲线，与新 Logo 保持一致。
 
-首次安装修复版：9.6.10 及更早的 Memozia 未配置更新源，无法自行发现此版本。请解压 ZIP，将 `Memozia.app` 拖入「应用程序」替换旧版，并重新打开应用、同意新版政策。之后可在「设置 → 关于」检查更新。
+适用于 Apple Silicon（arm64）、macOS 15 或以上。本包沿用现有 ad-hoc 签名的未公证预览分发，未经 Apple Developer ID 签名和公证，包含本地签名所需的单应用库加载例外；更新 ZIP 另经 Sparkle Ed25519 签名。首次打开可能需要在「系统设置 → 隐私与安全性」允许。
 
-本包沿用现有 Apple Silicon（arm64）、macOS 15+ 的 ad-hoc 签名预览分发，未经 Apple Developer ID 签名和公证。首次打开可能需要在「系统设置 → 隐私与安全性」允许；本地签名使用应用自身的库加载例外。更新包另有 Sparkle Ed25519 签名。模型按需下载。
+9.7.0 用户可通过应用内「检查更新」获取本版本。9.6.10 及更早版本未配置更新源，需要手动解压 ZIP 并将 `Memozia.app` 复制到「应用程序」替换旧版。
 
-本版本完成更新配置、隐私重新同意和安装保护相关测试，以及 Release 构建、签名与更新包验签；未覆盖真实录音及跨版本安装的全部人工回归。
+发布验证包括完整 macOS 单元测试、Release 构建、实际附件 SHA-256 与 Ed25519 验签、解包后的代码签名和启动检查，以及公开 stable 更新源的版本发现检查。未覆盖真实录音中的跨版本安装和系统权限衔接的全部人工回归。
 ]]></description>
-            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.7.0/Memozia-v9.7.0-155-arm64.zip" length="35182247" type="application/octet-stream" sparkle:edSignature="Mo5vYzsrCZUAI1OVCCaIzpNyc8tebihDCgn/T1V3EOarTZdRTJ/06bxtbB7ekw799m+PICUzKe3nMaZPwgPfAw=="/>
+            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.7.1/Memozia-v9.7.1-156-arm64.zip" length="36513935" type="application/octet-stream" sparkle:edSignature="YaorBykoIXgqOtQplgt3WneivhkDyEAGb/cXviYl1tCZnoNY640Gjlyf65ev5P4xTX1JoHP/pUGPZKX9EAm3Bg=="/>
         </item>
     </channel>
 </rss>
