@@ -34,8 +34,14 @@ final class MenuBarController: NSObject {
             logger.error("菜单栏自定义符号资源缺失，回退为系统波形图标")
             source = NSImage(systemSymbolName: "waveform.circle.fill", accessibilityDescription: "Memozia")
         }
-        let configuration = NSImage.SymbolConfiguration(pointSize: 18, weight: .regular)
+        // 自定义 Symbol 的字号不等于可见轮廓高度：26pt 对应约 18pt 的图形，
+        // 与常见系统菜单栏图标一致。保留原生向量及模板着色。
+        let configuration = NSImage.SymbolConfiguration(pointSize: 26, weight: .regular)
         let image = source?.withSymbolConfiguration(configuration)
+        if let image {
+            // 独立状态项按完整图像框居中，不沿用面向文字排版的符号基线留白。
+            image.alignmentRect = NSRect(origin: .zero, size: image.size)
+        }
         image?.isTemplate = true
         image?.accessibilityDescription = "Memozia"
         return image
@@ -102,7 +108,9 @@ final class MenuBarController: NSObject {
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.behavior = [.removalAllowed]
-        statusItem.button?.imagePosition = .imageLeft
+        statusItem.button?.imagePosition = .imageOnly
+        statusItem.button?.alignment = .center
+        statusItem.button?.imageScaling = .scaleNone
 
         // 构建菜单
         let menu = NSMenu()
@@ -405,7 +413,7 @@ final class MenuBarController: NSObject {
         guard signature != lastRefreshSignature else { return }
         lastRefreshSignature = signature
 
-        // 1) 固定使用截图框 + 麦克风文稿的自定义 Symbol（18pt、单色模板）。
+        // 1) 固定使用 A 版柔角折页 Symbol（可见轮廓约 18pt、单色模板）。
         // 系统负责菜单栏明暗、菜单展开高亮与对比度；录音/静音状态仍由菜单文本表达。
         statusItem.button?.image = Self.menuBarImage
         // 颜色交给系统：不设 contentTintColor，保持模板图的标准主题效果
