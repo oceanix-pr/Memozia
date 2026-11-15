@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a reproducible problem in Memozia.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "Use fictional examples. Do not attach private meeting material, API keys, or unredacted diagnostics. Security reports belong in SECURITY.md."
+  - type: input
+    id: version
+    attributes:
+      label: Memozia version and build
+      placeholder: "Example: 9.7.4 (159)"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: macOS version and hardware
+      placeholder: "Example: macOS version, Apple Silicon model"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected workflow
+      options:
+        - Recording or audio import
+        - Local transcription
+        - Cloud transcription
+        - Summary or action items
+        - Screenshots or image notes
+        - Installation or updates
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the recording source and local or cloud processing choice when relevant. Use sample data.
+      placeholder: "1. Open ...\n2. Choose ...\n3. Observe ..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include a short error message or redacted screenshot if it helps.
+    validations:
+      required: true

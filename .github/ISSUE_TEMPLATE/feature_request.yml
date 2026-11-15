@@ -1,0 +1,25 @@
+name: Feature request
+description: Describe a workflow you want to improve.
+title: "[Feature] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the task and where the current workflow gets in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior
+      description: Explain the result you would expect in the app.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: How would you know it works?
+      description: A small before/after example is useful. Please use fictional content.
+    validations:
+      required: true

@@ -1,0 +1,30 @@
+name: Documentation or translation
+description: Improve a setup guide, screen label, or translated sentence.
+title: "[Docs] "
+body:
+  - type: input
+    id: location
+    attributes:
+      label: Page, screen, or string key
+    validations:
+      required: true
+  - type: input
+    id: language
+    attributes:
+      label: Language or locale
+      placeholder: "Example: English / en, Japanese / ja"
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current wording or missing step
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: Include context or a fictional screenshot when it helps explain the change.
+    validations:
+      required: true
