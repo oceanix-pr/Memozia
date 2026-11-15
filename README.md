@@ -6,7 +6,22 @@
 
 <p align="center"><strong>End-to-end local workflow · Multilingual · Native macOS</strong></p>
 
-> 本副本使用独立的 `app.memozia` 标识与 `~/Documents/Memozia/` 数据目录；更新源、反馈邮箱和签名团队尚未配置。
+<p align="center">
+  <img src="https://img.shields.io/badge/macOS-15%2B-black?logo=apple" alt="macOS 15 or later">
+  <img src="https://img.shields.io/badge/Swift-6-orange?logo=swift" alt="Swift 6">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue" alt="MIT License"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/oceanix-pr/Memozia/releases">Download / 下载</a> ·
+  <a href="https://github.com/oceanix-pr/Memozia/wiki">Wiki / 文档</a> ·
+  <a href="https://github.com/oceanix-pr/Memozia/issues">Issues / 问题反馈</a> ·
+  <a href="SECURITY.md">Security / 安全政策</a>
+</p>
+
+> 当前提供预览版安装包；支持平台、签名状态和安装步骤请查看各 [Release 说明](https://github.com/oceanix-pr/Memozia/releases)。应用使用 `app.memozia` 标识与 `~/Documents/Memozia/` 数据目录。
+>
+> Preview builds are available. Check each [release](https://github.com/oceanix-pr/Memozia/releases) for supported hardware, signing status, and installation instructions.
 
 <p align="center">
   <a href="#简体中文">简体中文</a> ·
