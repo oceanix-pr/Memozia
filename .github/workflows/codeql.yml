@@ -1,0 +1,81 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '28 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            runner: ubuntu-latest
+            build-mode: none
+          - language: python
+            runner: ubuntu-latest
+            build-mode: none
+          - language: swift
+            runner: xcode-27
+            build-mode: manual
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Prepare macOS project and locked package artifacts
+        if: matrix.language == 'swift'
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
+        run: |
+          brew install xcodegen
+          xcodegen generate
+          xcodebuild -resolvePackageDependencies -onlyUsePackageVersionsFromResolvedFile -skipPackageUpdates \
+            -project Memozia.xcodeproj -scheme Memozia \
+            -derivedDataPath "${RUNNER_TEMP}/memozia-codeql/DerivedData"
+          MEMOZIA_PACKAGE_CACHE_PATH="${RUNNER_TEMP}/memozia-codeql/DerivedData/SourcePackages" \
+            bash Scripts/fix_onnxruntime_framework.sh
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - name: Build macOS app for Swift analysis
+        if: matrix.language == 'swift'
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
+        run: >-
+          xcodebuild
+          -project Memozia.xcodeproj -scheme Memozia -configuration Debug
+          -destination 'platform=macOS'
+          -derivedDataPath "${RUNNER_TEMP}/memozia-codeql/DerivedData"
+          -onlyUsePackageVersionsFromResolvedFile -skipPackageUpdates
+          ARCHS=arm64 ONLY_ACTIVE_ARCH=YES
+          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO DEVELOPMENT_TEAM=
+          build
+
+      - name: Analyze and upload results
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
+        with:
+          category: /language:${{ matrix.language }}
