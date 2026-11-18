@@ -1,4 +1,4 @@
-name: CodeQL
+name: Security scanning
 
 on:
   push:
@@ -19,8 +19,8 @@ concurrency:
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       actions: read
@@ -30,30 +30,12 @@ jobs:
       matrix:
         include:
           - language: actions
-            runner: ubuntu-latest
             build-mode: none
           - language: python
-            runner: ubuntu-latest
             build-mode: none
-          - language: swift
-            runner: xcode-27
-            build-mode: manual
     steps:
       - name: Check out repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-
-      - name: Prepare macOS project and locked package artifacts
-        if: matrix.language == 'swift'
-        env:
-          DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
-        run: |
-          brew install xcodegen
-          xcodegen generate
-          xcodebuild -resolvePackageDependencies -onlyUsePackageVersionsFromResolvedFile -skipPackageUpdates \
-            -project Memozia.xcodeproj -scheme Memozia \
-            -derivedDataPath "${RUNNER_TEMP}/memozia-codeql/DerivedData"
-          MEMOZIA_PACKAGE_CACHE_PATH="${RUNNER_TEMP}/memozia-codeql/DerivedData/SourcePackages" \
-            bash Scripts/fix_onnxruntime_framework.sh
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
@@ -61,21 +43,67 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
 
-      - name: Build macOS app for Swift analysis
-        if: matrix.language == 'swift'
-        env:
-          DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
-        run: >-
-          xcodebuild
-          -project Memozia.xcodeproj -scheme Memozia -configuration Debug
-          -destination 'platform=macOS'
-          -derivedDataPath "${RUNNER_TEMP}/memozia-codeql/DerivedData"
-          -onlyUsePackageVersionsFromResolvedFile -skipPackageUpdates
-          ARCHS=arm64 ONLY_ACTIVE_ARCH=YES
-          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO DEVELOPMENT_TEAM=
-          build
-
       - name: Analyze and upload results
         uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
         with:
           category: /language:${{ matrix.language }}
+
+  swift-source:
+    name: Analyze Swift source patterns
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Check out pinned source scanner
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: MobSF/mobsfscan
+          ref: e48f780d04c4fdd38ec07c1de3d2210513f48ecd # 1.2.0
+          path: .security-tools/mobsfscan
+          persist-credentials: false
+
+      - name: Set up scanner Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned scanner dependencies
+        run: python -m pip install --disable-pip-version-check -r .security-tools/mobsfscan/requirements.txt
+
+      # CodeQL traced Swift extraction does not support the app's Xcode 27 SDK.
+      # Reuse Swift/Objective-C source rules without changing app build targets.
+      - name: Scan Swift source and produce SARIF
+        env:
+          SEMGREP_SEND_METRICS: 'off'
+        run: |
+          python -I - <<'PY'
+          import pathlib
+          import sys
+
+          root = pathlib.Path.cwd()
+          sys.path.insert(0, str(root / '.security-tools/mobsfscan'))
+          from mobsfscan import __version__
+          from mobsfscan.mobsfscan import MobSFScan
+          from mobsfscan.formatters.sarif import sarif_output
+
+          paths = ['Memozia', 'MemoziaMCPHelper']
+          results = MobSFScan(paths, json=True).scan()
+          if results.get('errors'):
+              raise SystemExit('Swift source scan failed: ' + repr(results['errors']))
+          sarif_output('swift-security.sarif', results, __version__, paths)
+          count = sum(max(1, len(item.get('files', []))) for item in results.get('results', {}).values())
+          print(f'Swift source scan completed: {count} findings; report: swift-security.sarif')
+          PY
+
+      - name: Upload Swift source findings
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4
+        with:
+          sarif_file: swift-security.sarif
+          category: /language:swift-source
+          wait-for-processing: true

@@ -24,7 +24,7 @@ Do not upload real meeting recordings, transcripts, screenshots, API keys, acces
 
 - [Security advisories][advisories] contains published vulnerability notices and remediation guidance.
 - **Dependabot** reports known vulnerabilities in recognized dependencies. GitHub Actions dependency updates are proposed weekly.
-- **CodeQL** analyzes Swift, Python, and GitHub Actions on pushes to the default branch, pull requests, a weekly schedule, and manual runs.
+- **Code scanning** uses CodeQL for Python and GitHub Actions, and mobsfscan for Swift source security patterns. Checks run on pushes to the default branch, pull requests, a weekly schedule, and manual runs.
 - **Secret scanning and push protection** detect potential credential exposure in repository content and incoming pushes.
 
 See the [security overview][security-overview] for current status and findings.
@@ -57,7 +57,7 @@ For ordinary bugs, feature requests, or translation feedback, use the [issue for
 
 - [安全公告][advisories]提供已公开的漏洞通知与修复建议。
 - **Dependabot** 对已识别依赖中的已知漏洞发出告警，并每周提出 GitHub Actions 依赖更新建议。
-- **CodeQL** 在默认分支推送、PR、每周定时及手动运行时分析 Swift、Python 和 GitHub Actions。
+- **代码扫描**通过 CodeQL 分析 Python 和 GitHub Actions，通过 mobsfscan 检查 Swift 源码中的安全模式；在默认分支推送、PR、每周定时及手动运行时执行。
 - **密钥扫描与推送保护**识别仓库内容及推送中潜在的凭据泄露。
 
 当前状态与检查结果见[安全总览][security-overview]。
@@ -90,7 +90,7 @@ For ordinary bugs, feature requests, or translation feedback, use the [issue for
 
 - [安全公告][advisories]提供已公開的漏洞通知與修復建議。
 - **Dependabot** 針對已識別相依套件中的已知漏洞發出警示，並每週提出 GitHub Actions 相依項目更新建議。
-- **CodeQL** 在預設分支推送、PR、每週排程及手動執行時分析 Swift、Python 和 GitHub Actions。
+- **程式碼掃描**透過 CodeQL 分析 Python 和 GitHub Actions，透過 mobsfscan 檢查 Swift 原始碼中的安全模式；在預設分支推送、PR、每週排程及手動執行時執行。
 - **機密掃描與推送保護**識別儲存庫內容及推送中可能洩露的憑證。
 
 目前狀態與檢查結果請見[安全總覽][security-overview]。
@@ -123,7 +123,7 @@ GitHub にサインインし、[Memozia の非公開脆弱性報告フォーム]
 
 - [セキュリティアドバイザリ][advisories]で、公開された脆弱性情報と対処方法を確認できます。
 - **Dependabot** は、認識された依存関係の既知の脆弱性を通知し、GitHub Actions の依存関係の更新を毎週提案します。
-- **CodeQL** は、デフォルトブランチへのプッシュ、PR、週次スケジュール、手動実行時に Swift、Python、GitHub Actions を分析します。
+- **コードスキャン**では、CodeQL で Python と GitHub Actions を分析し、mobsfscan で Swift ソースの潜在的な脆弱性パターンを検査します。デフォルトブランチへのプッシュ、PR、週次スケジュール、手動実行時に動作します。
 - **シークレットスキャンとプッシュ保護**は、リポジトリの内容やプッシュに含まれる認証情報の漏えいを検出します。
 
 現在の状態と検出結果は[セキュリティの概要][security-overview]で確認してください。
@@ -156,7 +156,7 @@ GitHub에 로그인한 뒤 [Memozia 비공개 취약점 신고 양식][private-r
 
 - [보안 권고][advisories]에서 공개된 취약점 안내와 해결 방법을 확인할 수 있습니다.
 - **Dependabot**은 인식된 의존성의 알려진 취약점을 알리고, 매주 GitHub Actions 의존성 업데이트를 제안합니다.
-- **CodeQL**은 기본 브랜치에 푸시할 때, PR, 주간 일정 및 수동 실행 시 Swift, Python, GitHub Actions를 분석합니다.
+- **코드 검사**는 CodeQL로 Python과 GitHub Actions를 분석하고, mobsfscan으로 Swift 소스의 잠재적 보안 취약 패턴을 검사합니다. 기본 브랜치에 푸시할 때, PR, 주간 일정 및 수동 실행 시 수행됩니다.
 - **비밀 검사와 푸시 보호**는 저장소 내용과 푸시에 포함된 인증 정보의 잠재적 유출을 탐지합니다.
 
 현재 상태와 검사 결과는 [보안 개요][security-overview]에서 확인해 주세요.
@@ -189,7 +189,7 @@ No subas grabaciones reales de reuniones, transcripciones, capturas de pantalla,
 
 - Los [avisos de seguridad][advisories] muestran vulnerabilidades publicadas y orientaciones para corregirlas.
 - **Dependabot** avisa de vulnerabilidades conocidas en las dependencias reconocidas y propone cada semana actualizaciones de las dependencias de GitHub Actions.
-- **CodeQL** analiza Swift, Python y GitHub Actions en los cambios enviados a la rama predeterminada, las solicitudes de incorporación, las ejecuciones semanales y las ejecuciones manuales.
+- **El análisis de código** utiliza CodeQL para Python y GitHub Actions, y mobsfscan para buscar patrones de riesgo en el código Swift. Se ejecuta con los cambios enviados a la rama predeterminada, las solicitudes de incorporación, las ejecuciones semanales y las ejecuciones manuales.
 - **El análisis de secretos y la protección de envíos** detectan posibles filtraciones de credenciales en el repositorio y en los cambios enviados.
 
 Consulta el estado y los resultados en la [vista general de seguridad][security-overview].
@@ -222,7 +222,7 @@ Ne téléversez pas d'enregistrements réels de réunions, de transcriptions, de
 
 - Les [avis de sécurité][advisories] présentent les vulnérabilités publiées et les mesures correctives.
 - **Dependabot** signale les vulnérabilités connues des dépendances reconnues et propose chaque semaine des mises à jour des dépendances GitHub Actions.
-- **CodeQL** analyse Swift, Python et GitHub Actions lors des envois vers la branche par défaut, des pull requests, des exécutions hebdomadaires et des exécutions manuelles.
+- **L'analyse du code** utilise CodeQL pour Python et GitHub Actions, et mobsfscan pour rechercher des motifs à risque dans le code Swift. Elle s'exécute lors des envois vers la branche par défaut, des pull requests, des exécutions hebdomadaires et des exécutions manuelles.
 - **L'analyse des secrets et la protection des envois** détectent les fuites potentielles d'identifiants d'accès dans le dépôt et les modifications envoyées.
 
 Consultez l'état et les résultats dans la [vue d'ensemble de la sécurité][security-overview].
