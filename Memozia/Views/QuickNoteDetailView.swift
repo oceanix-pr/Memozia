@@ -359,7 +359,7 @@ struct QuickNoteDetailView: View {
                     // 编辑模式查找（⌘F）/替换（⌘R）支持
                     .textFindReplace(text: $textDraft)
             } else {
-                MarkdownView(markdown: text, preservesSoftLineBreaks: true, bodyFont: .body)
+                MarkdownView(markdown: text, preservesSoftLineBreaks: true)
                     .padding(12)
                     .background(.quaternary.opacity(0.3))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
