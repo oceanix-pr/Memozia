@@ -3,25 +3,23 @@
     <channel>
         <title>Memozia</title>
         <item>
-            <title>9.8.1</title>
-            <pubDate>Wed, 18 Nov 2026 18:08:32 +0800</pubDate>
-            <sparkle:version>161</sparkle:version>
-            <sparkle:shortVersionString>9.8.1</sparkle:shortVersionString>
+            <title>9.8.2</title>
+            <pubDate>Wed, 18 Nov 2026 21:10:59 +0800</pubDate>
+            <sparkle:version>162</sparkle:version>
+            <sparkle:shortVersionString>9.8.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.1（161）
+            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.2 (162)
 
-- 修复内建三麦克风阵列及其他多声道输入在采样率协商时无法启动录音的问题，保留实际输入声道与声道顺序。
-- 录音启动期间显示「正在启动录音…」，工具栏、菜单栏和快捷键共同阻止重复启动，避免将启动等待误报为「已有录音正在进行」。启动失败后可以重新尝试。
-- 保留更新后的权限准备流程，并补齐启动状态的 21 种语言文案。
+- Increase the body text size in Quick Notes' Text Content section to match summaries, including paragraphs, lists, and block quotes.
 
-本版本是适用于 Apple Silicon（arm64）和 macOS 15 或以上的未公证预览版。应用使用 ad-hoc 签名并保留 Hardened Runtime，更新 ZIP 另经 Sparkle Ed25519 签名。
+This is an unnotarized preview for Apple Silicon (arm64) running macOS 15 or later. The app is ad-hoc signed with Hardened Runtime enabled, and the update ZIP is separately signed with Sparkle Ed25519.
 
-9.7.0 及以上版本可在应用内检查更新。首次安装或从更早版本升级时，请解压 ZIP 并将 `Memozia.app` 复制到「应用程序」。
+Memozia 9.7.0 and later can check for this update in the app. For a first installation or an upgrade from an earlier version, extract the ZIP and copy `Memozia.app` to Applications.
 
-验证范围：按本次要求未执行全量回归；三/四声道文件写入与回读、启动防重、取消、失败后重试及相关权限准备的定向测试通过。真实麦克风连续启停用例因测试宿主授权不匹配被跳过；真实采集、录音中安装、后台交接、保存失败及升级后权限保持的人工场景尚未完成。
+Validation: the full macOS unit suite completed successfully (548 passed, 7 environment-gated tests skipped), including Markdown parsing/rendering and update installation safeguards. The Release build and embedded-framework verification passed. Manual UI checks, live capture, installation during recording, actual worker handoff, and an in-place upgrade with permission retention were not exercised end to end.
 ]]></description>
-            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.1/Memozia-v9.8.1-161-arm64.zip" length="35931771" type="application/octet-stream" sparkle:edSignature="4yNsJ5RxnPMwDHia/iZc0cSJjDCIuNT1Wch6wTgPr+inGGIMCpGqPX/fAj9yrR18zyoXi7lNyF97YOfmr/5hBQ=="/>
+            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.2/Memozia-v9.8.2-162-arm64.zip" length="35931771" type="application/octet-stream" sparkle:edSignature="gqqoiysBELONQUcTssJqtqM7gqDBiaBGI0MkAEWnLgyitCLR79+J3C7Eq1UZJwi3I6sTUjI41WQnH58cxy6wBQ=="/>
         </item>
     </channel>
 </rss>
