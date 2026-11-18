@@ -1,0 +1,8 @@
+---
+- ignore-rules:
+    # Memozia is a macOS-only desktop app; UIKit keyboard controls do not apply.
+    - ios_keyboard_cache
+    - ios_custom_keyboard_disabled
+    - ios_jailbreak_detect
+    # The app's MIT-licensed source is intentionally available for inspection.
+    - ios_detect_reversing

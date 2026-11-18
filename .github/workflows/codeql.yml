@@ -95,7 +95,7 @@ jobs:
           from mobsfscan.formatters.sarif import sarif_output
 
           paths = ['Memozia', 'MemoziaMCPHelper']
-          results = MobSFScan(paths, json=True).scan()
+          results = MobSFScan(paths, json=True, config='.github/mobsf.yml').scan()
           diagnostics = results.get('errors', [])
           fatal = [item for item in diagnostics if not isinstance(item, dict)
                    or str(item.get('level', 'error')).lower() not in {'warn', 'warning', 'info'}]
