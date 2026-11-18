@@ -3,24 +3,25 @@
     <channel>
         <title>Memozia</title>
         <item>
-            <title>9.8.0</title>
-            <pubDate>Wed, 18 Nov 2026 12:27:08 +0800</pubDate>
-            <sparkle:version>160</sparkle:version>
-            <sparkle:shortVersionString>9.8.0</sparkle:shortVersionString>
+            <title>9.8.1</title>
+            <pubDate>Wed, 18 Nov 2026 18:08:32 +0800</pubDate>
+            <sparkle:version>161</sparkle:version>
+            <sparkle:shortVersionString>9.8.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.0（160）
+            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.1（161）
 
-- 快捷笔记的「文字内容」现在可以显示 Markdown 标题、列表、引用、表格和代码块。普通换行保留，编辑和复制均使用原文。
-- 改善 OpenAI 兼容接口和 Claude 的模型请求处理，覆盖总结、图片理解和待办提取。会议总结沿用原始时间戳，旧总结里的录音跳转链接会显示为普通时间。
-- 补齐隐私政策、设置和错误提示的多语言显示。简体与繁体中文界面使用各自的产品名称。
-- 应用包补齐第三方许可与版权声明。说话人分离使用同版本的 Sherpa 官方无 TTS 构建，笔记转语音由 macOS 系统音色在本机合成。
+- 修复内建三麦克风阵列及其他多声道输入在采样率协商时无法启动录音的问题，保留实际输入声道与声道顺序。
+- 录音启动期间显示「正在启动录音…」，工具栏、菜单栏和快捷键共同阻止重复启动，避免将启动等待误报为「已有录音正在进行」。启动失败后可以重新尝试。
+- 保留更新后的权限准备流程，并补齐启动状态的 21 种语言文案。
 
 本版本是适用于 Apple Silicon（arm64）和 macOS 15 或以上的未公证预览版。应用使用 ad-hoc 签名并保留 Hardened Runtime，更新 ZIP 另经 Sparkle Ed25519 签名。
 
 9.7.0 及以上版本可在应用内检查更新。首次安装或从更早版本升级时，请解压 ZIP 并将 `Memozia.app` 复制到「应用程序」。
+
+验证范围：按本次要求未执行全量回归；三/四声道文件写入与回读、启动防重、取消、失败后重试及相关权限准备的定向测试通过。真实麦克风连续启停用例因测试宿主授权不匹配被跳过；真实采集、录音中安装、后台交接、保存失败及升级后权限保持的人工场景尚未完成。
 ]]></description>
-            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.0/Memozia-v9.8.0-160-arm64.zip" length="35928522" type="application/octet-stream" sparkle:edSignature="X+D+U4rGSM1ApXs6kWMA4+kphmiuDM8nB4IVnfQAK5NRKgD+FhnpISutvfLCehpks/V/0cSz9cudFGMrjhjgCw=="/>
+            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.1/Memozia-v9.8.1-161-arm64.zip" length="35931771" type="application/octet-stream" sparkle:edSignature="4yNsJ5RxnPMwDHia/iZc0cSJjDCIuNT1Wch6wTgPr+inGGIMCpGqPX/fAj9yrR18zyoXi7lNyF97YOfmr/5hBQ=="/>
         </item>
     </channel>
 </rss>
