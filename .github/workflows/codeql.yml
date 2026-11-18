@@ -83,6 +83,8 @@ jobs:
           SEMGREP_SEND_METRICS: 'off'
         run: |
           python -I - <<'PY'
+          import json
+          import os
           import pathlib
           import sys
 
@@ -94,11 +96,36 @@ jobs:
 
           paths = ['Memozia', 'MemoziaMCPHelper']
           results = MobSFScan(paths, json=True).scan()
-          if results.get('errors'):
-              raise SystemExit('Swift source scan failed: ' + repr(results['errors']))
-          sarif_output('swift-security.sarif', results, __version__, paths)
+          diagnostics = results.get('errors', [])
+          fatal = [item for item in diagnostics if not isinstance(item, dict)
+                   or str(item.get('level', 'error')).lower() not in {'warn', 'warning', 'info'}]
+          if fatal:
+              raise SystemExit(f'Swift source scan failed with {len(fatal)} execution errors: {fatal!r}')
+
+          notifications = []
+          for item in diagnostics:
+              kind = item.get('type', 'Parser warning')
+              if isinstance(kind, list):
+                  kind = kind[0]
+              message = f"Swift source coverage: {kind} in {item.get('path', 'unknown file')}"
+              escaped = message.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print(f'::warning::{escaped}')
+              notifications.append({'level': 'warning', 'message': {'text': message}})
+
+          report_path = pathlib.Path('swift-security.sarif')
+          sarif_output(str(report_path), results, __version__, paths)
+          report = json.loads(report_path.read_text(encoding='utf-8'))
+          report['runs'][0]['invocations'][0]['toolExecutionNotifications'] = notifications
+          report_path.write_text(json.dumps(report), encoding='utf-8')
           count = sum(max(1, len(item.get('files', []))) for item in results.get('results', {}).values())
-          print(f'Swift source scan completed: {count} findings; report: swift-security.sarif')
+          summary = f'Swift source scan: {count} findings; {len(diagnostics)} parser coverage warnings.'
+          print(summary)
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as output:
+              output.write('### Swift source security patterns\n\n' + summary + '\n\n')
+              if notifications:
+                  output.write('Files with parser warnings are not fully covered by these rules.\n\n')
+                  for item in notifications:
+                      output.write('- ' + item['message']['text'] + '\n')
           PY
 
       - name: Upload Swift source findings
