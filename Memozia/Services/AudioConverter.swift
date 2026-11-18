@@ -259,7 +259,7 @@ struct AudioConverter {
         // 导出“没报错但产物为空”也会被当成有效录音：以时长 > 0 作为最低可用门槛
         let exportedSeconds = (try? await getDuration(of: outputURL)) ?? 0
         guard exportedSeconds > 0 else {
-            throw AudioConverterError.conversionFailed("抽取结果为 0 秒音轨")
+            throw AudioConverterError.conversionFailed(String(localized: "抽取结果为 0 秒音轨"))
         }
         return outputURL
     }
@@ -276,7 +276,7 @@ struct AudioConverter {
         let audioAsset = AVURLAsset(url: audioURL)
         guard let videoTrack = try await videoAsset.loadTracks(withMediaType: .video).first,
               let audioTrack = try await audioAsset.loadTracks(withMediaType: .audio).first else {
-            throw AudioConverterError.conversionFailed("缺少视频或混音轨，无法混流")
+            throw AudioConverterError.conversionFailed(String(localized: "缺少视频或混音轨，无法混流"))
         }
         let duration = try await videoAsset.load(.duration)
         let videoFormatHint = try await videoTrack.load(.formatDescriptions).first
@@ -310,7 +310,7 @@ struct AudioConverter {
             // startWriting 不抛错：失败经 status/.error 暴露
             writer.startWriting()
             guard writer.status == .writing else {
-                throw AudioConverterError.conversionFailed("混流写入器启动失败：\(writer.error?.localizedDescription ?? "未知")")
+                throw AudioConverterError.conversionFailed(String(localized: "混流写入器启动失败：\(writer.error?.localizedDescription ?? String(localized: "未知"))"))
             }
             writer.startSession(atSourceTime: .zero)
             guard videoReader.startReading(), audioReader.startReading() else {
@@ -360,11 +360,11 @@ struct AudioConverter {
                 throw AudioConverterError.conversionFailed(boxed.value.localizedDescription)
             }
             guard w.status == .completed else {
-                throw AudioConverterError.conversionFailed(w.error?.localizedDescription ?? "写入器异常结束")
+                throw AudioConverterError.conversionFailed(w.error?.localizedDescription ?? String(localized: "写入器异常结束"))
             }
             let muxedSeconds = (try? await getDuration(of: outputURL)) ?? 0
             guard muxedSeconds > 0 else {
-                throw AudioConverterError.conversionFailed("混流产物为 0 秒")
+                throw AudioConverterError.conversionFailed(String(localized: "混流产物为 0 秒"))
             }
 
             // 同目录临时文件 → 原子替换原路径，条目/扫描识别约定（{base}_video.mp4）不变

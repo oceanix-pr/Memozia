@@ -3,7 +3,11 @@ import Observation
 
 /// Only encrypted values and scalar metadata cross the actor boundary.
 enum FullTextSearch {
-    struct Field: Sendable { let value: String; let seconds: Double? }
+    struct Field: Sendable {
+        let value: String
+        let seconds: Double?
+        var isSummary = false
+    }
     struct Entry: Sendable { let folder: String; let title: String; let fields: [Field] }
     struct Hit: Sendable { let snippet: String; let seconds: Double? }
     struct Result: Sendable { var hits: [String: Hit] = [:]; var unreadable = 0 }
@@ -18,7 +22,8 @@ enum FullTextSearch {
                 try Task.checkCancellation()
                 do {
                     let plain = try EncryptionService.decryptForExternalAccess(field.value)
-                    if let found = match(query, in: plain, seconds: field.seconds), hit == nil || (hit?.seconds == nil && found.seconds != nil) {
+                    let text = field.isSummary ? SummarySources.removingSeekLinks(from: plain) : plain
+                    if let found = match(query, in: text, seconds: field.seconds), hit == nil || (hit?.seconds == nil && found.seconds != nil) {
                         hit = found
                     }
                 } catch { result.unreadable += 1 }

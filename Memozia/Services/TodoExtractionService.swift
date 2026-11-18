@@ -78,10 +78,6 @@ enum TodoExtractionService {
         onProgress: @escaping @Sendable (Progress) -> Void = { _ in },
         session: URLSession? = nil
     ) async throws -> TodoDocument {
-        guard let url = URL(string: config.chatCompletionsURL) else {
-            throw LLMError.invalidURL
-        }
-        // 传输许可来自实际端点，而非模型标记。
         try LLMService.validateSecureURL(for: config)
 
         // Public entry point already partitions the entire input; do not truncate a part.
@@ -95,22 +91,15 @@ enum TodoExtractionService {
             ? baseSystemPrompt + "\n\n" + nonMeetingClause
             : baseSystemPrompt
 
-        let requestBody: [String: Any] = [
-            "model": config.modelName,
-            "messages": [
-                ["role": "system", "content": piiScrubbed
-                    ? basePrompt + "\n\n" + LLMService.piiPlaceholderRule
-                    : basePrompt],
-                ["role": "user", "content": userPrompt(content: cappedContent)]
-            ],
-            "stream": false,
-            "temperature": 0.3,
-            "max_tokens": 65536
-        ]
+        let request = ChatCompletionRequest(
+            config: config,
+            systemPrompt: piiScrubbed ? basePrompt + "\n\n" + LLMService.piiPlaceholderRule : basePrompt,
+            userContent: userPrompt(content: cappedContent), stream: config.isLocal, temperature: 0.3
+        )
 
         // 本地模型不重试
         if config.isLocal {
-            return try await performRequest(url: url, config: config, body: requestBody, source: source,
+            return try await performRequest(request, source: source,
                                             onProgress: onProgress, session: session)
         }
 
@@ -118,7 +107,7 @@ enum TodoExtractionService {
         var lastError: Error?
         for attempt in 1...maxRetries {
             do {
-                return try await performRequest(url: url, config: config, body: requestBody, source: source,
+                return try await performRequest(request, source: source,
                                                 onProgress: onProgress, session: session)
             } catch is CancellationError {
                 throw CancellationError()
@@ -160,42 +149,32 @@ enum TodoExtractionService {
                                      onProgress: onProgress, session: session)
         }
 
-        guard let url = URL(string: config.chatCompletionsURL) else {
-            throw LLMError.invalidURL
-        }
         // 图片同样服从独立端点策略，但不能宣称做了文本脱敏。
         try LLMService.validateSecureURL(for: config)
 
-        // 图片准备（解码 + 降采样 + base64 + JSON 序列化）显式移到后台执行器：
-        // 1) nonisolated async 函数在第一个挂起点之前**沿用调用方执行器**（这里通常是
-        //    MainActor），旧写法等于把 4K 截图的整张 base64 编码压在主线程上；
-        // 2) 旧版完全不做降采样，且原图 + base64 + dataURL 三份并存再被
-        //    JSONSerialization 复制一份，批量拆解时几百 MB 级峰值内存。
-        //    现在复用 LLMService 的 2048px JPEG 降采样（与总结路径同一实现）。
-        let model = config.modelName
-        let prompt = PromptTemplateStore.resolved(.todoExtraction)
-        let bodyData = try await Task.detached(priority: .userInitiated) { () throws -> Data in
+        // 大图的解码、降采样和 base64 编码在后台完成，复用截图总结的图片处理。
+        let encodeImage = Task.detached(priority: .userInitiated) {
+            try Task.checkCancellation()
             let payload = LLMService.downsampleForLLM(imageData: imageData)
-            let dataURL = "data:image/\(payload.format);base64,\(payload.data.base64EncodedString())"
-            // OpenAI 多模态消息格式：content 为数组
-            let requestBody: [String: Any] = [
-                "model": model,
-                "messages": [
-                    ["role": "system", "content": prompt],
-                    ["role": "user", "content": [
-                        ["type": "text", "text": "请从以下图片中提取待办事项："],
-                        ["type": "image_url", "image_url": ["url": dataURL]]
-                    ]]
-                ],
-                "stream": false,
-                "temperature": 0.3,
-                "max_tokens": 65536
-            ]
-            return try JSONSerialization.data(withJSONObject: requestBody)
-        }.value
+            try Task.checkCancellation()
+            return "data:image/\(payload.format);base64,\(payload.data.base64EncodedString())"
+        }
+        let dataURL = try await withTaskCancellationHandler {
+            try await encodeImage.value
+        } onCancel: {
+            encodeImage.cancel()
+        }
+        let userContent: [[String: Any]] = [
+            ["type": "text", "text": "请从以下图片中提取待办事项："],
+            ["type": "image_url", "image_url": ["url": dataURL]]
+        ]
+        let request = ChatCompletionRequest(
+            config: config, systemPrompt: PromptTemplateStore.resolved(.todoExtraction),
+            userContent: userContent, stream: config.isLocal, temperature: 0.3
+        )
 
         // 图片尚无可逐字校验的文本来源，不能接受模型编造的来源字段。
-        var document = try await performRequest(url: url, config: config, bodyData: bodyData, source: source,
+        var document = try await performRequest(request, source: source,
                                                 onProgress: onProgress, session: session)
         for index in document.items.indices {
             document.items[index].evidenceQuote = nil
@@ -209,62 +188,34 @@ enum TodoExtractionService {
     // MARK: - 请求执行
 
     private static func performRequest(
-        url: URL,
-        config: LLMConfigSnapshot,
-        body: [String: Any],
-        source: String,
-        onProgress: @escaping @Sendable (Progress) -> Void,
-        session: URLSession?
-    ) async throws -> TodoDocument {
-        try await performRequest(
-            url: url,
-            config: config,
-            bodyData: try JSONSerialization.data(withJSONObject: body),
-            source: source,
-            onProgress: onProgress,
-            session: session
-        )
-    }
-
-    /// 已序列化请求体入口：图片待办用它在后台完成解码/降采样/base64/序列化，
-    /// 避免这段重活落在调用方（MainActor）的执行器上
-    private static func performRequest(
-        url: URL,
-        config: LLMConfigSnapshot,
-        bodyData: Data,
+        _ request: ChatCompletionRequest,
         source: String,
         onProgress: @escaping @Sendable (Progress) -> Void,
         session suppliedSession: URLSession?
     ) async throws -> TodoDocument {
+        let config = request.config
         let session = suppliedSession ?? makeSession(isLocal: config.isLocal)
         defer { if suppliedSession == nil { session.invalidateAndCancel() } }
         return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
             let capabilities = try await LocalLLMCapabilities.discover(config: config, session: session)
-            guard var body = try JSONSerialization.jsonObject(with: bodyData) as? [String: Any] else {
-                throw LLMError.parseError
-            }
-            if config.isLocal { body["stream"] = true }
-            if let off = capabilities.reasoningOffValue { body["reasoning_effort"] = off }
+            var request = request
+            request.reasoningEffort = capabilities.reasoningOffValue
             if capabilities.supportsJSONSchema {
-                body["response_format"] = responseFormat
-                body["stream_options"] = ["include_usage": true]
-                if var messages = body["messages"] as? [[String: Any]],
-                   let system = messages.first?["content"] as? String {
-                    messages[0]["content"] = system + "\n结构化输出中，没有依据的可选字段填 null，不得编造值。"
-                    body["messages"] = messages
-                }
+                request.responseFormat = responseFormat
+                request.includeUsage = true
+                request.systemPrompt += "\n结构化输出中，没有依据的可选字段填 null，不得编造值。"
             }
             do {
-                return try await sendRequest(url: url, config: config, body: body, source: source,
-                                             session: session, onProgress: onProgress)
+                return try await sendRequest(request, source: source, session: session, onProgress: onProgress)
             } catch LLMError.apiError(let status, let message) where shouldRetryWithoutSchema(
-                status: status, message: message, usedSchema: body["response_format"] != nil
+                status: status, message: message, usedSchema: request.responseFormat != nil
             ) {
                 // 只对明确拒绝格式参数的服务协商一次，保留已验证的关闭思考参数。
                 logger.debug("本地服务拒绝 JSON Schema，移除格式参数重试一次")
-                body.removeValue(forKey: "response_format")
-                return try await sendRequest(url: url, config: config, body: body, source: source,
-                                             session: session, onProgress: onProgress)
+                request.responseFormat = nil
+                request.includeUsage = false
+                return try await sendRequest(request, source: source, session: session, onProgress: onProgress)
             }
         } onCancel: {
             // 每次生产调用独占 session，取消会中断等待响应头、流读取及能力探测。
@@ -281,41 +232,19 @@ enum TodoExtractionService {
     }
 
     private static func sendRequest(
-        url: URL, config: LLMConfigSnapshot, body: [String: Any], source: String,
+        _ request: ChatCompletionRequest, source: String,
         session: URLSession, onProgress: @escaping @Sendable (Progress) -> Void
     ) async throws -> TodoDocument {
-        try Task.checkCancellation()
         // 在实际发送前统一补充系统时间，覆盖文字、OCR 与图片，也覆盖云端重试和
-        // Schema 协商重试。放在自定义模板之后，避免模板中的示例日期充当「现在」。
-        guard var messages = body["messages"] as? [[String: Any]],
-              messages.first?["role"] as? String == "system",
-              let prompt = messages.first?["content"] as? String else {
-            throw LLMError.parseError
-        }
-        messages[0]["content"] = prompt + "\n\n" + CurrentTimeService.promptContext()
-        var requestBody = body
-        requestBody["messages"] = messages
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if !config.apiKey.isEmpty {
-            request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
-        }
-        request.timeoutInterval = config.isLocal ? 180 : 120
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        // 参数协商。放在自定义模板之后，避免模板中的示例日期充当「现在」。
+        let promptSuffix = { "\n\n" + CurrentTimeService.promptContext() }
+        let config = request.config
 
         var state = ResponseState()
         let started = Date()
         do {
             if config.isLocal {
-                let (bytes, response) = try await session.bytes(for: request, delegate: EndpointPolicy.RedirectGuard.shared)
-                guard let http = response as? HTTPURLResponse else { throw LLMError.invalidResponse }
-                if http.statusCode != 200 {
-                    var data = Data()
-                    for try await byte in bytes { data.append(byte) }
-                    throw LLMError.apiError(statusCode: http.statusCode, message: String(decoding: data, as: UTF8.self))
-                }
+                let (bytes, http) = try await request.bytes(timeout: 180, session: session, promptSuffix: promptSuffix)
                 if http.value(forHTTPHeaderField: "Content-Type")?.lowercased().contains("text/event-stream") == true {
                     for try await line in bytes.lines {
                         try Task.checkCancellation()
@@ -335,11 +264,7 @@ enum TodoExtractionService {
                     try state.receive(payload: String(decoding: data, as: UTF8.self), streaming: false)
                 }
             } else {
-                let (data, response) = try await session.data(for: request, delegate: EndpointPolicy.RedirectGuard.shared)
-                guard let http = response as? HTTPURLResponse else { throw LLMError.invalidResponse }
-                guard http.statusCode == 200 else {
-                    throw LLMError.apiError(statusCode: http.statusCode, message: String(decoding: data, as: UTF8.self))
-                }
+                let data = try await request.data(timeout: 120, session: session, promptSuffix: promptSuffix)
                 try state.receive(payload: String(decoding: data, as: UTF8.self), streaming: false)
             }
             try Task.checkCancellation()

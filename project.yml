@@ -36,8 +36,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "9.7.4"
-    CURRENT_PROJECT_VERSION: "159"
+    MARKETING_VERSION: "9.8.0"
+    CURRENT_PROJECT_VERSION: "160"
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     DEAD_CODE_STRIPPING: YES
     ENABLE_USER_SCRIPT_SANDBOXING: YES
@@ -55,6 +55,13 @@ targets:
         excludes:
           - "Resources/**/*.md"
           - "Resources/Models/**"
+      - path: LICENSE
+        buildPhase: resources
+      - path: THIRD_PARTY_NOTICES.md
+        buildPhase: resources
+      - path: LICENSES
+        type: folder
+        buildPhase: resources
     info:
       path: Memozia/Resources/Info.plist
       properties:
@@ -119,8 +126,7 @@ targets:
         MEMOZIA_UNNOTARIZED_BUILD: NO
         MEMOZIA_CONTACT_EMAIL: ""
     preBuildScripts:
-      # 上游 onnxruntime shared xcframework 布局非标准（实体目录替代符号链接），
-      # 构建前规范为标准 framework 布局，否则嵌入后签名严格校验失败
+      # 准备标准 ONNX Runtime framework 布局，并将 Sherpa dylib 替换为同版本 no-TTS 构建。
       - path: Scripts/fix_onnxruntime_framework.sh
         name: Fix Onnxruntime Framework Layout
         basedOnDependencyAnalysis: false
@@ -132,8 +138,7 @@ targets:
         basedOnDependencyAnalysis: false
         inputFiles: []
         outputFiles: []
-      # 重签 Xcode Run/Test 会优先加载的构建目录动态框架，并校验
-      # SherpaOnnxC 的引用与签名；异常时直接让构建失败，避免启动即崩溃
+      # 同时校验 App 与 Xcode Run/Test 可加载的 Sherpa 副本、ONNX 引用与签名。
       - path: Scripts/verify_embedded_frameworks.sh
         name: Verify Embedded Frameworks
         basedOnDependencyAnalysis: false
@@ -155,8 +160,7 @@ targets:
       - package: KeychainAccess
       # 说话人分离（基于 pyannote segmentation 3.0 的 ONNX 导出，CPU 推理）。
       # 官方 SPM 支持近期才合入 master，故按提交固定依赖（见 packages 段）。
-      # 用 shared 动态产品：静态 onnxruntime 产物是 ar archive 非标准 framework，
-      # 嵌入时生成断链符号链接导致 CodeSign 失败；动态 dylib 产物结构标准可正常嵌入签名
+      # 用 shared 产品管理 Swift 模块、头文件与 ONNX Runtime；构建阶段替换 Sherpa dylib。
       - package: SherpaOnnx
         product: sherpa-onnx-shared
     scheme:
@@ -236,5 +240,5 @@ packages:
     url: https://github.com/k2-fsa/sherpa-onnx
     # 固定到 v1.13.6 的发布提交（原为 branch: master）：跟踪主干会让推理行为、C API
     # 与预编译产物随上游变动，发布构建不可复现；升级时显式改此 revision 并重跑
-    # 说话人分离相关回归
+    # 说话人分离相关回归，并同步 Scripts/install_sherpa_no_tts.sh 的二进制锁定信息。
     revision: 1cb484af5e69d3c7803c1eb0b3b5ab8041e0e911

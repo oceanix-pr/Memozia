@@ -24,11 +24,11 @@
 
 ### 1.2 generateSummary 主流程
 
-1. **輸入預處理**：錄音提示詞由 `SummarySources` 附上應用生成的片段時間連結；超過 `SummaryChunking.inputBudget` 的文字順序分段壓縮並歸併，所有輸入均參與，不再僅保留字首。預算按字元而非精確 token 計算；壓縮失敗或無法收斂明確報錯，分段摘要仍有資訊損失風險。
+1. `SummarySources` 為錄音提示詞附上轉寫片段的純文字時間戳記。超過 `SummaryChunking.inputBudget` 的文字按順序分段壓縮並歸併，完整輸入均參與。預算按字元計算。壓縮失敗或無法收斂時會回報錯誤，分段摘要仍可能遺失資訊。
 2. **會議/概要雙模板（使用者顯式選擇）**：錄音/影片條目總結頁提供「會議總結/概要總結」兩按鈕（已有總結時變為「重新生成會議總結/重新生成概要總結」），模板隨任務寫入 `AudioRecording.isMeeting`/`meetingJudgedBy`（manual）並隨 `.summary` 佇列條目攜帶，守護程序續跑不重新判定；舊佇列條目無欄位時用持久化判定，再無則 `detectMeeting` 文字分類兌底（保守會議，僅無按鈕入口會自動分類，如守護程序續跑 / 一鍵處理）；轉寫完成時持久化判定失效。圖片/文字筆記不變，統一走概要模板（`forceOverview`）。
    模板選擇：會議→`systemPrompt`；非會議純音訊→`overviewSystemPrompt`；非會議影片且已有畫面要點→`videoOverviewSystemPrompt`（主題模組式內容大綱：按主題聚塊保留 mm:ss 時間錨點，禁止時間線流水複述；`overviewSystemPrompt` 同步按“核心結論+主題分組”提煉重組，兩套概要模板均明確禁止“首先…接著…”式複述、按重要性取捨不追求覆蓋）。影片條目若已生成「畫面要點」（`visualSummary`），作為同時間軸佐證塊注入總結輸入（會議→視聽對照紀要）；**不會為總結自動抽幀上雲**（未經確認不傳送畫面），頁籤順序「轉寫→畫面→總結」即引導；待辦拆解跟隨條目判定欄位，非會議內容追加約束條款
 3. **本地/雲端分支** + **重試策略**：重試前呼叫 `onAttemptStart` 回撥——呼叫方**必須先清空已展示的部分結果**，否則新舊 token 重複拼接
-4. **流式回撥**：`onToken(String)` 經 TokenCoalescer 合批推送並 flush 尾塊，UI 實時渲染 Markdown
+4. `TokenCoalescer` 合批推送 `onToken(String)` 並送出最後一批，介面即時呈現 Markdown。總結在顯示、複製、匯出和儲存時將錄音跳轉網址轉換成純文字時間戳記。
 
 ### 1.3 請求構建與 SSE 解析
 
@@ -39,6 +39,8 @@ Authorization: Bearer <apiKey>
 超時：timeoutInterval = 3600（1 小時，容納長轉寫）
 max_tokens：剋制預設值（非模型理論上限）
 ```
+
+Anthropic 官方的 Chat Completions 相容端點使用 `max_tokens`。Claude 4.7 及之後的模型和 Mythos Preview 省略 `temperature`，Claude 4.5 系列的輸出預算上限為 64,000。新建 Anthropic 設定時預填 `claude-sonnet-5-5`。模型列表透過 Claude 的 `/v1/models` 取得，並帶有 `anthropic-version`。 [Claude 介面相容規範](https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk) · [Claude 模型目錄](https://platform.claude.com/docs/en/models/overview)
 
 SSE 解析：`URLSession.shared.bytes` 逐行讀取 → 識別 `data:` 字首 → 解析 `choices[0].delta.content` → 合批迴調 `onToken` → 累積完整返回文字。
 
@@ -150,13 +152,15 @@ restore(TodoDocument, mapping)          # 待辦 JSON 返回後逐欄位還原
 ## 7. 端到端資料流（總結 + 待辦）
 
 ```
-SummarySources.markdown（嚴格解密拼接，附原始片段時間連結）
+SummarySources.markdown（嚴格解密拼接，附純文字片段時間戳記）
   ↓ [shouldScrubText 且有效 enablePIIScrub]
 PIIScrubService.scrub → (scrubbedText, mapping)
   ↓
 LLMService.generateSummary(onToken: 流式渲染)
   ↓ [對映還原]
 PIIScrubService.restore(fullText, mapping)
+  ↓
+SummarySources.removingSeekLinks(from: restoredText)
   ↓
 EncryptionService 加密 → recording.summary + summary.md 落盤
   ↓

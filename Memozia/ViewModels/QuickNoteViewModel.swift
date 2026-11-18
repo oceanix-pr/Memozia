@@ -89,8 +89,8 @@ final class QuickNoteViewModel {
     @discardableResult
     func createQuickNote(from text: String, context: ModelContext) -> QuickNote? {
         guard !rejectWriteIfReadOnly(.createEntry) else { return nil }
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
+        let titleSource = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !titleSource.isEmpty else {
             showErrorMessage(String(localized: "文字内容为空"))
             return nil
         }
@@ -105,7 +105,7 @@ final class QuickNoteViewModel {
 
         // G-1: 写入 source.txt（加密存储，与数据库加密一致）
         do {
-            try EncryptionService.encryptAndWrite(trimmed, to: folderURL.appendingPathComponent("source.txt"))
+            try EncryptionService.encryptAndWrite(text, to: folderURL.appendingPathComponent("source.txt"))
         } catch {
             try? FileManager.default.removeItem(at: folderURL)
             showErrorMessage(String(localized: "写入文件失败：\(error.localizedDescription)"))
@@ -115,13 +115,13 @@ final class QuickNoteViewModel {
         // 加密文字内容存入数据库
         var encryptedText: String?
         do {
-            encryptedText = try EncryptionService.encrypt(trimmed)
+            encryptedText = try EncryptionService.encrypt(text)
         } catch {
             EncryptionService.reportEncryptionFailure(error, context: "快捷笔记文字")
-            encryptedText = trimmed
+            encryptedText = text
         }
 
-        let title = makeDefaultTitle(text: trimmed, date: now)
+        let title = makeDefaultTitle(text: titleSource, date: now)
         let note = QuickNote(
             title: title,
             textContent: encryptedText,
@@ -363,23 +363,24 @@ final class QuickNoteViewModel {
                     } ?? generated
                 }
 
-                guard !result.isEmpty else {
+                let summary = SummarySources.removingSeekLinks(from: result)
+                guard !summary.isEmpty else {
                     self.showErrorMessage(String(localized: "总结生成失败：LLM 返回了空内容。请检查模型配置或稍后重试。"))
                     return .failed
                 }
 
-                let encrypted = try EncryptionService.encrypt(result)
+                let encrypted = try EncryptionService.encrypt(summary)
                 note.summaryText = encrypted
                 note.summaryGeneratedAt = Date()
-                self.saveSummaryToFolder(result, for: note)
+                self.saveSummaryToFolder(summary, for: note)
                 let saved = PersistenceReporting.saveOrReport { try context.save() }
                 // 只有当前展示笔记才写入共享 UI 状态，避免并发串数据
-                if self.isSelectedNote(noteID) { self.summaryText = result }
+                if self.isSelectedNote(noteID) { self.summaryText = summary }
                 // 总结完成后自动生成标题并更新列表标题（与录音/截图总结后行为一致）；
                 // 仅默认标题时生效，失败仅日志，不影响总结本身
                 await self.autoAssignNoteTitle(
                     note,
-                    from: result,
+                    from: summary,
                     config: snapshot,
                     context: context,
                     experience: taskExperience
@@ -459,7 +460,8 @@ final class QuickNoteViewModel {
         let now = CFAbsoluteTimeGetCurrent()
         guard now - (noteSummaryFlushTimes[noteID] ?? 0) >= 0.1 else { return }
         noteSummaryFlushTimes[noteID] = now
-        summaryText = restoredNoteSummaryText(buffer, noteID: noteID)
+        let restored = restoredNoteSummaryText(buffer, noteID: noteID)
+        summaryText = SummarySources.removingSeekLinks(from: restored)
     }
 
     /// 重试前清空本次执行的流式缓冲；同样校验执行代次，避免清掉新请求已积累的内容
@@ -510,7 +512,8 @@ final class QuickNoteViewModel {
         isGeneratingSummary = id.map { generatingSummaryIDs.contains($0) } ?? false
         isExtractingTodos = id.map { extractingTodoIDs.contains($0) } ?? false
         if let id, generatingSummaryIDs.contains(id) {
-            summaryText = restoredNoteSummaryText(noteSummaryBuffers[id] ?? "", noteID: id)
+            let restored = restoredNoteSummaryText(noteSummaryBuffers[id] ?? "", noteID: id)
+            summaryText = SummarySources.removingSeekLinks(from: restored)
             summaryReasoningText = restoredNoteSummaryText(
                 noteSummaryReasoningBuffers[id] ?? "", noteID: id)
         } else {
@@ -525,20 +528,21 @@ final class QuickNoteViewModel {
     @discardableResult
     func updateSummary(_ text: String, for note: QuickNote, context: ModelContext) -> Bool {
         guard !rejectWriteIfReadOnly(.editSummary) else { return false }
+        let summary = SummarySources.removingSeekLinks(from: text)
         // 先生成加密结果，成功后才修改模型：旧实现把 `try? encrypt` 直接赋给字段，
         // 加密失败会把已保存的总结清成 nil（内容凭空丢失）
         let encrypted: String
         do {
             try SummaryHistory.preserve(note.summaryText, in: note.folderURL)
-            encrypted = try EncryptionService.encrypt(text)
+            encrypted = try EncryptionService.encrypt(summary)
         } catch {
             logger.error("总结加密失败，保留原内容: \(error.localizedDescription)")
             return false
         }
         note.summaryText = encrypted
         note.summaryGeneratedAt = Date()
-        summaryText = text
-        saveSummaryToFolder(text, for: note)
+        summaryText = summary
+        saveSummaryToFolder(summary, for: note)
         // 磁盘镜像（summary.md）是权威源：即使数据库保存失败，下次对账也能补写
         let saved = PersistenceReporting.saveOrReport { try context.save() }
         guard saved else {
@@ -554,7 +558,8 @@ final class QuickNoteViewModel {
         let noteID = note.id
         if generatingSummaryIDs.contains(noteID) {
             if let buffer = noteSummaryBuffers[noteID] {
-                summaryText = restoredNoteSummaryText(buffer, noteID: noteID)
+                let restored = restoredNoteSummaryText(buffer, noteID: noteID)
+                summaryText = SummarySources.removingSeekLinks(from: restored)
             } else {
                 summaryText = note.decryptedSummaryText
             }
@@ -572,20 +577,19 @@ final class QuickNoteViewModel {
     @discardableResult
     func updateTextContent(_ text: String, for note: QuickNote, context: ModelContext) -> Bool {
         guard !rejectWriteIfReadOnly(.editTextContent) else { return false }
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return false }
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
         // 先生成加密结果，成功后才修改模型：旧实现把 `try? encrypt` 直接赋给字段，
         // 加密失败会把正文清成 nil（数据库内容凭空丢失）
         let encrypted: String
         do {
-            encrypted = try EncryptionService.encrypt(trimmed)
+            encrypted = try EncryptionService.encrypt(text)
         } catch {
             logger.error("文字内容加密失败，保留原内容: \(error.localizedDescription)")
             return false
         }
         // 磁盘文件（source.txt）是权威源：写入失败就不动数据库，避免「数据库有、磁盘无」的不一致
         do {
-            try EncryptionService.encryptAndWrite(trimmed, to: note.folderURL.appendingPathComponent("source.txt"))
+            try EncryptionService.encryptAndWrite(text, to: note.folderURL.appendingPathComponent("source.txt"))
         } catch {
             logger.error("文字内容磁盘写入失败，保留原内容: \(error.localizedDescription)")
             return false
@@ -841,7 +845,7 @@ final class QuickNoteViewModel {
                     experience: taskExperience
                 )
                 guard !title.isEmpty else {
-                    self.showErrorMessage("润色标题失败：大模型返回了空内容，请重试。")
+                    self.showErrorMessage(String(localized: "润色标题失败：大模型返回了空内容，请重试。"))
                     return .failed
                 }
 
@@ -900,7 +904,7 @@ final class QuickNoteViewModel {
         guard !rejectWriteIfReadOnly(.editTodo) else { return }
         guard let document = currentTodoDocument else { return }
         guard !document.items.isEmpty else {
-            showErrorMessage("待办列表为空，无需写入")
+            showErrorMessage(String(localized: "待办列表为空，无需写入"))
             return
         }
 
@@ -908,7 +912,7 @@ final class QuickNoteViewModel {
         if !RemindersService.shared.isAuthorized {
             let granted = await RemindersService.shared.requestAccess()
             if !granted {
-                showErrorMessage("未授权提醒事项访问，无法写入待办。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中开启 Memozia，或在「应用设置 → 待办」中点击「请求授权」后重试。")
+                showErrorMessage(String(localized: "未授权提醒事项访问，无法写入待办。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中开启 Memozia，或在「应用设置 → 待办」中点击「请求授权」后重试。"))
                 return
             }
         }
@@ -929,7 +933,7 @@ final class QuickNoteViewModel {
         if result.failed > 0 {
             // 进一步判断失败是否因授权丢失
             if !RemindersService.shared.isAuthorized {
-                showErrorMessage("待办写入失败：提醒事项授权已失效。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中重新开启 Memozia 后重试。")
+                showErrorMessage(String(localized: "待办写入失败：提醒事项授权已失效。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中重新开启 Memozia 后重试。"))
             } else {
                 showErrorMessage(String(localized: "部分待办写入失败：成功 \(result.success) 个，失败 \(result.failed) 个"))
             }
@@ -951,7 +955,7 @@ final class QuickNoteViewModel {
         TodoDocument.remove(from: note.folderURL)
         currentTodoDocument = nil
         if hasDeleteFailure {
-            showErrorMessage("部分提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。")
+            showErrorMessage(String(localized: "部分提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。"))
         }
     }
 
@@ -992,7 +996,7 @@ final class QuickNoteViewModel {
                             self.currentTodoDocument = doc
                             if let d = doc { self.saveTodosToFolder(d, for: note) }
                         }
-                        self.showErrorMessage("提醒事项同步更新失败，本地已保存。可重新点击「写入提醒事项」重试。")
+                        self.showErrorMessage(String(localized: "提醒事项同步更新失败，本地已保存。可重新点击「写入提醒事项」重试。"))
                     }
                 }
             }
@@ -1011,7 +1015,7 @@ final class QuickNoteViewModel {
 
         if item.status == .exported, let identifier = item.reminderIdentifier {
             if !RemindersService.shared.deleteReminder(identifier: identifier) {
-                showErrorMessage("提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。")
+                showErrorMessage(String(localized: "提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。"))
             }
         }
 
@@ -1081,7 +1085,7 @@ final class QuickNoteViewModel {
             currentTodoDocument = nil
         }
         if hasReminderDeleteFailure {
-            showErrorMessage("部分提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。")
+            showErrorMessage(String(localized: "部分提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。"))
         }
     }
 

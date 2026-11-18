@@ -40,12 +40,22 @@ struct MarkdownTable: Equatable, Sendable {
 /// 转写、总结与 PDF 的统一块解析器。不访问数据库或 UI。
 enum TranscriptMarkdownBuilder {
     /// 取消时返回空结果；只有流式后台任务传入取消检查，常规缓存解析始终完整执行。
-    static func parseBlocks(_ markdown: String, shouldCancel: @Sendable () -> Bool = { false }) -> [TranscriptBlock] {
+    static func parseBlocks(
+        _ markdown: String,
+        preservesSoftLineBreaks: Bool = false,
+        shouldCancel: @Sendable () -> Bool = { false }
+    ) -> [TranscriptBlock] {
         parse(markdown.replacingOccurrences(of: "\r\n", with: "\n")
-            .replacingOccurrences(of: "\r", with: "\n"), nesting: 0, shouldCancel: shouldCancel)
+            .replacingOccurrences(of: "\r", with: "\n"), nesting: 0,
+            preservesSoftLineBreaks: preservesSoftLineBreaks, shouldCancel: shouldCancel)
     }
 
-    private static func parse(_ markdown: String, nesting: Int, shouldCancel: @Sendable () -> Bool) -> [TranscriptBlock] {
+    private static func parse(
+        _ markdown: String,
+        nesting: Int,
+        preservesSoftLineBreaks: Bool,
+        shouldCancel: @Sendable () -> Bool
+    ) -> [TranscriptBlock] {
         // 限制引用递归深度，异常生成的内容也不会耗尽调用栈。
         guard nesting < 32 else { return [.paragraph(text: markdown)] }
         let lines = markdown.components(separatedBy: "\n")
@@ -55,7 +65,7 @@ enum TranscriptMarkdownBuilder {
 
         func flushParagraph() {
             if !paragraph.isEmpty {
-                blocks.append(.paragraph(text: joinLines(paragraph)))
+                blocks.append(.paragraph(text: joinLines(paragraph, preservesSoftLineBreaks: preservesSoftLineBreaks)))
                 paragraph.removeAll(keepingCapacity: true)
             }
         }
@@ -116,7 +126,7 @@ enum TranscriptMarkdownBuilder {
             }
 
             if let level = setextLevel(trimmed), !paragraph.isEmpty {
-                blocks.append(.heading(level: level, text: joinLines(paragraph)))
+                blocks.append(.heading(level: level, text: joinLines(paragraph, preservesSoftLineBreaks: preservesSoftLineBreaks)))
                 paragraph.removeAll(keepingCapacity: true)
                 index += 1
                 continue
@@ -141,7 +151,9 @@ enum TranscriptMarkdownBuilder {
                     quoted.append(content)
                     index += 1
                 }
-                blocks.append(.quote(blocks: parse(quoted.joined(separator: "\n"), nesting: nesting + 1, shouldCancel: shouldCancel)))
+                let quotedBlocks = parse(quoted.joined(separator: "\n"), nesting: nesting + 1,
+                    preservesSoftLineBreaks: preservesSoftLineBreaks, shouldCancel: shouldCancel)
+                blocks.append(.quote(blocks: quotedBlocks))
                 continue
             }
 
@@ -160,12 +172,14 @@ enum TranscriptMarkdownBuilder {
                     index += 1
                 }
                 if !continuation.isEmpty {
-                    let extra = joinLines(continuation)
+                    let extra = joinLines(continuation, preservesSoftLineBreaks: preservesSoftLineBreaks)
                     switch item {
                     case .bulletItem(let text, let depth, let checked):
-                        blocks[blocks.count - 1] = .bulletItem(text: softJoin(text, extra), depth: depth, checked: checked)
+                        let content = joinLine(text, extra, lineBreak: preservesSoftLineBreaks)
+                        blocks[blocks.count - 1] = .bulletItem(text: content, depth: depth, checked: checked)
                     case .numberedItem(let number, let text, let depth):
-                        blocks[blocks.count - 1] = .numberedItem(number: number, text: softJoin(text, extra), depth: depth)
+                        let content = joinLine(text, extra, lineBreak: preservesSoftLineBreaks)
+                        blocks[blocks.count - 1] = .numberedItem(number: number, text: content, depth: depth)
                     default: break
                     }
                 }
@@ -303,7 +317,7 @@ enum TranscriptMarkdownBuilder {
         return .numberedItem(number: number, text: rest.dropFirst(2).trimmingCharacters(in: .whitespaces), depth: depth)
     }
 
-    private static func joinLines(_ lines: [String]) -> String {
+    private static func joinLines(_ lines: [String], preservesSoftLineBreaks: Bool) -> String {
         var result = ""
         var hardBreak = false
         for raw in lines {
@@ -311,15 +325,16 @@ enum TranscriptMarkdownBuilder {
             let escapedBreak = raw.reversed().prefix(while: { $0 == "\\" }).count % 2 == 1
             let nextHardBreak = raw.hasSuffix("  ") || escapedBreak
             if escapedBreak { text = String(text.dropLast()) }
-            if result.isEmpty { result = text }
-            else { result = hardBreak ? result + "\n" + text : softJoin(result, text) }
+            result = joinLine(result, text, lineBreak: hardBreak || preservesSoftLineBreaks)
             hardBreak = nextHardBreak
         }
         return result
     }
 
-    private static func softJoin(_ left: String, _ right: String) -> String {
-        guard let last = left.last, let first = right.first else { return left + right }
+    private static func joinLine(_ left: String, _ right: String, lineBreak: Bool) -> String {
+        guard let last = left.last else { return right }
+        if lineBreak { return left + "\n" + right }
+        guard let first = right.first else { return left }
         return left + (last.isCJKLike || first.isCJKLike ? "" : " ") + right
     }
 

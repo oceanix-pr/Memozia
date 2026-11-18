@@ -19,7 +19,8 @@ struct SummaryHistoryButton: View {
                         LazyVStack(alignment: .leading, spacing: 16) {
                             ForEach(revisions) { revision in
                                 DisclosureGroup {
-                                    Text(verbatim: revision.text).textSelection(.enabled)
+                                    Text(verbatim: SummarySources.removingSeekLinks(from: revision.text))
+                                        .textSelection(.enabled)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                 } label: {
                                     Text(revision.date, format: .dateTime.year().month().day().hour().minute().second())

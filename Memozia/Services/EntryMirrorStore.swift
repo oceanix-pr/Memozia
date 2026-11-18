@@ -55,9 +55,9 @@ final class EntryMirrorStore: @unchecked Sendable {
 
         var displayName: String {
             switch self {
-            case .transcript: return "转写"
-            case .summary: return "总结"
-            case .visual: return "画面要点"
+            case .transcript: return String(localized: "转写")
+            case .summary: return String(localized: "总结")
+            case .visual: return String(localized: "画面要点")
             }
         }
     }
@@ -226,7 +226,7 @@ final class EntryMirrorStore: @unchecked Sendable {
                     case .transcript(let items):
                         let data = try JSONEncoder().encode(items)
                         guard let encoded = String(data: data, encoding: .utf8) else {
-                            throw EntryMirrorStoreError(reason: "转写 JSON 无法转换为 UTF-8")
+                            throw EntryMirrorStoreError(reason: String(localized: "转写 JSON 无法转换为 UTF-8"))
                         }
                         content = encoded
                     }
@@ -244,7 +244,7 @@ final class EntryMirrorStore: @unchecked Sendable {
                 Self.discardPendingMarker(for: item.url)
                 markCompleted(item, for: key, succeeded: true, reason: nil)
             } else {
-                let reason = lastError?.localizedDescription ?? "未知错误"
+                let reason = lastError?.localizedDescription ?? String(localized: "未知错误")
                 markCompleted(item, for: key, succeeded: false, reason: reason)
                 Self.logger.fault("条目镜像写入失败（\(key.description)）：\(reason, privacy: .public)")
                 PersistenceReporting.reportSaveFailure(
@@ -400,7 +400,7 @@ final class EntryMirrorStore: @unchecked Sendable {
         let tempURL = url.deletingLastPathComponent()
             .appendingPathComponent(".\(url.lastPathComponent).tmp-\(UUID().uuidString)")
         guard fm.createFile(atPath: tempURL.path, contents: nil) else {
-            throw EntryMirrorStoreError(reason: "无法创建镜像临时文件：\(tempURL.path)")
+            throw EntryMirrorStoreError(reason: String(localized: "无法创建镜像临时文件：\(tempURL.path)"))
         }
         do {
             let handle = try FileHandle(forWritingTo: tempURL)

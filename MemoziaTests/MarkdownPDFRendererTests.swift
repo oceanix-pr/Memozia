@@ -254,6 +254,24 @@ struct MarkdownBlockParserTests {
             .paragraph(text: "第一行\n第二行\n第三行")])
     }
 
+    @Test func noteMarkdownPreservesSoftLineBreaksWithoutChangingOtherPreviews() {
+        let source = "# 会议纪要\r\n\r\n**第一行**\r\n第二行\r\n\r\n> 引用\r\n> 续行\r\n\r\n- [x] 待办\r\n  详情"
+        let memo = MarkdownParseMemo()
+
+        #expect(memo.blocks(for: source) == [
+            .heading(level: 1, text: "会议纪要"),
+            .paragraph(text: "**第一行**第二行"),
+            .quote(blocks: [.paragraph(text: "引用续行")]),
+            .bulletItem(text: "待办详情", checked: true)
+        ])
+        #expect(memo.blocks(for: source, preservesSoftLineBreaks: true) == [
+            .heading(level: 1, text: "会议纪要"),
+            .paragraph(text: "**第一行**\n第二行"),
+            .quote(blocks: [.paragraph(text: "引用\n续行")]),
+            .bulletItem(text: "待办\n详情", checked: true)
+        ])
+    }
+
     @Test func tablePDFRepeatsHeaderAndKeepsLastRow() throws {
         let rows = (0..<100).map { "| ROW\($0) | 内容 \($0) |" }.joined(separator: "\n")
         let data = try MarkdownPDFRenderer.render(markdown: "| HEADER | VALUE |\n| --- | --- |\n" + rows)

@@ -84,7 +84,7 @@ extension QuickNote {
 
     /// 解密后的总结文本
     var decryptedSummaryText: String {
-        EncryptionService.decryptSafely(summaryText)
+        SummarySources.decryptedMarkdown(summaryText)
     }
 
     /// 总结文件 URL

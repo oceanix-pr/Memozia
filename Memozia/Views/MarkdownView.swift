@@ -16,10 +16,14 @@ struct MarkdownView: View {
     var highlightText: String = ""
     /// 高亮背景色（当前定位的匹配可用不同颜色区分）
     var highlightColor: Color = .yellow
+    var preservesSoftLineBreaks = false
+    var bodyFont: Font = .title3
 
     var body: some View {
         LazyVStack(alignment: .leading, spacing: 8) {
-            let resolvedBlocks = blocks ?? MarkdownParseCache.shared.blocks(for: markdown)
+            let resolvedBlocks = blocks ?? MarkdownParseCache.shared.blocks(
+                for: markdown, preservesSoftLineBreaks: preservesSoftLineBreaks
+            )
             ForEach(resolvedBlocks.indices, id: \.self) { index in
                 renderBlock(resolvedBlocks[index])
             }
@@ -36,14 +40,14 @@ struct MarkdownView: View {
             renderHeading(level: level, text: text)
 
         case .paragraph(let text):
-            renderInlineText(text, font: .title3)
+            renderInlineText(text, font: bodyFont)
                 .textSelection(.enabled)
 
         case .bulletItem(let text, let depth, let checked):
             HStack(alignment: .top, spacing: 6) {
                 Text(checked.map { $0 ? "☑" : "☐" } ?? "•")
-                    .font(.title3)
-                renderInlineText(text, font: .title3)
+                    .font(bodyFont)
+                renderInlineText(text, font: bodyFont)
                     .textSelection(.enabled)
             }
             .padding(.leading, CGFloat(depth) * 16)
@@ -51,9 +55,9 @@ struct MarkdownView: View {
         case .numberedItem(let number, let text, let depth):
             HStack(alignment: .top, spacing: 6) {
                 Text("\(number).")
-                    .font(.title3)
+                    .font(bodyFont)
                     .fixedSize(horizontal: true, vertical: false)
-                renderInlineText(text, font: .title3)
+                renderInlineText(text, font: bodyFont)
                     .textSelection(.enabled)
             }
             .padding(.leading, CGFloat(depth) * 16)
@@ -74,7 +78,8 @@ struct MarkdownView: View {
                     .fill(.secondary)
                     .frame(width: 3)
                 AnyView(MarkdownView(markdown: "", blocks: quotedBlocks,
-                                     highlightText: highlightText, highlightColor: highlightColor))
+                                     highlightText: highlightText, highlightColor: highlightColor,
+                                     bodyFont: bodyFont))
                     .foregroundStyle(.secondary)
             }
 
@@ -202,36 +207,42 @@ struct MarkdownView: View {
 /// 多篇文本的有界 LRU 缓存，搜索结果中的多个 MarkdownView 不再互相挤掉唯一槽位。
 /// 所有共享状态由 lock 保护，解析在锁外执行，不阻塞其他命中查询。
 final class MarkdownParseMemo: @unchecked Sendable {
+    private struct Key: Hashable {
+        let markdown: String
+        let preservesSoftLineBreaks: Bool
+    }
+
     private struct Slot {
         let blocks: [TranscriptBlock]
         let cost: Int
         var usedAt: UInt64
     }
     private let lock = NSLock()
-    private var entries: [String: Slot] = [:]
+    private var entries: [Key: Slot] = [:]
     private var clock: UInt64 = 0
     private var totalCost = 0
     private let costLimit = 8 * 1024 * 1024
 
-    func blocks(for markdown: String) -> [TranscriptBlock] {
+    func blocks(for markdown: String, preservesSoftLineBreaks: Bool = false) -> [TranscriptBlock] {
+        let key = Key(markdown: markdown, preservesSoftLineBreaks: preservesSoftLineBreaks)
         lock.lock()
         clock += 1
-        if var slot = entries[markdown] {
+        if var slot = entries[key] {
             slot.usedAt = clock
-            entries[markdown] = slot
+            entries[key] = slot
             lock.unlock()
             return slot.blocks
         }
         lock.unlock()
 
-        let blocks = TranscriptMarkdownBuilder.parseBlocks(markdown)
+        let blocks = TranscriptMarkdownBuilder.parseBlocks(markdown, preservesSoftLineBreaks: preservesSoftLineBreaks)
         let cost = markdown.utf8.count + blocks.reduce(0) { $0 + $1.contentByteCount }
         guard cost <= costLimit else { return blocks }
         lock.lock()
         defer { lock.unlock() }
-        if let existing = entries[markdown] { return existing.blocks }
+        if let existing = entries[key] { return existing.blocks }
         clock += 1
-        entries[markdown] = Slot(blocks: blocks, cost: cost, usedAt: clock)
+        entries[key] = Slot(blocks: blocks, cost: cost, usedAt: clock)
         totalCost += cost
         while entries.count > 32 || totalCost > costLimit {
             guard let oldest = entries.min(by: { $0.value.usedAt < $1.value.usedAt }) else { break }

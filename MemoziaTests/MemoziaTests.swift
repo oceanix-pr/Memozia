@@ -889,6 +889,10 @@ struct MemoziaTests {
         let openAI = LLMConfig.openAITemplate()
         #expect(openAI.isLocal == false)
         #expect(openAI.baseURL.contains("openai"))
+        #expect(openAI.modelName == "gpt-6.1-terra")
+        #expect(openAI.supportsVision)
+        #expect(LLMPreset.openAI.suggestedModels.contains("gpt-6.1-sol"))
+        #expect(LLMPreset.openAI.suggestedModels.contains("gpt-6.2-astra"))
 
         let custom = LLMConfig.customTemplate()
         #expect(custom.isLocal == false)

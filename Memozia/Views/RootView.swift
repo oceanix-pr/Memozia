@@ -773,7 +773,7 @@ struct RootView: View {
             // 的标准排版（label 闭包里嵌套的 Label 会沿用同一套样式），文案走 Localizable.xcstrings
             ContentUnavailableView {
                 VStack(spacing: 10) {
-                    Text("Memozia · 闻墨集")
+                    Text(verbatim: AppBranding.displayName)
                         .font(.system(size: 36))
                         .foregroundStyle(.secondary)
                     Label("选择一个条目", systemImage: "tray")
@@ -966,13 +966,13 @@ struct RootView: View {
                     let encryptedSummary = recording.summary ?? ""
                     if !encryptedSummary.isEmpty {
                         Button("复制总结内容") {
-                            withBuiltText({ EncryptionService.decryptSafely(encryptedSummary) }) { text in
+                            withBuiltText({ SummarySources.decryptedMarkdown(encryptedSummary) }) { text in
                                 copyToClipboard(text)
                             }
                         }
                         Button("导出总结为 .md") {
                             let name = recording.fileName
-                            withBuiltText({ EncryptionService.decryptSafely(encryptedSummary) }) { text in
+                            withBuiltText({ SummarySources.decryptedMarkdown(encryptedSummary) }) { text in
                                 exportBaseName = name
                                 exportSummaryDoc = MarkdownDocument(text: text)
                                 showSummaryExporter = true
@@ -980,7 +980,7 @@ struct RootView: View {
                         }
                         Button("导出总结为 .pdf") {
                             let name = recording.fileName
-                            withBuiltText({ EncryptionService.decryptSafely(encryptedSummary) }) { text in
+                            withBuiltText({ SummarySources.decryptedMarkdown(encryptedSummary) }) { text in
                                 exportBaseName = name
                                 exportPDF(markdown: text, title: name, to: .summary)
                             }
@@ -1042,13 +1042,13 @@ struct RootView: View {
                 if !encryptedSummary.isEmpty {
                     Menu {
                         Button("复制总结内容") {
-                            withBuiltText({ EncryptionService.decryptSafely(encryptedSummary) }) { text in
+                            withBuiltText({ SummarySources.decryptedMarkdown(encryptedSummary) }) { text in
                                 copyToClipboard(text)
                             }
                         }
                         Button("导出总结为 .md") {
                             let title = note.title
-                            withBuiltText({ EncryptionService.decryptSafely(encryptedSummary) }) { text in
+                            withBuiltText({ SummarySources.decryptedMarkdown(encryptedSummary) }) { text in
                                 exportBaseName = title
                                 exportSummaryDoc = MarkdownDocument(text: text)
                                 showSummaryExporter = true
@@ -1056,7 +1056,7 @@ struct RootView: View {
                         }
                         Button("导出总结为 .pdf") {
                             let title = note.title
-                            withBuiltText({ EncryptionService.decryptSafely(encryptedSummary) }) { text in
+                            withBuiltText({ SummarySources.decryptedMarkdown(encryptedSummary) }) { text in
                                 exportBaseName = title
                                 exportPDF(markdown: text, title: title, to: .summary)
                             }

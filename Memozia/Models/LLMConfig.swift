@@ -449,7 +449,11 @@ extension LLMConfig {
     }
 
     static func openAITemplate() -> LLMConfig {
-        LLMConfig(name: "OpenAI GPT-4o", baseURL: "https://api.openai.com", modelName: "gpt-4o", isLocal: false, supportsVision: true)
+        let preset = LLMPreset.openAI
+        return LLMConfig(
+            name: preset.displayName, baseURL: preset.baseURL, modelName: preset.defaultModel,
+            isLocal: preset.isLocal, supportsVision: preset.supportsVisionByDefault
+        )
     }
 
     static func customTemplate() -> LLMConfig {

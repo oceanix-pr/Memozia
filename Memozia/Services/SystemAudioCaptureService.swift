@@ -491,7 +491,7 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
             append: { sampleBuffer in
                 guard input.isReadyForMoreMediaData else { return false }
                 guard input.append(sampleBuffer) else {
-                    throw WriterAppendError(reason: "AVAssetWriterInput 追加音频样本失败")
+                    throw WriterAppendError(reason: String(localized: "AVAssetWriterInput 追加音频样本失败"))
                 }
                 return true
             },

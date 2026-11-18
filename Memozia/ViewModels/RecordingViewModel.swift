@@ -1032,7 +1032,7 @@ final class RecordingViewModel {
         }
         // 用带说话人与时间戳的 Markdown（而非纯文本 fullTranscript），
         // 保证声纹识别/手动标记的姓名进入总结 prompt。
-        // 提示词使用单独的来源版 Markdown，不改变复制/编辑时的干净渲染缓存。
+        // 提示词附普通时间戳，严格解密失败时停止总结。
         let segmentData = recording.segments
             .sorted { $0.startTime < $1.startTime }
             .map { segment in
@@ -1129,22 +1129,21 @@ final class RecordingViewModel {
                 }
             )
 
-            // D-3: 检查 LLM 返回空内容
-            guard !result.isEmpty else {
+            // 保存前还原占位符为真实信息（附带还原诊断日志）
+            let restored = PIIScrubService.restoreWithDiagnostics(
+                result, mapping: state.scrubMapping ?? .empty)
+            let summary = SummarySources.removingSeekLinks(from: restored)
+            guard !summary.isEmpty else {
                 showErrorMessage(String(localized: "总结生成失败：LLM 返回了空内容。请检查模型配置或稍后重试。"))
                 return .failed
             }
 
-            // 保存前还原占位符为真实信息（附带还原诊断日志）
-            let restored = PIIScrubService.restoreWithDiagnostics(
-                result, mapping: state.scrubMapping ?? .empty)
-
             // 加密保存总结（加密失败时回退到明文并记录日志）
             do {
-                recording.summary = try EncryptionService.encrypt(restored)
+                recording.summary = try EncryptionService.encrypt(summary)
             } catch {
                 EncryptionService.reportEncryptionFailure(error, context: "总结")
-                recording.summary = restored
+                recording.summary = summary
             }
             recording.summaryGeneratedAt = Date()
 
@@ -1154,7 +1153,7 @@ final class RecordingViewModel {
             // 总结完成后自动生成标题并更新列表标题（失败仅日志，不影响总结本身）
             await autoAssignRecordingTitle(
                 recording,
-                from: restored,
+                from: summary,
                 config: snapshot,
                 context: context,
                 experience: experience
@@ -1406,7 +1405,7 @@ final class RecordingViewModel {
                 let result = generation.text
 
                 guard !result.isEmpty else {
-                    showErrorMessage("画面要点生成失败：模型返回了空内容，请检查模型配置或稍后重试")
+                    showErrorMessage(String(localized: "画面要点生成失败：模型返回了空内容，请检查模型配置或稍后重试"))
                     return .failed
                 }
                 visualNotesText = result
@@ -1476,7 +1475,7 @@ final class RecordingViewModel {
         let task = Task { @MainActor () -> Int? in
             guard let videoURL = recording.videoFileURL,
                   FileManager.default.fileExists(atPath: videoURL.path) else {
-                showErrorMessage("该条目没有留存的原始视频，无法抽取关键帧（重新导入视频即可保留原件）")
+                showErrorMessage(String(localized: "该条目没有留存的原始视频，无法抽取关键帧（重新导入视频即可保留原件）"))
                 return nil
             }
             isGeneratingVisualNotes = true
@@ -1540,7 +1539,7 @@ final class RecordingViewModel {
     func cleanupVideo(recording: AudioRecording, context: ModelContext) {
         guard !rejectWriteIfReadOnly(.deleteEntry) else { return }
         guard let request = MediaCleanupRequest(kind: .video, items: [.recording(recording)]) else {
-            showErrorMessage("该条目没有留存的原始视频可清理。")
+            showErrorMessage(String(localized: "该条目没有留存的原始视频可清理。"))
             return
         }
         Task { @MainActor in
@@ -1623,7 +1622,7 @@ final class RecordingViewModel {
                     .items.map(\.title).joined(separator: "\n") ?? ""
                 if !todoTitles.isEmpty { sources.append(todoTitles) }
                 guard !sources.isEmpty else {
-                    self.showErrorMessage("请先生成总结或拆解待办，再润色标题。")
+                    self.showErrorMessage(String(localized: "请先生成总结或拆解待办，再润色标题。"))
                     return .failed
                 }
 
@@ -1633,7 +1632,7 @@ final class RecordingViewModel {
                     experience: taskExperience
                 )
                 guard !title.isEmpty else {
-                    self.showErrorMessage("润色标题失败：大模型返回了空内容，请重试。")
+                    self.showErrorMessage(String(localized: "润色标题失败：大模型返回了空内容，请重试。"))
                     return .failed
                 }
 
@@ -1752,8 +1751,8 @@ final class RecordingViewModel {
         } else {
             text = state.rawBuffer
         }
-        state.displayText = text
-        if isSelected(recordingID) { summaryText = text }
+        state.displayText = SummarySources.removingSeekLinks(from: text)
+        if isSelected(recordingID) { summaryText = state.displayText }
     }
 
     /// 流式「思考过程」缓冲：与正文分开累积，只用于展示与诊断
@@ -1866,7 +1865,8 @@ final class RecordingViewModel {
     /// 更新总结内容并同步到文件夹（加密存储）
     func updateRecordingSummary(_ recording: AudioRecording, newSummary: String, context: ModelContext) {
         guard !rejectWriteIfReadOnly(.editSummary) else { return }
-        let trimmed = newSummary.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = SummarySources.removingSeekLinks(from: newSummary)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         do { try SummaryHistory.preserve(recording.summary, in: recording.folderURL) }
         catch {
@@ -1927,7 +1927,7 @@ final class RecordingViewModel {
         do {
             try context.save()
         } catch {
-            showErrorMessage("隐藏状态保存失败，请重试。")
+            showErrorMessage(String(localized: "隐藏状态保存失败，请重试。"))
         }
         // 如果隐藏了当前选中的录音，取消选中
         if recording.isHidden && selectedRecording?.id == recording.id {
@@ -2836,9 +2836,10 @@ final class RecordingViewModel {
                 }
             }
 
-            let summary = recording.decryptedSummary
+            // 旧总结的原始地址仍可用于校验待办的来源字段。
+            let summary = EncryptionService.decryptSafely(recording.summary)
             guard !summary.isEmpty else {
-                self.showErrorMessage("总结为空，请先生成总结")
+                self.showErrorMessage(String(localized: "总结为空，请先生成总结"))
                 return .failed
             }
 
@@ -2910,7 +2911,7 @@ final class RecordingViewModel {
     ) async {
         guard let document = currentTodoDocument else { return }
         guard !document.items.isEmpty else {
-            showErrorMessage("待办列表为空，无需写入")
+            showErrorMessage(String(localized: "待办列表为空，无需写入"))
             return
         }
 
@@ -2918,7 +2919,7 @@ final class RecordingViewModel {
         if !RemindersService.shared.isAuthorized {
             let granted = await RemindersService.shared.requestAccess()
             if !granted {
-                showErrorMessage("未授权提醒事项访问，无法写入待办。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中开启 Memozia，或在「应用设置 → 待办」中点击「请求授权」后重试。")
+                showErrorMessage(String(localized: "未授权提醒事项访问，无法写入待办。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中开启 Memozia，或在「应用设置 → 待办」中点击「请求授权」后重试。"))
                 return
             }
         }
@@ -2939,7 +2940,7 @@ final class RecordingViewModel {
         if result.failed > 0 {
             // 进一步判断失败是否因授权丢失
             if !RemindersService.shared.isAuthorized {
-                showErrorMessage("待办写入失败：提醒事项授权已失效。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中重新开启 Memozia 后重试。")
+                showErrorMessage(String(localized: "待办写入失败：提醒事项授权已失效。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中重新开启 Memozia 后重试。"))
             } else {
                 showErrorMessage(String(localized: "部分待办写入失败：成功 \(result.success) 个，失败 \(result.failed) 个"))
             }
@@ -2961,7 +2962,7 @@ final class RecordingViewModel {
         TodoDocument.remove(from: recording.folderURL)
         currentTodoDocument = nil
         if hasDeleteFailure {
-            showErrorMessage("部分提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。")
+            showErrorMessage(String(localized: "部分提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。"))
         }
     }
 
@@ -3004,7 +3005,7 @@ final class RecordingViewModel {
                             self.currentTodoDocument = doc
                             if let d = doc { self.saveTodosToFolder(d, for: recording) }
                         }
-                        self.showErrorMessage("提醒事项同步更新失败，本地已保存。可重新点击「写入提醒事项」重试。")
+                        self.showErrorMessage(String(localized: "提醒事项同步更新失败，本地已保存。可重新点击「写入提醒事项」重试。"))
                     }
                 }
             }
@@ -3025,7 +3026,7 @@ final class RecordingViewModel {
         // 已写入提醒事项的，同步删除
         if item.status == .exported, let identifier = item.reminderIdentifier {
             if !RemindersService.shared.deleteReminder(identifier: identifier) {
-                showErrorMessage("提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。")
+                showErrorMessage(String(localized: "提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。"))
             }
         }
 

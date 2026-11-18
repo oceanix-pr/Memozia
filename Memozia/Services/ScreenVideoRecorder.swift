@@ -396,7 +396,7 @@ final class ScreenVideoRecorder: NSObject, SCStreamOutput, SCStreamDelegate, @un
         // startWriting 不抛错：失败经 status/.error 暴露后取消收尾
         writer.startWriting()
         guard writer.status == .writing else {
-            let reason = writer.error?.localizedDescription ?? "未知错误"
+            let reason = writer.error?.localizedDescription ?? String(localized: "未知错误")
             writer.cancelWriting()
             throw ScreenRecordingError.writerSetupFailed(reason)
         }
@@ -485,15 +485,15 @@ final class ScreenVideoRecorder: NSObject, SCStreamOutput, SCStreamDelegate, @un
             let frameCount = stateLock.withLock { _videoFrameCount }
             let reason: String
             if !finalized {
-                reason = "收尾超时（finishWriting 未回调，已放弃等待）"
+                reason = String(localized: "收尾超时（finishWriting 未回调，已放弃等待）")
             } else if let error = writer.error {
                 reason = error.localizedDescription
             } else if frameCount == 0 {
-                reason = "未收到任何完整画面帧（屏幕采集未出帧）"
+                reason = String(localized: "未收到任何完整画面帧（屏幕采集未出帧）")
             } else {
-                reason = "未知"
+                reason = String(localized: "未知")
             }
-            let message = "录屏视频轨封装异常（\(reason)），已写入片段可能不完整，音频不受影响。"
+            let message = String(localized: "录屏视频轨封装异常（\(reason)），已写入片段可能不完整，音频不受影响。")
             Self.logger.error("\(message, privacy: .public)")
             lastError = message
             result = FileManager.default.fileExists(atPath: destination.path) ? destination : nil
@@ -647,7 +647,7 @@ final class ScreenVideoRecorder: NSObject, SCStreamOutput, SCStreamDelegate, @un
             if videoInput.append(sampleBuffer) {
                 stateLock.withLock { _videoFrameCount += 1 }
             } else {
-                reportAppendFailure(writer, track: "视频")
+                reportAppendFailure(writer, track: String(localized: "视频"))
             }
         } else {
             // 会话开始前的音频（无视频锚点）直接丢弃，最多损失首帧前片段
@@ -659,7 +659,7 @@ final class ScreenVideoRecorder: NSObject, SCStreamOutput, SCStreamDelegate, @un
                 return
             }
             if !audioInput.append(sampleBuffer) {
-                reportAppendFailure(writer, track: "音频")
+                reportAppendFailure(writer, track: String(localized: "音频"))
             }
         }
     }
@@ -685,7 +685,7 @@ final class ScreenVideoRecorder: NSObject, SCStreamOutput, SCStreamDelegate, @un
             return true
         }
         guard first else { return }
-        let message = "录屏\(track)轨写入失败（\(writer.error?.localizedDescription ?? "未知")），视频可能不完整，音频不受影响。"
+        let message = String(localized: "录屏\(track)轨写入失败（\(writer.error?.localizedDescription ?? String(localized: "未知"))），视频可能不完整，音频不受影响。")
         Self.logger.error("\(message, privacy: .public)")
         lastError = message
     }
@@ -699,7 +699,7 @@ final class ScreenVideoRecorder: NSObject, SCStreamOutput, SCStreamDelegate, @un
             _isCapturing = false
         }
         stopDiskWatch()
-        let message = "画面采集已中断（\(error.localizedDescription)），录音继续进行，视频保留到中断时刻。"
+        let message = String(localized: "画面采集已中断（\(error.localizedDescription)），录音继续进行，视频保留到中断时刻。")
         Self.logger.error("\(message, privacy: .public)")
         lastError = message
         let callback = onInterrupted

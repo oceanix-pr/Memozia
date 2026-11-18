@@ -303,14 +303,15 @@ struct TodoHTTPFixture {
     private static let hostSequence = Mutex(0)
     // Unique loopback hosts keep parallel protocol fixtures separate while matching
     // the production endpoint policy for local HTTP.
-    let host = "127.0.0.\(Self.hostSequence.withLock { value in value += 1; return value })"
+    let host: String
     let session: URLSession
 
-    init(handler: @escaping @Sendable (URLRequest) -> TodoTestProtocol.Reply) {
+    init(host: String? = nil, handler: @escaping @Sendable (URLRequest) -> TodoTestProtocol.Reply) {
+        self.host = host ?? "127.0.0.\(Self.hostSequence.withLock { value in value += 1; return value })"
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [TodoTestProtocol.self]
         session = URLSession(configuration: configuration)
-        TodoTestProtocol.handlers.withLock { $0[host] = handler }
+        TodoTestProtocol.handlers.withLock { $0[self.host] = handler }
     }
 
     func close() {

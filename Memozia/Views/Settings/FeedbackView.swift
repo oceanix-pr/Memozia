@@ -88,15 +88,15 @@ struct FeedbackView: View {
 
     private func sendFeedback() {
         guard let email = MemoziaContact.email else { return }
-        let subject = "[Memozia 反馈] \(feedbackType.localizedName)"
-        let body = """
+        let subject = String(localized: "[Memozia 反馈] \(feedbackType.localizedName)")
+        let body = String(localized: """
         反馈类型：\(feedbackType.localizedName)
 
         内容：
         \(feedbackContent)
 
         联系方式：\(contactEmail.isEmpty ? String(localized: "未提供") : contactEmail)
-        """
+        """)
 
         let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
         let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""

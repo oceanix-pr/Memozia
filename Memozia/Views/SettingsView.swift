@@ -543,12 +543,12 @@ struct SettingsView: View {
                isPresented: $showModelError) {
             Button("确定") {}
         } message: {
-            Text(whisperService.lastError ?? "未知错误")
+            Text(whisperService.lastError ?? String(localized: "未知错误"))
         }
         .alert("错误", isPresented: $settingsVM.showError) {
             Button("确定") {}
         } message: {
-            Text(settingsVM.errorMessage ?? "未知错误")
+            Text(settingsVM.errorMessage ?? String(localized: "未知错误"))
         }
     }
 
@@ -1595,7 +1595,7 @@ struct SettingsView: View {
             isPresented: $showLLMExporter,
             document: llmExportDocument,
             contentType: .json,
-            defaultFilename: "Memozia-大模型配置"
+            defaultFilename: String(localized: "Memozia-大模型配置")
         ) { result in
             if case .failure(let error) = result {
                 llmTransferMessage = String(format: String(localized: "导出失败：%@"), UserFacingError.summary(for: error))
@@ -1791,7 +1791,9 @@ struct SettingsView: View {
                 .frame(width: 80, height: 80)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             Text(verbatim: "Memozia").font(.largeTitle).fontWeight(.bold)
-            Text(verbatim: "闻墨集").font(.title3).foregroundStyle(.secondary)
+            if let chineseName = AppBranding.chineseName {
+                Text(verbatim: chineseName).font(.title3).foregroundStyle(.secondary)
+            }
             Text(appVersion).font(.caption).foregroundStyle(.tertiary)
             if AppUpdateService.shared.isStarted {
                 AppUpdateSettingsView()

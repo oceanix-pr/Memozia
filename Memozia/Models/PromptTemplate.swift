@@ -24,7 +24,13 @@ enum PromptTemplateKind: String, CaseIterable, Identifiable, Sendable {
 
         var id: String { rawValue }
 
-        var localizedName: String { NSLocalizedString(rawValue, comment: "") }
+        var localizedName: String {
+            switch self {
+            case .summary: String(localized: "总结")
+            case .extraction: String(localized: "提取与生成")
+            case .classification: String(localized: "判定")
+            }
+        }
     }
 
     var category: Category {

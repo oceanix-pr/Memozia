@@ -1,11 +1,10 @@
 #!/bin/bash
-# 修复 sherpa-onnx shared 产物的两个上游打包问题（构建前执行，幂等）：
+# 准备 macOS 上的 Sherpa 和 ONNX Runtime 动态框架（构建前执行，幂等）：
 # 1. csukuangfj/onnxruntime-libs 的 shared xcframework 用实体目录/文件复制代替标准
 #    符号链接（Versions/Current 为实体目录、顶层存在重复的二进制与 Info.plist），
 #    Xcode 嵌入后 codesign --verify --strict 会报 "invalid Info.plist"；
-# 2. SherpaOnnxC 二进制引用 @rpath/libonnxruntime.dylib，而实际嵌入的是
-#    onnxruntime.framework（install name 为 @rpath/onnxruntime.framework/Versions/A/onnxruntime），
-#    导致启动时 dyld 报 Library missing 崩溃。
+# 2. 用同版本、关闭 TTS 的 Sherpa 官方 macOS 二进制替换 SwiftPM 的 dylib，
+#    同时将其 ONNX 引用对齐到应用实际嵌入的 onnxruntime.framework。
 #
 # 产物目录只定位「本次构建所用的」DerivedData：BUILD_DIR / BUILD_ROOT 均为
 # …/DerivedData/<工程>/Build/Products（**不含**配置目录），故 SourcePackages/artifacts
@@ -15,6 +14,7 @@
 # 产物，现改为只认本次构建目录 + 仓库内 .packages（-packageCachePath 场景）。
 set -eu
 shopt -s nullglob
+source_root="${SRCROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 
 roots=()
 add_root() {
@@ -44,8 +44,6 @@ if [ "${#roots[@]}" -eq 0 ]; then
 fi
 
 layout_fixed=0
-dylib_fixed=0
-dylib_failed=0
 
 for root in "${roots[@]:-}"; do
     for fw in "$root"/onnxruntime-libs/*/onnxruntime.xcframework/*/onnxruntime.framework \
@@ -82,32 +80,15 @@ for root in "${roots[@]:-}"; do
         fi
     done
 
-    # 修复 SherpaOnnxC 对 libonnxruntime.dylib 的错误引用（指向 onnxruntime.framework 的真实路径）
-    for fw in "$root"/sherpa-onnx/*/sherpa-onnx.xcframework/*/SherpaOnnxC.framework \
-              "$root"/extract/sherpa-onnx/*/sherpa-onnx.xcframework/*/SherpaOnnxC.framework; do
+    for fw in "$root"/sherpa-onnx/SherpaOnnxMacOSShared/sherpa-onnx.xcframework/*/SherpaOnnxC.framework \
+              "$root"/extract/sherpa-onnx/SherpaOnnxMacOSShared/sherpa-onnx.xcframework/*/SherpaOnnxC.framework; do
         bin="$fw/Versions/A/SherpaOnnxC"
         [ -f "$bin" ] || continue
-        if otool -L "$bin" 2>/dev/null | grep -q "libonnxruntime.dylib"; then
-            if install_name_tool -change "@rpath/libonnxruntime.dylib" \
-                "@rpath/onnxruntime.framework/Versions/A/onnxruntime" "$bin" 2>/dev/null; then
-                dylib_fixed=$((dylib_fixed + 1))
-                echo "Fixed dylib reference: $bin"
-            else
-                # 改不动就必须让构建失败：继续下去会产出一个启动即崩溃的 App，
-                # 旧实现只打 WARNING 并 exit 0
-                echo "error: install_name_tool 修复失败，产物仍引用 libonnxruntime.dylib: $bin" >&2
-                dylib_failed=$((dylib_failed + 1))
-            fi
-        fi
+        /bin/bash "$source_root/Scripts/install_sherpa_no_tts.sh" "${root%/artifacts}/Memozia" "$bin"
     done
 done
 
-if [ "$dylib_failed" -gt 0 ]; then
-    echo "error: $dylib_failed 个 SherpaOnnxC 产物的 dylib 引用未能修复，中止构建" >&2
-    exit 1
-fi
-
-echo "onnxruntime 产物修复完成：规范布局 $layout_fixed 个，dylib 引用 $dylib_fixed 个，产物目录 ${#roots[@]} 个"
+echo "onnxruntime 产物修复完成：规范布局 $layout_fixed 个，产物目录 ${#roots[@]} 个"
 
 # 注意：这里**不再删除** App 内嵌副本。
 # 实测 Xcode 的「Embed Frameworks」不会仅仅因为该文件被删除就重新拷贝（它认为输出已是

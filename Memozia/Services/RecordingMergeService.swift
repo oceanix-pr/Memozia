@@ -119,7 +119,8 @@ actor RecordingMergeService {
                 ))
             }
             if let raw = input.summary, !raw.isEmpty {
-                summaries.append("## \(input.title)\n\n\(try Self.plaintext(raw))")
+                let summary = SummarySources.removingSeekLinks(from: try Self.plaintext(raw))
+                summaries.append("## \(input.title)\n\n\(summary)")
             }
             // 先加载所有待办；已有文件损坏时明确失败，不能把读失败当成无待办再删源目录。
             if !input.folderName.isEmpty, TodoDocument.exists(in: input.folderURL) {

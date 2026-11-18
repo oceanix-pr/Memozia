@@ -1205,7 +1205,7 @@ final class OverlayAnnotationView: NSView, NSTextFieldDelegate {
         formatter.dateFormat = "yyyyMMdd_HHmmss"
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = TimeZone.autoupdatingCurrent
-        return "截图_\(formatter.string(from: Date())).png"
+        return "\(String(localized: "截图"))_\(formatter.string(from: Date())).png"
     }
 
     /// 保存面板默认定位目录：上次选择的目录 → 桌面 → 文稿 → 用户目录

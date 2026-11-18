@@ -130,17 +130,18 @@ struct RecordingListView: View {
         }
         isSearching = true
         let entries = recordings.filter { showHiddenRecordings || !$0.isHidden }.map { recording in
-            FullTextSearch.Entry(folder: recording.folderName, title: recording.fileName,
+            let summary = recording.summary.map { FullTextSearch.Field(value: $0, seconds: nil, isSummary: true) }
+            let visual = recording.visualSummary.map { FullTextSearch.Field(value: $0, seconds: nil) }
+            return FullTextSearch.Entry(folder: recording.folderName, title: recording.fileName,
                 fields: recording.segments.sorted { $0.startTime < $1.startTime }.map {
                     FullTextSearch.Field(value: $0.text, seconds: $0.startTime)
-                } + [recording.summary, recording.visualSummary].compactMap { $0 }.map {
-                    FullTextSearch.Field(value: $0, seconds: nil)
-                })
+                } + [summary, visual].compactMap { $0 })
         } + quickNotes.filter { showHiddenRecordings || !$0.isHidden }.map { note in
-            FullTextSearch.Entry(folder: note.folderName, title: note.title,
-                fields: [note.textContent, note.ocrText, note.summaryText].compactMap { $0 }.map {
-                    FullTextSearch.Field(value: $0, seconds: nil)
-                })
+            let text = note.textContent.map { FullTextSearch.Field(value: $0, seconds: nil) }
+            let ocr = note.ocrText.map { FullTextSearch.Field(value: $0, seconds: nil) }
+            let summary = note.summaryText.map { FullTextSearch.Field(value: $0, seconds: nil, isSummary: true) }
+            return FullTextSearch.Entry(folder: note.folderName, title: note.title,
+                fields: [text, ocr, summary].compactMap { $0 })
         }
         let work = Task.detached(priority: .userInitiated) { try FullTextSearch.find(query, in: entries) }
         do {
@@ -278,7 +279,7 @@ struct RecordingListView: View {
                 contextMenuContent(items)
             }
         }
-        .navigationTitle("Memozia · 闻墨集")
+        .navigationTitle(AppBranding.displayName)
         // P2-7: 搜索防抖，300ms 内连续输入只触发一次过滤
         .task(id: searchRequest) { await searchContents() }
         .onChange(of: searchText) { searchRequest = UUID() }

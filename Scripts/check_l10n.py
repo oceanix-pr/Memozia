@@ -23,8 +23,10 @@
 import argparse
 import json
 import os
+from pathlib import Path
 import re
 import sys
+import textwrap
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CATALOG_PATH = os.path.join(ROOT, 'Memozia/Resources/Localizable.xcstrings')
@@ -38,7 +40,7 @@ CJK = re.compile(r'[\u3400-\u9fff\u3000-\u303f\uff00-\uffef]')
 
 # 视为「用户可见文案来源」的调用点（用于降低误报）
 QUALIFIERS = (
-    'Text(', 'Label(', 'Button(', 'Toggle(', 'Picker(', 'Section(', 'Link(',
+    'Text(', 'TextField(', 'SecureField(', 'Label(', 'Button(', 'Toggle(', 'Picker(', 'Section(', 'Link(',
     'NavigationLink(', 'LocalizedStringKey(', 'String(localized:', '.help(',
     '.navigationTitle(', '.accessibilityLabel(', '.alert(', '.confirmationDialog(',
     'title:', 'content:', 'message:', 'label:', 'placeholder:', 'prompt:',
@@ -129,7 +131,7 @@ def swift_literals(source):
                         continue
                     buf.append(source[j])
                     j += 1
-                results.append((''.join(buf), start))
+                results.append((textwrap.dedent(''.join(buf)).strip('\n'), start))
                 i = j + 3
                 continue
             j = i + 1
@@ -190,6 +192,10 @@ def variation_categories(entry):
 def main():
     parser = argparse.ArgumentParser(description='只读校验 Localizable.xcstrings')
     parser.add_argument('--quiet', action='store_true', help='只输出错误与告警')
+    parser.add_argument('--strict', action='store_true',
+                        help='将未翻译及未入库文案视为错误（stale 不阻断）')
+    parser.add_argument('--strings-data-dir', type=Path,
+                        help='编译器生成的 .stringsdata 目录，用于精确检查插值、多行与动态显示文案')
     args = parser.parse_args()
 
     catalog = json.load(open(CATALOG_PATH, encoding='utf-8'))
@@ -202,6 +208,15 @@ def main():
     source_sigs, candidates, source_blob = collect_source_literals()
     key_sigs = {normalize(key) for key in strings}
 
+    compiler_keys = set()
+    if args.strings_data_dir:
+        files = list(args.strings_data_dir.rglob('*.stringsdata'))
+        if not files:
+            parser.error('--strings-data-dir 中未找到 .stringsdata 文件，请先构建主应用')
+        for path in files:
+            data = json.loads(path.read_text(encoding='utf-8'))
+            compiler_keys.update(item['key'] for item in data.get('tables', {}).get('Localizable', []))
+
     errors = []
     warnings = []
     unused_heuristic = []
@@ -210,7 +225,7 @@ def main():
 
     for key, entry in strings.items():
         localizations = entry.get('localizations') or {}
-        in_use = normalize(key) in source_sigs or (key.strip() and key in source_blob)
+        in_use = key in compiler_keys or normalize(key) in source_sigs or (key.strip() and key in source_blob)
         # 0) 完全空条目：Xcode 抽取后尚未翻译的占位（等价于 state=new），归入「待翻译」
         if not localizations:
             if in_use and key.strip():
@@ -289,6 +304,14 @@ def main():
             continue
         seen_missing.add(sig)
         warnings.append(f'新文案未进入 catalog：{literal[:60]}（{path}）')
+
+    if args.strict:
+        errors.extend(f'待翻译文案：{key[:80]}' for key in untranslated)
+        errors.extend(f'编译器提取的文案未进入 catalog：{key[:80]}'
+                      for key in sorted(compiler_keys - strings.keys()) if key.strip())
+        # 使用编译器结果时，以实际提取键为准，避免多行缩进导致的启发式误报。
+        if not args.strings_data_dir:
+            errors.extend(f'新文案未进入 catalog：{key[:80]}' for key in seen_missing)
 
     if not args.quiet:
         print(f'catalog：{CATALOG_PATH}')

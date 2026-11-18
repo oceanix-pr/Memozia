@@ -29,17 +29,6 @@ enum LLMService {
     /// 仅对「真·空返回」生效——真实错误（网络、4xx/5xx、预算耗尽）不重试。
     private static let localEmptyOutputAttempts = 2
 
-    /// 本地模型的输出预算（token）：推理型模型（Qwen3 / DeepSeek-R1 / gpt-oss 等）
-    /// 会先用输出预算做思考，8k 上限足以让正文一个 token 都产不出来（finish_reason=length）。
-    /// 本地推理不计费，统一放宽到 64k；非推理模型到 EOS 即停，不会因此变慢。
-    /// 云端保持各请求原有上限，不擅自放大按 token 计费的调用。
-    private static let localMaxOutputTokens = 65_536
-
-    /// 按配置选择 max_tokens：本地模型放宽到 64k，云端沿用各请求原有上限
-    private static func maxOutputTokens(for config: LLMConfigSnapshot, cloudDefault: Int) -> Int {
-        config.isLocal ? localMaxOutputTokens : cloudDefault
-    }
-
     /// Per-request conservative budget; larger inputs use full-coverage map/reduce.
     private static let maxTranscriptCharacters = SummaryChunking.inputBudget
 
@@ -66,7 +55,8 @@ enum LLMService {
         baseURL: String,
         apiKey: String,
         isLocal: Bool,
-        allowInsecureLAN: Bool = false
+        allowInsecureLAN: Bool = false,
+        session: URLSession = .shared
     ) async throws -> [String] {
         guard let url = LLMConfig.endpointURL(forBaseURL: baseURL, appending: "models") else {
             throw LLMError.invalidURL
@@ -77,12 +67,16 @@ enum LLMService {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
+        if url.host?.lowercased() == "api.anthropic.com" {
+            // /v1/models 走 Claude Models API，按其文档指定版本。
+            request.setValue("2026-10-21", forHTTPHeaderField: "anthropic-version")
+        }
         if !apiKey.isEmpty {
             request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         }
         request.timeoutInterval = 30
 
-        let (data, response) = try await URLSession.shared.data(for: request, delegate: EndpointPolicy.RedirectGuard.shared)
+        let (data, response) = try await session.data(for: request, delegate: EndpointPolicy.RedirectGuard.shared)
         guard let httpResponse = response as? HTTPURLResponse else {
             throw LLMError.invalidResponse
         }
@@ -134,11 +128,9 @@ enum LLMService {
         condense: Bool = false,
         onToken: @escaping @Sendable (String) -> Void,
         onReasoning: @escaping @Sendable (String) -> Void = { _ in },
-        onAttemptStart: @escaping @Sendable () -> Void = {}
+        onAttemptStart: @escaping @Sendable () -> Void = {},
+        session: URLSession = .shared
     ) async throws -> String {
-        guard let url = URL(string: config.chatCompletionsURL) else {
-            throw LLMError.invalidURL
-        }
         // 实际端点决定传输信任；内网明文必须单独授权，与模型标记无关。
         try validateSecureURL(for: config)
 
@@ -149,13 +141,13 @@ enum LLMService {
                 try await generateSummary(
                     transcript: part, config: config, forceOverview: forceOverview,
                     isMeetingHint: isMeetingHint, piiScrubbed: piiScrubbed,
-                    condense: true, onToken: { _ in }, onReasoning: onReasoning
+                    condense: true, onToken: { _ in }, onReasoning: onReasoning, session: session
                 )
             }
             let result = try await generateSummary(
                 transcript: reduced, config: config, forceOverview: forceOverview,
                 isMeetingHint: isMeetingHint, piiScrubbed: piiScrubbed, condense: condense,
-                onToken: onToken, onReasoning: onReasoning, onAttemptStart: onAttemptStart
+                onToken: onToken, onReasoning: onReasoning, onAttemptStart: onAttemptStart, session: session
             )
             try Task.checkCancellation()
             let coverage = "\n\n> " + String(localized: "本总结已分段处理全部输入，再归并生成；AI 结果仍需核对原文。")
@@ -173,7 +165,7 @@ enum LLMService {
         } else if forceOverview {
             isMeeting = false
         } else {
-            do { isMeeting = try await detectMeeting(transcript: cappedTranscript, config: config) }
+            do { isMeeting = try await detectMeeting(transcript: cappedTranscript, config: config, session: session) }
             catch {
                 try Task.checkCancellation()
                 if error is CancellationError { throw error }
@@ -189,7 +181,6 @@ enum LLMService {
             for _ in 1...localEmptyOutputAttempts {
                 onAttemptStart()
                 lastText = try await performSummaryRequest(
-                    url: url,
                     config: config,
                     transcript: cappedTranscript,
                     isMeeting: isMeeting,
@@ -197,7 +188,8 @@ enum LLMService {
                     piiScrubbed: piiScrubbed,
                     condense: condense,
                     onToken: onToken,
-                    onReasoning: onReasoning
+                    onReasoning: onReasoning,
+                    session: session
                 )
                 if !lastText.isEmpty { return lastText }
             }
@@ -211,7 +203,6 @@ enum LLMService {
                 // 每次尝试前通知调用方重置已展示的流式文本
                 onAttemptStart()
                 return try await performSummaryRequest(
-                    url: url,
                     config: config,
                     transcript: cappedTranscript,
                     isMeeting: isMeeting,
@@ -219,7 +210,8 @@ enum LLMService {
                     piiScrubbed: piiScrubbed,
                     condense: condense,
                     onToken: onToken,
-                    onReasoning: onReasoning
+                    onReasoning: onReasoning,
+                    session: session
                 )
             } catch is CancellationError {
                 throw CancellationError()
@@ -258,9 +250,8 @@ enum LLMService {
         throw lastError ?? LLMError.invalidResponse
     }
 
-    /// 执行单次总结请求
+    /// 执行一次总结，流式响应的 180 秒超时按无数据间隔计时。
     private static func performSummaryRequest(
-        url: URL,
         config: LLMConfigSnapshot,
         transcript: String,
         isMeeting: Bool,
@@ -268,19 +259,9 @@ enum LLMService {
         piiScrubbed: Bool,
         condense: Bool = false,
         onToken: @escaping @Sendable (String) -> Void,
-        onReasoning: @escaping @Sendable (String) -> Void = { _ in }
+        onReasoning: @escaping @Sendable (String) -> Void,
+        session: URLSession
     ) async throws -> String {
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        if !config.apiKey.isEmpty {
-            request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
-        }
-        // 3 分钟：流式响应下该超时按"无数据间隔"计时（token 持续到达会重置），
-        // 仅在服务端 hang 住时生效；原 5 分钟会让单次尝试空等过久
-        request.timeoutInterval = 180
-
         let baseUserContent = isMeeting
             ? "请对以下会议录音转写内容进行总结：\n\n<<<会议转写内容开始>>>\n\(transcript)\n<<<会议转写内容结束>>>"
             : "请对以下录音转写内容进行概要总结（该内容不是会议）：\n\n<<<转写内容开始>>>\n\(transcript)\n<<<转写内容结束>>>"
@@ -299,36 +280,15 @@ enum LLMService {
         }
 
         let systemContent = systemBase
-            + "\n\n重要结论和行动项应保留输入中已有的 Memozia://seek/ 时间来源链接，不得编造来源、负责人或日期。没有明确依据时标注待确认。输入也可能是按顺序排列的分段摘要，应归并全部段落而非仅总结开头。"
-            + (condense ? "\n\n这是长内容的中间归并步骤。请压缩至最多1500个汉字左右，保留决议、未决事项、行动项、负责人、日期及原有时间链接；不得添加本段之外的信息。" : "")
+            + "\n\n重要结论和行动项不得编造来源、负责人或日期。没有明确依据时标注待确认。需要注明录音时间时，使用普通时间戳。输入也可能是按顺序排列的分段摘要，应归并全部段落而非仅总结开头。"
+            + (condense ? "\n\n这是长内容的中间归并步骤。请压缩至最多1500个汉字左右，保留决议、未决事项、行动项、负责人、日期及必要的时间点；不得添加本段之外的信息。" : "")
             + (piiScrubbed ? "\n\n" + Self.piiPlaceholderRule : "")
 
-        let requestBody: [String: Any] = [
-            "model": config.modelName,
-            "messages": [
-                ["role": "system", "content": systemContent],
-                ["role": "user", "content": userContent]
-            ],
-            "stream": true,
-            "temperature": 0.7,
-            "max_tokens": maxOutputTokens(for: config, cloudDefault: 65536)
-        ]
-
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-
-        let (bytes, response) = try await URLSession.shared.bytes(for: request, delegate: EndpointPolicy.RedirectGuard.shared)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw LLMError.invalidResponse
-        }
-
-        guard httpResponse.statusCode == 200 else {
-            var errorBody = ""
-            for try await line in bytes.lines {
-                errorBody += line
-            }
-            throw LLMError.apiError(statusCode: httpResponse.statusCode, message: errorBody)
-        }
+        let request = ChatCompletionRequest(
+            config: config, systemPrompt: systemContent, userContent: userContent,
+            stream: true, temperature: 0.7
+        )
+        let (bytes, _) = try await request.bytes(timeout: 180, session: session)
 
         return try await consumeStream(
             bytes: bytes,
@@ -515,12 +475,9 @@ enum LLMService {
 
     /// 判定转写内容是否为会议（非流式，单字输出）。
     /// 解析失败时保守视为会议，沿用总结模板，避免误伤真实会议
-    static func detectMeeting(transcript: String, config: LLMConfigSnapshot) async throws -> Bool {
-        guard let url = URL(string: config.chatCompletionsURL) else {
-            throw LLMError.invalidURL
-        }
-        try validateSecureURL(for: config)
-
+    static func detectMeeting(
+        transcript: String, config: LLMConfigSnapshot, session: URLSession = .shared
+    ) async throws -> Bool {
         // 采样：开头 + 结尾各半，中间省略
         let half = maxClassifierInputCharacters / 2
         let head = String(transcript.prefix(half))
@@ -531,36 +488,12 @@ enum LLMService {
             ? head
             : head + "\n……（中间内容省略）……\n" + tail
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if !config.apiKey.isEmpty {
-            request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
-        }
-        request.timeoutInterval = 60
-
-        let requestBody: [String: Any] = [
-            "model": config.modelName,
-            "messages": [
-                ["role": "system", "content": PromptTemplateStore.resolved(.meetingClassifier)],
-                ["role": "user", "content": sampled]
-            ],
-            "stream": false,
-            "temperature": 0,
-            "max_tokens": 8
-        ]
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-
-        let (data, response) = try await URLSession.shared.data(for: request, delegate: EndpointPolicy.RedirectGuard.shared)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw LLMError.invalidResponse
-        }
-        guard httpResponse.statusCode == 200 else {
-            throw LLMError.apiError(
-                statusCode: httpResponse.statusCode,
-                message: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
+        let request = ChatCompletionRequest(
+            config: config, systemPrompt: PromptTemplateStore.resolved(.meetingClassifier),
+            userContent: sampled, stream: false, temperature: 0,
+            outputTokens: config.isLocal ? 4_096 : 8, reasoningOutputTokens: 4_096
+        )
+        let data = try await request.data(timeout: 60, session: session)
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let choices = json["choices"] as? [[String: Any]],
               let message = choices.first?["message"] as? [String: Any],
@@ -653,57 +586,24 @@ enum LLMService {
         retryOnEmpty: Bool
     ) async throws -> String {
         try Task.checkCancellation()
-        guard let url = URL(string: config.chatCompletionsURL) else {
-            throw LLMError.invalidURL
-        }
-        try validateSecureURL(for: config)
-
         let capped = content.count > maxTitleInputCharacters
             ? String(content.prefix(maxTitleInputCharacters)) : content
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if !config.apiKey.isEmpty {
-            request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
-        }
-        request.timeoutInterval = config.isLocal ? 180 : 60
-
-        var requestBody: [String: Any] = [
-            "model": config.modelName,
-            "messages": [
-                ["role": "system", "content": PromptTemplateStore.resolved(.title)],
-                ["role": "user", "content": capped]
-            ],
-            "stream": config.isLocal,
-            "temperature": 0.3,
-            "max_tokens": maxOutputTokens(for: config, cloudDefault: 65536)
-        ]
-        if let off = capabilities.reasoningOffValue {
-            requestBody["reasoning_effort"] = off
-        }
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        let request = ChatCompletionRequest(
+            config: config, systemPrompt: PromptTemplateStore.resolved(.title), userContent: capped,
+            stream: config.isLocal, temperature: 0.3, reasoningEffort: capabilities.reasoningOffValue
+        )
 
         let started = Date()
-        let (bytes, response) = try await session.bytes(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw LLMError.invalidResponse
-        }
+        let (bytes, httpResponse) = try await request.bytes(timeout: config.isLocal ? 180 : 60, session: session)
         let result: SSEStreamResult
-        if httpResponse.statusCode == 200,
-           httpResponse.value(forHTTPHeaderField: "Content-Type")?.lowercased().contains("text/event-stream") == true {
+        if httpResponse.value(forHTTPHeaderField: "Content-Type")?.lowercased().contains("text/event-stream") == true {
             result = try await consumeSSEStream(bytes: bytes, onToken: { _ in })
             guard result.sawDone || result.finishReason != nil else { throw LLMError.invalidResponse }
         } else {
             // 兼容忽略 stream、仍然返回完整 JSON 的本地服务，以及云端原有响应。
             var data = Data()
             for try await byte in bytes { data.append(byte) }
-            guard httpResponse.statusCode == 200 else {
-                throw LLMError.apiError(
-                    statusCode: httpResponse.statusCode,
-                    message: String(decoding: data, as: UTF8.self)
-                )
-            }
             guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let choices = json["choices"] as? [[String: Any]],
                   let choice = choices.first,
@@ -760,7 +660,8 @@ enum LLMService {
         config: LLMConfigSnapshot,
         onToken: @escaping @Sendable (String) -> Void = { _ in },
         onReasoning: @escaping @Sendable (String) -> Void = { _ in },
-        onAttemptStart: @escaping @Sendable () -> Void = {}
+        onAttemptStart: @escaping @Sendable () -> Void = {},
+        session: URLSession = .shared
     ) async throws -> String {
         guard config.supportsVision else {
             let ocrText = try await VisionOCRService.recognizeText(from: imageData)
@@ -769,59 +670,29 @@ enum LLMService {
             }
             return try await generateSummary(
                 transcript: ocrText, config: config, forceOverview: true,
-                onToken: onToken, onReasoning: onReasoning, onAttemptStart: onAttemptStart)
+                onToken: onToken, onReasoning: onReasoning, onAttemptStart: onAttemptStart, session: session)
         }
 
-        guard let url = URL(string: config.chatCompletionsURL) else {
-            throw LLMError.invalidURL
-        }
         try validateSecureURL(for: config)
 
         let payload = Self.downsampleForLLM(imageData: imageData)
         let dataURL = "data:image/\(payload.format);base64,\(payload.data.base64EncodedString())"
 
-        let requestBody: [String: Any] = [
-            "model": config.modelName,
-            "messages": [
-                ["role": "system", "content": PromptTemplateStore.resolved(.screenshotSummary)],
-                ["role": "user", "content": [
-                    ["type": "text", "text": "请对以下截图内容进行总结："],
-                    ["type": "image_url", "image_url": ["url": dataURL]]
-                ]]
-            ],
-            "stream": true,
-            "temperature": 0.5,
-            "max_tokens": maxOutputTokens(for: config, cloudDefault: 65536)
+        let userContent: [[String: Any]] = [
+            ["type": "text", "text": "请对以下截图内容进行总结："],
+            ["type": "image_url", "image_url": ["url": dataURL]]
         ]
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if !config.apiKey.isEmpty {
-            request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
-        }
-        request.timeoutInterval = 300
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        let request = ChatCompletionRequest(
+            config: config, systemPrompt: PromptTemplateStore.resolved(.screenshotSummary),
+            userContent: userContent, stream: true, temperature: 0.5
+        )
 
         // 与非视觉路径同一策略：本地模型仅对「真·空返回」再试一次（图片重复上传的成本可接受）
         let attempts = config.isLocal ? localEmptyOutputAttempts : 1
         var text = ""
         for _ in 1...attempts {
             onAttemptStart()
-            let (bytes, response) = try await URLSession.shared.bytes(for: request, delegate: EndpointPolicy.RedirectGuard.shared)
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw LLMError.invalidResponse
-            }
-            guard httpResponse.statusCode == 200 else {
-                var errorBody = ""
-                for try await line in bytes.lines {
-                    errorBody += line
-                }
-                throw LLMError.apiError(
-                    statusCode: httpResponse.statusCode,
-                    message: errorBody
-                )
-            }
+            let (bytes, _) = try await request.bytes(timeout: 300, session: session)
             text = try await consumeStream(
                 bytes: bytes,
                 request: "截图总结",
@@ -864,16 +735,12 @@ enum LLMService {
             _ segment: Int,
             _ total: Int,
             _ text: String
-        ) async -> Void = { _, _, _ in }
+        ) async -> Void = { _, _, _ in },
+        session: URLSession = .shared
     ) async throws -> VisualNotesGenerationResult {
         let chunks = visualChunks(from: frames, perRequest: maxFramesPerVisualRequest)
         guard !chunks.isEmpty else { throw LLMError.noVisualFrames }
 
-        guard let url = URL(string: config.chatCompletionsURL) else {
-            throw LLMError.invalidURL
-        }
-        // 画面分析要能用本地模型：本地配置走 http://局域网IP:端口 时必须放行，
-        // 否则 LM Studio / Ollama / vLLM 只有明文 HTTP 端点的用户根本跑不了画面要点
         try validateSecureURL(for: config)
 
         // 本地模型仅对「空正文」再试一次（与总结/截图同一策略）；云端沿用原有重试次数
@@ -881,6 +748,7 @@ enum LLMService {
         var collected: [String] = []
         var failedRanges: [String] = []
         var lastError: Error?
+        var capabilities: LocalLLMCapabilities?
 
         for (segment, chunk) in chunks.enumerated() {
             try Task.checkCancellation()
@@ -910,14 +778,17 @@ enum LLMService {
                 intro = visualSegmentOCRIntro(frames: chunk, segment: segment, total: chunks.count)
             }
 
+            if capabilities == nil {
+                capabilities = try await LocalLLMCapabilities.discover(config: config, session: session)
+            }
             var segmentText: String?
             for attempt in 1...attemptsPerSegment {
                 onSegmentStart(segment, attempt)
                 do {
                     segmentText = try await performVisualRequest(
-                        url: url, config: config, frames: chunk,
-                        ocrText: ocrText, intro: intro,
-                        onToken: onToken, onReasoning: onReasoning
+                        config: config, frames: chunk, ocrText: ocrText, intro: intro,
+                        reasoningEffort: capabilities?.reasoningOffValue,
+                        onToken: onToken, onReasoning: onReasoning, session: session
                     )
                     break
                 } catch is CancellationError {
@@ -957,9 +828,9 @@ enum LLMService {
                     "\(chunkStart.formattedAsDuration())–\(chunkEnd.formattedAsDuration())"
                 )
                 FileSyncService.logWarning(String(
-                    format: "画面要点第 %d/%d 段失败: %@",
+                    format: String(localized: "画面要点第 %d/%d 段失败: %@"),
                     segment + 1, chunks.count,
-                    lastError?.localizedDescription ?? "模型返回空内容"
+                    lastError?.localizedDescription ?? String(localized: "模型返回空内容")
                 ))
             }
             onSegmentProgress(segment + 1, chunks.count)
@@ -1078,82 +949,45 @@ enum LLMService {
 
     /// 执行单次视觉请求（一个时间分片，SSE 流式）
     private static func performVisualRequest(
-        url: URL,
         config: LLMConfigSnapshot,
         frames: [VideoKeyframe],
         ocrText: String?,
         intro: String,
+        reasoningEffort: String?,
         onToken: @escaping @Sendable (String) -> Void,
-        onReasoning: @escaping @Sendable (String) -> Void = { _ in }
+        onReasoning: @escaping @Sendable (String) -> Void,
+        session: URLSession
     ) async throws -> String {
-        var userContent: [[String: Any]] = []
+        let userContent: Any
         if let ocrText {
-            userContent = [[
-                "type": "text",
-                "text": intro + ocrText
-            ]]
+            userContent = intro + ocrText
         } else {
-            userContent.append([
+            var parts: [[String: Any]] = [[
                 "type": "text",
                 "text": intro
-            ])
+            ]]
             for (index, frame) in frames.enumerated() {
-                userContent.append([
+                parts.append([
                     "type": "text",
                     "text": "帧 \(index + 1) · 时间 \(frame.time.formattedAsDuration())"
                 ])
                 // 复用截图链路的同一降采样实现（帧已是 1280px JPEG，这里通常直接透传）
                 let payload = downsampleForLLM(imageData: frame.jpegData)
                 let dataURL = "data:image/\(payload.format);base64,\(payload.data.base64EncodedString())"
-                userContent.append([
+                parts.append([
                     "type": "image_url",
                     "image_url": ["url": dataURL]
                 ])
             }
+            userContent = parts
         }
 
-        var requestBody: [String: Any] = [
-            "model": config.modelName,
-            "messages": [
-                ["role": "system", "content": PromptTemplateStore.resolved(.visualNotes)],
-                ["role": "user", "content": userContent]
-            ],
-            "stream": true,
-            "temperature": 0.3,
-            // 8 帧一批的正文不长，但推理型模型会先用输出预算「看图思考」，
-            // 4096 会让它正文一个 token 都产不出来（finish_reason=length → 输出预算耗尽）；
-            // 与总结/截图总结统一到 65536；非推理模型到 EOS 即停，抬高上限不增加实际计费
-            "max_tokens": maxOutputTokens(for: config, cloudDefault: 65536)
-        ]
-        // 本地推理服务（LM Studio 等）的 Qwen 系模型默认开思考：它会以正常解码速度一路
-        // 把输出预算烧在 thinking 上，正文一个 token 都产不出来（finish_reason=length），
-        // 单段耗时可达数十分钟后整段失败。画面分析只需「看图记要点」，无需推理，
-        // 故仅在本地路径关闭思考（LM Studio 认 reasoning_effort="none"）；云端请求不变。
-        if config.isLocal {
-            requestBody["reasoning_effort"] = "none"
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if !config.apiKey.isEmpty {
-            request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
-        }
+        let request = ChatCompletionRequest(
+            config: config, systemPrompt: PromptTemplateStore.resolved(.visualNotes),
+            userContent: userContent, stream: true, temperature: 0.3, reasoningEffort: reasoningEffort
+        )
         // 多图请求体大 + 视觉模型首 token 慢，与截图总结同一档超时
-        request.timeoutInterval = 300
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-
-        let (bytes, response) = try await URLSession.shared.bytes(for: request, delegate: EndpointPolicy.RedirectGuard.shared)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw LLMError.invalidResponse
-        }
-        guard httpResponse.statusCode == 200 else {
-            var errorBody = ""
-            for try await line in bytes.lines {
-                errorBody += line
-            }
-            throw LLMError.apiError(statusCode: httpResponse.statusCode, message: errorBody)
-        }
+        let (bytes, _) = try await request.bytes(timeout: 300, session: session)
         return try await consumeStream(
             bytes: bytes,
             request: "画面要点",
@@ -1164,7 +998,7 @@ enum LLMService {
     }
 
     /// 发送 LLM 前的降采样：长边超过 2048px 时缩到上限并转 JPEG（文字保留度足够），
-    /// 未超限的原样返回（保持 PNG 无损）
+    /// 未超限的保留原始数据和 MIME 类型（截图 PNG、视频帧 JPEG）。
     ///
     /// internal：供 `TodoExtractionService` 的图片待办拆解复用同一实现——旧版那条路径
     /// 完全不做降采样，4K 截图以「原图 + base64 + dataURL」三份并存送进 JSON 序列化，
@@ -1180,7 +1014,9 @@ enum LLMService {
 
         let longestSide = max(cgImage.width, cgImage.height)
         let limit = Int(maxImageDimensionForLLM)
-        guard longestSide > limit else { return (imageData, "png") }
+        let mimeType = CGImageSourceGetType(source).flatMap { UTType($0 as String)?.preferredMIMEType }
+        let format = mimeType?.split(separator: "/").last.map(String.init) ?? "png"
+        guard longestSide > limit else { return (imageData, format) }
 
         let scale = CGFloat(limit) / CGFloat(longestSide)
         let targetWidth = max(1, Int(CGFloat(cgImage.width) * scale))
@@ -1196,17 +1032,17 @@ enum LLMService {
             space: colorSpace,
             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
         ) else {
-            return (imageData, "png")
+            return (imageData, format)
         }
         context.interpolationQuality = .high
         context.draw(cgImage, in: CGRect(x: 0, y: 0, width: targetWidth, height: targetHeight))
-        guard let resized = context.makeImage() else { return (imageData, "png") }
+        guard let resized = context.makeImage() else { return (imageData, format) }
 
         let output = NSMutableData()
         guard let destination = CGImageDestinationCreateWithData(
             output, UTType.jpeg.identifier as CFString, 1, nil
         ) else {
-            return (imageData, "png")
+            return (imageData, format)
         }
         CGImageDestinationAddImage(
             destination,
@@ -1214,7 +1050,7 @@ enum LLMService {
             [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary
         )
         guard CGImageDestinationFinalize(destination), output.length > 0 else {
-            return (imageData, "png")
+            return (imageData, format)
         }
         return (output as Data, "jpeg")
     }
@@ -1273,7 +1109,7 @@ enum LLMError: LocalizedError {
     case parseError
     case insecureURL
     case noVisualFrames
-    /// 输出预算（max_tokens）在正文产出前被耗尽：推理型模型把预算用在思考上是典型成因
+    /// 输出预算在正文产出前被耗尽：推理型模型把预算用在思考上是典型成因
     case outputBudgetExhausted
     case summaryReductionFailed
 

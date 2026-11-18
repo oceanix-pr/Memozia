@@ -108,12 +108,28 @@ struct ImprovementRegressionTests {
         let encrypted = try EncryptionService.encrypt("这是原始发言")
         let segment = TranscriptMarkdownBuilder.SegmentData(timeRange: "00:12", startTime: 12.5, speaker: "发言人", encryptedText: encrypted)
         let markdown = try SummarySources.markdown(from: [segment])
-        #expect(markdown == "[00:12](Memozia://seek/12.5) · 发言人\n这是原始发言")
+        #expect(markdown == "00:12 · 发言人\n这是原始发言")
         #expect(try SummarySources.markdown(from: []).isEmpty)
         let invalid = TranscriptMarkdownBuilder.SegmentData(timeRange: "?", startTime: .nan, speaker: nil, encryptedText: encrypted)
         #expect(throws: (any Error).self) { try SummarySources.markdown(from: [invalid]) }
         let corrupted = TranscriptMarkdownBuilder.SegmentData(timeRange: "00:00", startTime: 0, speaker: nil, encryptedText: Data(repeating: 0, count: 40).base64EncodedString())
         #expect(throws: (any Error).self) { try SummarySources.markdown(from: [corrupted]) }
+    }
+
+    @Test func legacySummarySeekLinksBecomePlainTimes() throws {
+        let markdown = """
+        来源：Memozia://seek/69.6、[01:24.0](Memozia://seek/84.0)、<MEMOZIA://seek/92.64>
+        查看[文档](https://example.com)。
+        """
+        let expected = """
+        来源：1:09.6、01:24.0、1:32.6
+        查看[文档](https://example.com)。
+        """
+        let encrypted = try EncryptionService.encrypt(markdown)
+        #expect(SummarySources.decryptedMarkdown(encrypted) == expected)
+        #expect(SummarySources.decryptedMarkdown(markdown) == expected)
+        #expect(SummarySources.removingSeekLinks(from: expected) == expected)
+        #expect(SummarySources.removingSeekLinks(from: "来源：[01:09.6](Memozia://seek/69.6") == "来源：01:09.6")
     }
 
     @Test func evidenceMustExistInTheSameSourceBlock() throws {

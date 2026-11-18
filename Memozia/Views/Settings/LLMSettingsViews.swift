@@ -367,7 +367,7 @@ struct LLMConfigEditView: View {
             .alert("错误", isPresented: $showError) {
                 Button("确定") {}
             } message: {
-                Text(errorMessage ?? "未知错误")
+                Text(errorMessage ?? String(localized: "未知错误"))
             }
         }
         #if os(macOS)

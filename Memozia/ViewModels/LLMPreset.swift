@@ -28,10 +28,10 @@ enum LLMPreset: String, CaseIterable, Identifiable {
         switch self {
         case .openAI:    return "OpenAI"
         case .anthropic: return "Anthropic Claude"
-        case .deepSeek:  return "DeepSeek 深度求索"
-        case .kimi:      return "Kimi 月之暗面"
-        case .glm:       return "智谱 GLM"
-        case .qwen:      return "通义千问 Qwen"
+        case .deepSeek:  return String(localized: "DeepSeek 深度求索")
+        case .kimi:      return String(localized: "Kimi 月之暗面")
+        case .glm:       return String(localized: "智谱 GLM")
+        case .qwen:      return String(localized: "通义千问 Qwen")
         case .miniMax:   return "MiniMax"
         case .ollama:    return "Ollama"
         case .lmStudio:  return "LM Studio"
@@ -85,8 +85,8 @@ enum LLMPreset: String, CaseIterable, Identifiable {
     /// 添加时预填的模型名
     var defaultModel: String {
         switch self {
-        case .openAI:    return "gpt-4o"
-        case .anthropic: return "claude-sonnet-4-5"
+        case .openAI:    return "gpt-6.1-terra"
+        case .anthropic: return "claude-sonnet-5-5"
         case .deepSeek:  return "deepseek-chat"
         case .kimi:      return "kimi-latest"
         case .glm:       return "glm-4-plus"
@@ -102,8 +102,10 @@ enum LLMPreset: String, CaseIterable, Identifiable {
     /// 权威清单以「从服务获取模型列表」（`LLMService.fetchAvailableModels`）为准
     var suggestedModels: [String] {
         switch self {
-        case .openAI:    return ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "o4-mini"]
-        case .anthropic: return ["claude-sonnet-4-5", "claude-opus-4-1", "claude-3-5-haiku-latest"]
+        case .openAI:
+            return [defaultModel, "gpt-6.1-sol", "gpt-6.2-astra", "gpt-6-astra",
+                    "gpt-4o", "gpt-4o-mini", "gpt-4.1", "o4-mini"]
+        case .anthropic: return [defaultModel, "claude-opus-5-5", "claude-haiku-5-5"]
         case .deepSeek:  return ["deepseek-chat", "deepseek-reasoner"]
         case .kimi:      return ["kimi-latest", "kimi-k2-0711-preview", "moonshot-v1-128k", "moonshot-v1-32k"]
         case .glm:       return ["glm-4-plus", "glm-4-air", "glm-4-flash"]

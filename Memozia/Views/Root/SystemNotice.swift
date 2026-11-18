@@ -30,9 +30,9 @@ enum SystemNotice: String, Identifiable {
     /// 弹窗标题：直接说明结论，不用「提示」「警告」这类无信息量的词
     var title: String {
         switch self {
-        case .decryptionFailed: return "数据解密失败"
-        case .encryptionIneffective: return "加密保护未生效"
-        case .saveFailed: return "部分改动未能保存"
+        case .decryptionFailed: return String(localized: "数据解密失败")
+        case .encryptionIneffective: return String(localized: "加密保护未生效")
+        case .saveFailed: return String(localized: "部分改动未能保存")
         }
     }
 
@@ -41,11 +41,11 @@ enum SystemNotice: String, Identifiable {
     var message: String {
         switch self {
         case .decryptionFailed:
-            return "部分加密内容无法解密，加密密钥可能已更改或 Keychain 中的密钥被删除。对应内容将显示为空，但原始数据仍保留在磁盘与数据库中。请勿删除 Keychain 中的密钥，否则已加密的数据将无法恢复。"
+            return String(localized: "部分加密内容无法解密，加密密钥可能已更改或 Keychain 中的密钥被删除。对应内容将显示为空，但原始数据仍保留在磁盘与数据库中。请勿删除 Keychain 中的密钥，否则已加密的数据将无法恢复。")
         case .encryptionIneffective:
-            return "本次运行中有内容加密失败（Keychain 不可用或被锁定），为避免丢数据已以明文保存，这些内容仍可正常读写但不受加密保护。请确认钥匙串访问正常后重新启动应用。"
+            return String(localized: "本次运行中有内容加密失败（Keychain 不可用或被锁定），为避免丢数据已以明文保存，这些内容仍可正常读写但不受加密保护。请确认钥匙串访问正常后重新启动应用。")
         case .saveFailed:
-            return "保存到本地数据库时出错（常见原因是磁盘已写满）。当前界面上的改动可能在重启后丢失，请检查磁盘剩余空间后重试；本次运行的详细原因已记入应用日志（category: Persistence）。"
+            return String(localized: "保存到本地数据库时出错（常见原因是磁盘已写满）。当前界面上的改动可能在重启后丢失，请检查磁盘剩余空间后重试；本次运行的详细原因已记入应用日志（category: Persistence）。")
         }
     }
 

@@ -269,9 +269,9 @@ struct DictionaryFileEditorView: View {
         if let file {
             initialContent = TranscriptDictionaryService.shared.content(of: file)
         } else {
-            initialContent = "# 词典\n\n- \(String(localized: "术语一"))\n- \(String(localized: "术语二"))\n"
+            initialContent = "# \(String(localized: "词典"))\n\n- \(String(localized: "术语一"))\n- \(String(localized: "术语二"))\n"
         }
-        _fileName = State(initialValue: file?.fileName ?? "新词典")
+        _fileName = State(initialValue: file?.fileName ?? String(localized: "新词典"))
         _content = State(initialValue: initialContent)
     }
 

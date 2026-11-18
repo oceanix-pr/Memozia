@@ -50,35 +50,12 @@ enum PIIScanService {
             ? String(content.prefix(maxInputCharacters))
             : content
 
-        let requestBody: [String: Any] = [
-            "model": config.modelName,
-            "messages": [
-                ["role": "system", "content": systemPrompt],
-                ["role": "user", "content": capped]
-            ],
-            "stream": false,
-            "temperature": 0.0,
-            "max_tokens": 65536
-        ]
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if !config.apiKey.isEmpty {
-            request.setValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
-        }
-        request.timeoutInterval = 120
-        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
-
-        let (data, response) = try await URLSession.shared.data(for: request, delegate: EndpointPolicy.RedirectGuard.shared)
+        let request = ChatCompletionRequest(
+            config: config, systemPrompt: systemPrompt, userContent: capped,
+            stream: false, temperature: 0
+        )
+        let data = try await request.data(timeout: 120)
         try Task.checkCancellation()
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw LLMError.invalidResponse
-        }
-        guard httpResponse.statusCode == 200 else {
-            let msg = String(data: data, encoding: .utf8) ?? ""
-            throw LLMError.apiError(statusCode: httpResponse.statusCode, message: msg)
-        }
 
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let choices = json["choices"] as? [[String: Any]],

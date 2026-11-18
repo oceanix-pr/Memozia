@@ -1,41 +1,41 @@
 # Third-Party Notices
 
-Memozia 的源代码采用 MIT License，但以下第三方组件、数据文件和用户下载的模型适用各自的许可证。本文件依据当前 `Package.resolved` 与源码中的资源来源整理；升级依赖或模型时应同步复核。
+Memozia 源代码采用 [MIT License](LICENSE)。第三方组件、数据文件和按需下载的模型适用各自的许可证。应用包的 `Contents/Resources` 收录本清单、Memozia 的 MIT 许可证和第三方许可文件。
 
 ## Swift Package 依赖
 
 | 组件 | 锁定版本 | 许可证 | 权利人或项目 |
 |---|---:|---|---|
 | [argmax-oss-swift / WhisperKit](https://github.com/argmaxinc/argmax-oss-swift) | 0.18.0 | MIT | Copyright (c) 2024 argmax, inc. |
+| [EventSource](https://github.com/mattt/eventsource) | 1.5.1 | MIT | 完整许可证见 `MCP-LICENSES.txt` |
 | [Sparkle](https://github.com/sparkle-project/Sparkle) | 2.10.0 | MIT 及附带第三方条款 | Sparkle Project contributors；完整声明随 App 分发于 `Sparkle-LICENSE.txt` |
 | [KeychainAccess](https://github.com/kishikawakatsumi/KeychainAccess) | 4.2.2 | MIT | Copyright (c) 2014 kishikawa katsumi |
-| [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) | revision `1cb484a` | Apache-2.0 | sherpa-onnx contributors |
+| [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) | v1.13.6（`1cb484a`） | Apache-2.0 及随附第三方条款 | 应用使用上游 macOS shared no-TTS 构建 |
 | [onnxruntime-libs](https://github.com/csukuangfj/onnxruntime-libs) | 1.27.1 | MIT（所分发 ONNX Runtime 二进制） | Microsoft Corporation and contributors |
-| [swift-argument-parser](https://github.com/apple/swift-argument-parser) | 1.8.2 | Apache-2.0 | Swift Argument Parser contributors |
+| [swift-argument-parser](https://github.com/apple/swift-argument-parser) | 1.8.2 | Apache-2.0 with Runtime Library Exception | Swift Argument Parser contributors |
 | [swift-asn1](https://github.com/apple/swift-asn1) | 1.7.1 | Apache-2.0 | Copyright 2022 The SwiftASN1 Project |
-| [swift-collections](https://github.com/apple/swift-collections) | 1.6.0 | Apache-2.0 | Swift Collections contributors |
+| [swift-atomics](https://github.com/apple/swift-atomics) | 1.3.1 | Apache-2.0 with Runtime Library Exception | 完整许可证见 `MCP-LICENSES.txt` |
+| [swift-collections](https://github.com/apple/swift-collections) | 1.6.0 | Apache-2.0 with Runtime Library Exception | Swift Collections contributors |
 | [swift-crypto](https://github.com/apple/swift-crypto) | 4.5.0 | Apache-2.0 | Copyright 2019 The SwiftCrypto Project |
 | [swift-jinja](https://github.com/huggingface/swift-jinja) | 2.3.6 | Apache-2.0 | swift-jinja contributors |
+| [swift-log](https://github.com/apple/swift-log) | 1.16.2 | Apache-2.0 | 完整许可和声明见 `MCP-LICENSES.txt` |
+| [SwiftNIO](https://github.com/apple/swift-nio) | 2.104.0 | Apache-2.0 及随附第三方条款 | 完整许可和声明见 `MCP-LICENSES.txt` 与 `Swift-Package-Notices.txt` |
+| [MCP Swift SDK](https://github.com/modelcontextprotocol/swift-sdk) | 0.12.1 | MIT / Apache-2.0 过渡许可 | 完整许可证见 `MCP-LICENSES.txt` |
+| [Swift System](https://github.com/apple/swift-system) | 1.8.1 | Apache-2.0 with Runtime Library Exception | 完整许可证见 `MCP-LICENSES.txt` |
 | [swift-transformers](https://github.com/huggingface/swift-transformers) | 1.1.9 | Apache-2.0 | swift-transformers contributors |
 | [yyjson](https://github.com/ibireme/yyjson) | 0.12.0 | MIT | Copyright (c) 2020 YaoYuan |
 
-依赖由 Swift Package Manager 拉取，完整且版本对应的许可证文本位于各包源码中。MIT 与 Apache-2.0 的通用许可证正文也分别收录在 [`LICENSES/MIT.txt`](LICENSES/MIT.txt) 和 [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt)。
+Swift 包的许可证与版权声明随应用分发于 `Sparkle-LICENSE.txt`、`MCP-LICENSES.txt` 和 [`LICENSES/Swift-Package-Notices.txt`](LICENSES/Swift-Package-Notices.txt)。[Apache-2.0 正文](LICENSES/Apache-2.0.txt)与这些声明一同收录。
 
-### SwiftASN1 NOTICE
+### Sherpa-ONNX 与 ONNX Runtime 的内嵌组件
 
-> The SwiftASN1 Project — Copyright 2022 The SwiftASN1 Project. This product contains derivations of scripts from SwiftNIO and Swift OpenAPI Generator.
+SwiftPM 提供 Sherpa 的 Swift 模块和头文件。构建阶段采用 [Sherpa v1.13.6 官方 macOS no-TTS 构建](https://github.com/k2-fsa/sherpa-onnx/releases/tag/v1.13.6) 的 C API 动态库。框架修改、内嵌库的版权声明与 Eigen 对应版本的 MPL-2.0 源码下载地址见 [`LICENSES/Sherpa-ONNX-Notices.txt`](LICENSES/Sherpa-ONNX-Notices.txt)。
 
-上游完整 NOTICE：<https://github.com/apple/swift-asn1/blob/main/NOTICE.txt>
-
-### SwiftCrypto NOTICE
-
-> The SwiftCrypto Project — Copyright 2019 The SwiftCrypto Project. This product contains test vectors from Google's Wycheproof project and derivations of files from SwiftNIO.
-
-上游完整 NOTICE：<https://github.com/apple/swift-crypto/blob/main/NOTICE.txt>
+ONNX Runtime 自身采用 [MIT](LICENSES/ONNXRuntime-LICENSE.txt)，内嵌组件适用 [ONNX Runtime 上游第三方声明](LICENSES/ONNXRuntime-ThirdPartyNotices.txt)列出的条款。
 
 ## 随仓库分发的数据
 
-`Memozia/Resources/ChineseDictionary/*.txt` 来源于 [OpenCC](https://github.com/BYVoid/OpenCC)，采用 Apache License 2.0。词典文件保留了来源与许可证头；Apache-2.0 正文见 [`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt)。
+`Memozia/Resources/ChineseDictionary/*.txt` 来源于 [OpenCC](https://github.com/BYVoid/OpenCC)，采用 Apache License 2.0。词典文件保留来源与许可头，应用包附带 [OpenCC 原始许可](LICENSES/OpenCC-LICENSE.txt)。
 
 ## 运行时下载的模型
 

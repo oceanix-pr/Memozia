@@ -138,7 +138,7 @@ private final class ChineseDictConverter {
             throw NSError(
                 domain: "ChineseConverter",
                 code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "找不到字典文件 \(name).\(ext)"]
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "找不到字典文件 \(name).\(ext)")]
             )
         }
 

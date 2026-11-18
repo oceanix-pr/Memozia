@@ -298,7 +298,7 @@ final class SpeakerDiarizationService: @unchecked Sendable {
                 guard let onnx = Self.firstFile(
                     named: "model.onnx", in: tempDir, allowSubdirectory: true
                 ) else {
-                    throw DiarizationError.downloadFailed("分段模型包中未找到 model.onnx")
+                    throw DiarizationError.downloadFailed(String(localized: "分段模型包中未找到 model.onnx"))
                 }
                 try? fm.removeItem(at: segDest)
                 try fm.moveItem(at: onnx, to: segDest)
@@ -522,7 +522,7 @@ final class SpeakerDiarizationService: @unchecked Sendable {
         let file = try AVAudioFile(forReading: url)
         let sampleRate = file.processingFormat.sampleRate
         guard sampleRate > 0 else {
-            throw DiarizationError.audioLoadFailed("音频采样率无效")
+            throw DiarizationError.audioLoadFailed(String(localized: "音频采样率无效"))
         }
         return Double(max(Int64(0), file.length)) / sampleRate
     }
@@ -1348,7 +1348,7 @@ final class SpeakerDiarizationService: @unchecked Sendable {
         let file = try AVAudioFile(forReading: audioURL)
         let srcFormat = file.processingFormat
         guard srcFormat.sampleRate > 0 else {
-            throw DiarizationError.audioLoadFailed("音频采样率无效")
+            throw DiarizationError.audioLoadFailed(String(localized: "音频采样率无效"))
         }
 
         guard let dstFormat = AVAudioFormat(
@@ -1357,12 +1357,12 @@ final class SpeakerDiarizationService: @unchecked Sendable {
             channels: 1,
             interleaved: false
         ) else {
-            throw DiarizationError.audioLoadFailed("无法创建音频转换格式")
+            throw DiarizationError.audioLoadFailed(String(localized: "无法创建音频转换格式"))
         }
 
         let fileFrames = max(Int64(0), file.length)
         guard fileFrames > 0 else {
-            throw DiarizationError.audioLoadFailed("音频内容为空")
+            throw DiarizationError.audioLoadFailed(String(localized: "音频内容为空"))
         }
         // 读取起点：整段为 0；分段模式按秒换算成源帧并把读取位置前移
         let startFrame: AVAudioFramePosition
@@ -1379,7 +1379,7 @@ final class SpeakerDiarizationService: @unchecked Sendable {
         }
         let totalSourceFrames = AVAudioFrameCount(endFrame - startFrame)
         guard totalSourceFrames > 0 else {
-            throw DiarizationError.audioLoadFailed("音频区间为空")
+            throw DiarizationError.audioLoadFailed(String(localized: "音频区间为空"))
         }
 
         let ratio = dstFormat.sampleRate / srcFormat.sampleRate
@@ -1389,7 +1389,7 @@ final class SpeakerDiarizationService: @unchecked Sendable {
 
         let chunkFrames = min(Self.sourceChunkFrames, totalSourceFrames)
         guard let srcBuffer = AVAudioPCMBuffer(pcmFormat: srcFormat, frameCapacity: chunkFrames) else {
-            throw DiarizationError.audioLoadFailed("无法创建音频读取缓冲")
+            throw DiarizationError.audioLoadFailed(String(localized: "无法创建音频读取缓冲"))
         }
 
         // 源已是目标格式（16k 单声道 Float32）：逐块读取直接拼接，同样不分配整段缓冲
@@ -1405,7 +1405,7 @@ final class SpeakerDiarizationService: @unchecked Sendable {
                     try file.read(into: srcBuffer)
                 } catch {
                     guard framesRead >= totalSourceFrames || Self.isEndOfFileRead(error) else {
-                        throw DiarizationError.audioLoadFailed("音频读取失败：\(error.localizedDescription)")
+                        throw DiarizationError.audioLoadFailed(String(localized: "音频读取失败：\(error.localizedDescription)"))
                     }
                     break
                 }
@@ -1415,13 +1415,13 @@ final class SpeakerDiarizationService: @unchecked Sendable {
                 output.append(contentsOf: Self.floatSamples(of: srcBuffer))
             }
             guard !output.isEmpty else {
-                throw DiarizationError.audioLoadFailed("音频内容为空")
+                throw DiarizationError.audioLoadFailed(String(localized: "音频内容为空"))
             }
             return output
         }
 
         guard let converter = AVAudioConverter(from: srcFormat, to: dstFormat) else {
-            throw DiarizationError.audioLoadFailed("无法创建音频转换器")
+            throw DiarizationError.audioLoadFailed(String(localized: "无法创建音频转换器"))
         }
         // 单块输出容量 = 本块全部输出 + 滤波器余量：足够宽则不会出现
         // “输出填满而输入只被部分消费”的情况（那会丢弃未消费的源帧）
@@ -1436,7 +1436,7 @@ final class SpeakerDiarizationService: @unchecked Sendable {
                 try file.read(into: srcBuffer)
             } catch {
                 guard framesRead >= totalSourceFrames || Self.isEndOfFileRead(error) else {
-                    throw DiarizationError.audioLoadFailed("音频读取失败：\(error.localizedDescription)")
+                    throw DiarizationError.audioLoadFailed(String(localized: "音频读取失败：\(error.localizedDescription)"))
                 }
                 break
             }
@@ -1456,7 +1456,7 @@ final class SpeakerDiarizationService: @unchecked Sendable {
             try Self.flushConverter(converter, to: dstFormat, outputCapacity: outputCapacity, into: &output)
         }
         guard !output.isEmpty else {
-            throw DiarizationError.audioLoadFailed("音频内容为空")
+            throw DiarizationError.audioLoadFailed(String(localized: "音频内容为空"))
         }
         return output
     }
@@ -1472,7 +1472,7 @@ final class SpeakerDiarizationService: @unchecked Sendable {
         into output: inout [Float]
     ) throws {
         guard let out = AVAudioPCMBuffer(pcmFormat: dstFormat, frameCapacity: outputCapacity) else {
-            throw DiarizationError.audioLoadFailed("无法创建音频输出缓冲")
+            throw DiarizationError.audioLoadFailed(String(localized: "无法创建音频输出缓冲"))
         }
         nonisolated(unsafe) var delivered = false
         nonisolated(unsafe) let inputBuffer = source
@@ -1496,7 +1496,7 @@ final class SpeakerDiarizationService: @unchecked Sendable {
         }
         // .error 状态才视为失败；.haveData/.endOfStream/.inputRanOut 均可使用已转换数据
         if status == .error {
-            throw DiarizationError.audioLoadFailed("音频格式转换失败")
+            throw DiarizationError.audioLoadFailed(String(localized: "音频格式转换失败"))
         }
         output.append(contentsOf: Self.floatSamples(of: out))
     }
@@ -1631,7 +1631,7 @@ private final class StreamingDownloadDelegate: NSObject, URLSessionDownloadDeleg
             }
             try fm.moveItem(at: location, to: destination)
         } catch {
-            settle(.failure(DiarizationError.downloadFailed("下载文件落盘失败：\(error.localizedDescription)")))
+            settle(.failure(DiarizationError.downloadFailed(String(localized: "下载文件落盘失败：\(error.localizedDescription)"))))
         }
     }
 
@@ -1656,16 +1656,16 @@ private final class StreamingDownloadDelegate: NSObject, URLSessionDownloadDeleg
             return
         }
         guard let http = task.response as? HTTPURLResponse else {
-            settle(.failure(DiarizationError.downloadFailed("模型下载无响应头")))
+            settle(.failure(DiarizationError.downloadFailed(String(localized: "模型下载无响应头"))))
             return
         }
         guard (200..<300).contains(http.statusCode) else {
-            settle(.failure(DiarizationError.downloadFailed("模型下载失败（服务端返回 \(http.statusCode)）")))
+            settle(.failure(DiarizationError.downloadFailed(String(localized: "模型下载失败（服务端返回 \(http.statusCode)）"))))
             return
         }
         let size = ((try? FileManager.default.attributesOfItem(atPath: destination.path)[.size]) as? NSNumber)?.int64Value ?? 0
         guard size > 0 else {
-            settle(.failure(DiarizationError.downloadFailed("模型下载结果为空文件")))
+            settle(.failure(DiarizationError.downloadFailed(String(localized: "模型下载结果为空文件"))))
             return
         }
         if let finalURL {
@@ -1673,7 +1673,7 @@ private final class StreamingDownloadDelegate: NSObject, URLSessionDownloadDeleg
                 try? FileManager.default.removeItem(at: finalURL)
                 try FileManager.default.moveItem(at: destination, to: finalURL)
             } catch {
-                settle(.failure(DiarizationError.downloadFailed("模型文件就位失败：\(error.localizedDescription)")))
+                settle(.failure(DiarizationError.downloadFailed(String(localized: "模型文件就位失败：\(error.localizedDescription)"))))
                 return
             }
         }

@@ -4,8 +4,8 @@
 #    会把 CONFIGURATION_BUILD_DIR 注入 DYLD_LIBRARY_PATH，优先加载这里的副本；
 #    pre-build 的 install_name_tool 会使上游签名失效，如果只签 App 内的嵌入副本，
 #    测试宿主会在建立 XCTest 连接前被 AMFI 终止。
-# 2. 确认所有可能被加载的 SherpaOnnxC 不再引用
-#    @rpath/libonnxruntime.dylib，且它引用的 onnxruntime.framework 确实存在。
+# 2. 确认所有可能被加载的 SherpaOnnxC 都来自关闭 TTS 的上游构建，
+#    并校验其链接的 onnxruntime.framework 实际可用。
 #
 # 背景：上游产物引用 libonnxruntime.dylib，若 Scripts/fix_onnxruntime_framework.sh
 # 没找到产物目录（或 install_name_tool 失败），构建照样成功，但应用启动即
@@ -28,52 +28,30 @@ if [ ! -d "$APP" ]; then
     exit 0
 fi
 
-# 就地修复「构建产物目录」里可能陈旧的 SherpaOnnxC dylib 引用。
-#
-# 背景：预构建脚本修补的是 SourcePackages/artifacts 里的**源产物**；但 Xcode 认为
-# Build/Products/<Config>/SherpaOnnxC.framework 已经是「最新构建产物」，不会因为源被改
-# 而重新拷贝（它的 time check 不一定覆盖这种修改），于是这里会长期残留对
-# @rpath/libonnxruntime.dylib 的旧引用——应用启动即 "Library not loaded" 崩溃。
-# 预构建脚本只能删「App 内嵌副本」（它在链接之后才生成）；此处这个副本由包目标先产出，
-# 在我们的预构建阶段删除会导致链接缺输入，因此只能在这一步就地重写引用。
-# 重写成功后再由下面的重签逻辑恢复签名；若改不动，紧随其后的链接校验仍会失败。
-if [ -f "$BUILD_PRODUCTS/SherpaOnnxC.framework/Versions/A/SherpaOnnxC" ] &&
-   otool -L "$BUILD_PRODUCTS/SherpaOnnxC.framework/Versions/A/SherpaOnnxC" 2>/dev/null \
-       | grep -q "libonnxruntime\.dylib"; then
-    if install_name_tool -change "@rpath/libonnxruntime.dylib" \
-        "@rpath/onnxruntime.framework/Versions/A/onnxruntime" \
-        "$BUILD_PRODUCTS/SherpaOnnxC.framework/Versions/A/SherpaOnnxC" 2>/dev/null; then
-        echo "Repaired stale SherpaOnnxC dylib reference in build products"
-    else
-        echo "error: 无法修复构建产物中 SherpaOnnxC 的 libonnxruntime.dylib 引用" >&2
+APP_FW="$APP/Contents/Frameworks/SherpaOnnxC.framework"
+PROD_FW="$BUILD_PRODUCTS/SherpaOnnxC.framework"
+if [ -d "$PROD_FW" ] && [ ! -f "$APP_FW/Versions/A/SherpaOnnxC" ]; then
+    rm -rf "$APP_FW"
+    if ! /usr/bin/ditto "$PROD_FW" "$APP_FW"; then
+        echo "error: 无法刷新 App 内嵌的 SherpaOnnxC.framework" >&2
         exit 1
     fi
 fi
 
-# 确保 App 内嵌副本存在且引用正确。
-# Xcode 的「Embed Frameworks」不会因为上游产物被改写而重新拷贝（它认为输出已是最新），
-# 预构建阶段删掉旧副本后也不会自动补回（Debug 使用 debug dylib 时尤其明显），
-# 结果是 App 缺失 SherpaOnnxC、启动即 “Library not loaded”。这里直接从已修正的
-# 构建产物副本整体覆盖，保证 bundle 完整。
-APP_FW="$APP/Contents/Frameworks/SherpaOnnxC.framework"
-PROD_FW="$BUILD_PRODUCTS/SherpaOnnxC.framework"
-if [ -d "$PROD_FW" ]; then
-    need_copy=0
-    if [ ! -f "$APP_FW/Versions/A/SherpaOnnxC" ]; then
-        need_copy=1
-    elif otool -L "$APP_FW/Versions/A/SherpaOnnxC" 2>/dev/null | grep -q "libonnxruntime\.dylib"; then
-        need_copy=1
-    fi
-    if [ "$need_copy" -eq 1 ]; then
-        rm -rf "$APP_FW"
-        if /usr/bin/ditto "$PROD_FW" "$APP_FW"; then
-            echo "Refreshed embedded SherpaOnnxC.framework in app bundle"
-        else
-            echo "error: 无法刷新 App 内嵌的 SherpaOnnxC.framework" >&2
-            exit 1
-        fi
-    fi
+# Xcode 增量构建可能保留上一份框架。逐一检查可加载副本并替换旧的二进制，再重签。
+if [ ! -f "$APP_FW/Versions/A/SherpaOnnxC" ]; then
+    echo "error: 缺少 App 内嵌的 SherpaOnnxC.framework" >&2
+    exit 1
 fi
+sherpa_frameworks=("$APP_FW")
+sherpa_binaries=("$APP_FW/Versions/A/SherpaOnnxC")
+if [ -f "$PROD_FW/Versions/A/SherpaOnnxC" ]; then
+    sherpa_frameworks+=("$PROD_FW")
+    sherpa_binaries+=("$PROD_FW/Versions/A/SherpaOnnxC")
+fi
+source_root="${SRCROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+package_cache="${MEMOZIA_PACKAGE_CACHE_PATH:-${OBJROOT:-$BUILD_PRODUCTS/..}/../../SourcePackages}"
+/bin/bash "$source_root/Scripts/install_sherpa_no_tts.sh" "$package_cache/Memozia" "${sherpa_binaries[@]}" || exit 1
 
 # 修改过 Mach-O 后上游签名已失效。App 内副本由 Xcode 自动重签，但构建目录副本不会；
 # 后者却会在 Xcode Run/Test 时被优先加载，所以必须显式重签。
@@ -123,21 +101,6 @@ if [ "${CODE_SIGNING_ALLOWED:-YES}" != "NO" ]; then
     fi
 fi
 
-sherpa_frameworks=()
-for candidate in "$APP/Contents/Frameworks/SherpaOnnxC.framework" \
-                 "$BUILD_PRODUCTS/SherpaOnnxC.framework"; do
-    [ -f "$candidate/Versions/A/SherpaOnnxC" ] && sherpa_frameworks+=("$candidate")
-done
-
-if [ "${#sherpa_frameworks[@]}" -eq 0 ]; then
-    cat >&2 <<EOF
-error: 未找到 SherpaOnnxC.framework（已查找 ${APP}/Contents/Frameworks 与 ${BUILD_PRODUCTS}）：
-       说话人分离将不可用，应用也可能无法启动。
-       请检查 sherpa-onnx 依赖是否解析成功、preBuildScripts 是否被跳过。
-EOF
-    exit 1
-fi
-
 for framework in "${sherpa_frameworks[@]}"; do
     BIN="$framework/Versions/A/SherpaOnnxC"
     links="$(otool -L "$BIN" 2>/dev/null || true)"
@@ -146,8 +109,8 @@ for framework in "${sherpa_frameworks[@]}"; do
         cat >&2 <<EOF
 error: SherpaOnnxC 仍引用 @rpath/libonnxruntime.dylib（${BIN}），应用启动会因
        "Library not loaded" 崩溃。
-       请检查构建日志中 "Fix Onnxruntime Framework Layout" 阶段是否输出
-       "Fixed dylib reference"，以及 Scripts/fix_onnxruntime_framework.sh 是否能
+       请检查构建日志中 "Fix Onnxruntime Framework Layout" 阶段，以及
+       Scripts/fix_onnxruntime_framework.sh 是否能
        在本次 DerivedData 的 SourcePackages/artifacts 下找到产物。
 EOF
         exit 1
@@ -172,7 +135,7 @@ EOF
         exit 1
     fi
 
-    echo "Verified dynamic framework: SherpaOnnxC linkage and signature OK (${framework})"
+    echo "Verified dynamic framework: SherpaOnnxC no-TTS build, linkage and signature OK (${framework})"
 done
 
 # AVKit 加载命令校验（防回归）：

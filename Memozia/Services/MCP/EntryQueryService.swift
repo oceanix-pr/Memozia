@@ -211,6 +211,11 @@ final class EntryQueryService {
                         "scan_complete": .bool(exhausted), "order": .string("entry_folder_desc")])
     }
 
+    private func fieldText(_ value: String?, field: String) throws -> String {
+        let text = try decrypt(value)
+        return field == "summary" ? SummarySources.removingSeekLinks(from: text) : text
+    }
+
     private func match(_ item: Entry, query: String, grant: MCPClientGrant, deadline: ContinuousClock.Instant) async throws -> Value? {
         func hit(_ text: String, field: String, start: Double? = nil, end: Double? = nil) -> Value? {
             guard let range = text.range(of: query, options: [.caseInsensitive, .diacriticInsensitive]) else { return nil }
@@ -225,7 +230,7 @@ final class EntryQueryService {
         switch item {
         case .recording(let r):
             for (field, value) in [("summary", r.summary), ("visual", r.visualSummary)] {
-                if let match = hit(try decrypt(value), field: field) { return match }
+                if let match = hit(try fieldText(value, field: field), field: field) { return match }
             }
             for (index, segment) in r.segments.sorted(by: { $0.startTime < $1.startTime }).enumerated() {
                 if index.isMultiple(of: 64) {
@@ -238,7 +243,7 @@ final class EntryQueryService {
             }
         case .note(let n):
             for (field, value) in [("text", n.textContent), ("summary", n.summaryText), ("ocr", n.ocrText)] {
-                if let match = hit(try decrypt(value), field: field) { return match }
+                if let match = hit(try fieldText(value, field: field), field: field) { return match }
             }
         }
         return nil
@@ -260,7 +265,7 @@ final class EntryQueryService {
         case (.note(let n), "ocr"): value = n.ocrText
         default: throw MCPQueryError.invalidArguments
         }
-        let plain = try decrypt(value)
+        let plain = try fieldText(value, field: field)
         var result = item.metadata
         result["field"] = .string(field)
         result["text"] = .string(plain)

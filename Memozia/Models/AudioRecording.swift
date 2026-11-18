@@ -553,9 +553,9 @@ extension AudioRecording {
             .joined(separator: "\n\n---\n\n")
     }
 
-    /// 解密后的总结内容
+    /// 解密后的总结正文，历史录音跳转地址转换为普通时间文字。
     var decryptedSummary: String {
-        EncryptionService.decryptSafely(summary)
+        SummarySources.decryptedMarkdown(summary)
     }
 
     /// 解密后的画面要点内容

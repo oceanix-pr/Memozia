@@ -82,8 +82,9 @@ struct QuickNoteDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     // 文字内容
-                    if !quickNote.decryptedTextContent.isEmpty {
-                        textContentSection
+                    let textContent = quickNote.decryptedTextContent
+                    if !textContent.isEmpty {
+                        textContentSection(textContent)
                     }
 
                     // 图片内容
@@ -299,7 +300,7 @@ struct QuickNoteDetailView: View {
     // MARK: - 文字内容
 
     @ViewBuilder
-    private var textContentSection: some View {
+    private func textContentSection(_ text: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
                 Label("文字内容", systemImage: "text.alignleft")
@@ -326,7 +327,14 @@ struct QuickNoteDetailView: View {
                     .disabled(textDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 } else {
                     Button {
-                        textDraft = quickNote.decryptedTextContent
+                        copyToClipboard(text)
+                    } label: {
+                        Label("复制", systemImage: "doc.on.doc")
+                    }
+                    .buttonStyle(.borderless)
+
+                    Button {
+                        textDraft = text
                         isEditingText = true
                     } label: {
                         Label("编辑", systemImage: "pencil")
@@ -342,6 +350,8 @@ struct QuickNoteDetailView: View {
                 // 编辑/替换内容时编辑框高度保持不变（与总结编辑一致）
                 TextEditor(text: $textDraft)
                     .font(.body)
+                    .accessibilityLabel(Text("文字内容"))
+                    .help("编辑模式（支持 Markdown）")
                     .frame(height: 240)
                     .padding(8)
                     .background(.quaternary.opacity(0.3))
@@ -349,10 +359,7 @@ struct QuickNoteDetailView: View {
                     // 编辑模式查找（⌘F）/替换（⌘R）支持
                     .textFindReplace(text: $textDraft)
             } else {
-                Text(quickNote.decryptedTextContent)
-                    .font(.body)
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                MarkdownView(markdown: text, preservesSoftLineBreaks: true, bodyFont: .body)
                     .padding(12)
                     .background(.quaternary.opacity(0.3))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -589,12 +596,10 @@ struct QuickNoteDetailView: View {
         }
     }
 
-    /// 保存重新编辑的文字内容（含截图笔记 OCR 文本与纯文字笔记正文）
+    /// 保存重新编辑的 Markdown 原文。
     private func saveTextEdit() {
-        let trimmed = textDraft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
         // 保存失败（加密/磁盘/数据库）时保留草稿并维持编辑态，避免用户输入丢失
-        guard viewModel.updateTextContent(trimmed, for: quickNote, context: modelContext) else { return }
+        guard viewModel.updateTextContent(textDraft, for: quickNote, context: modelContext) else { return }
         isEditingText = false
         textDraft = ""
     }
