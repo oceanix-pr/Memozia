@@ -27,7 +27,7 @@ jobs:
       TEST_RUNNER_MEMOZIA_CI: '1'
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install XcodeGen
         run: brew install xcodegen
