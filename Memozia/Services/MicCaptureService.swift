@@ -298,9 +298,21 @@ final class MicCaptureService: @unchecked Sendable {
            client.commonFormat == .pcmFormatFloat32 {
             return client
         }
-        guard let format = AVAudioFormat(
-            standardFormatWithSampleRate: rate, channels: hardware.channelCount
-        ) else { throw MicCaptureError.inputDeviceLost }
+        let format: AVAudioFormat
+        if hardware.channelCount > 2 {
+            // channels: 初始化器只为单/双声道提供默认布局。内建三麦克风阵列也可能
+            // 暴露三声道，必须保留现有声道顺序；无布局时按离散声道构造，不能误报设备断开。
+            let layout = [client.channelLayout, hardware.channelLayout]
+                .compactMap { $0 }.first { $0.channelCount == hardware.channelCount }
+                ?? AVAudioChannelLayout(layoutTag: kAudioChannelLayoutTag_DiscreteInOrder | hardware.channelCount)
+            guard let layout else { throw MicCaptureError.inputDeviceLost }
+            format = AVAudioFormat(standardFormatWithSampleRate: rate, channelLayout: layout)
+        } else {
+            guard let monoOrStereo = AVAudioFormat(
+                standardFormatWithSampleRate: rate, channels: hardware.channelCount
+            ) else { throw MicCaptureError.inputDeviceLost }
+            format = monoOrStereo
+        }
         return format
     }
 

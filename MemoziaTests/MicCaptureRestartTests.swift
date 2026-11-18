@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import CoreAudio
+import SwiftData
 import Testing
 @testable import Memozia
 
@@ -237,6 +238,52 @@ struct MicCaptureRestartTests {
         ).sampleRate == 48_000)
     }
 
+    @Test("多声道输入在采样率变化后保留布局，并写出全部声道", arguments: [3, 4])
+    func multiChannelFormatPreservesChannelsAndWritesPlayableCAF(channels: AVAudioChannelCount) throws {
+        let tag = channels == 4 ? kAudioChannelLayoutTag_Quadraphonic
+            : kAudioChannelLayoutTag_DiscreteInOrder | channels
+        let layout = try #require(AVAudioChannelLayout(layoutTag: tag))
+        let hardware = AVAudioFormat(standardFormatWithSampleRate: 96_000, channelLayout: layout)
+        let staleClient = AVAudioFormat(standardFormatWithSampleRate: 48_000, channelLayout: layout)
+        let capture = try MicCaptureService.captureFormat(
+            hardware: hardware, client: staleClient, deviceSampleRate: 96_000
+        )
+        #expect(capture.sampleRate == 96_000)
+        #expect(capture.channelCount == channels)
+        #expect(capture.channelLayout == layout)
+        #expect(!MicCaptureService.needsFormatReconfiguration(
+            hardware: hardware, client: capture, capture: capture, deviceSampleRate: 96_000
+        ))
+        // 客户端仍是旧设备的单声道时，不能复制它的布局或丢掉硬件的其他声道。
+        let mismatchedClient = try MicCaptureService.captureFormat(hardware: hardware, client: format(48_000))
+        #expect(mismatchedClient.channelCount == channels)
+        #expect(mismatchedClient.channelLayout == layout)
+
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("MicMultiChannel-\(UUID()).caf")
+        defer { try? FileManager.default.removeItem(at: url) }
+        let store = MicCaptureFileStore()
+        store.file = try AVAudioFile(forWriting: url,
+            settings: #require(MicCaptureService.fileSettings(for: capture)),
+            commonFormat: capture.commonFormat, interleaved: capture.isInterleaved)
+        let buffer = try #require(AVAudioPCMBuffer(pcmFormat: capture, frameCapacity: 960))
+        buffer.frameLength = 960
+        for channel in 0..<Int(channels) {
+            buffer.floatChannelData?[channel].update(repeating: Float(channel + 1) / 10, count: 960)
+        }
+        try store.write { try $0.write(from: buffer) }
+        store.file = nil
+        let saved = try AVAudioFile(forReading: url)
+        #expect(saved.fileFormat.channelCount == channels)
+        #expect(saved.fileFormat.sampleRate == 96_000)
+        #expect(saved.length == 960)
+        let restored = try #require(AVAudioPCMBuffer(pcmFormat: saved.processingFormat, frameCapacity: 960))
+        try saved.read(into: restored)
+        let samples = try #require(restored.floatChannelData)
+        for channel in 0..<Int(channels) {
+            #expect(abs(samples[channel][0] - Float(channel + 1) / 10) < 0.0001)
+        }
+    }
+
     @Test func postStartHardwareChangeInvalidatesPreparedTap() throws {
         let prepared = try format(48_000)
         let negotiated = try format(24_000)
@@ -427,5 +474,88 @@ struct MicCaptureStartupWaitTests {
         #expect(recovered == 0)
         #expect(failures == 1)
         #expect(!recovery.isActive)
+    }
+}
+
+@MainActor
+struct MeetingRecorderStartupTests {
+    private enum PreparationFailure: LocalizedError {
+        case expected
+        var errorDescription: String? { "test recording preparation failure" }
+    }
+
+    private func waitUntil(_ condition: () -> Bool) async throws {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(2))
+        while !condition(), ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(5)) }
+        try #require(condition())
+    }
+
+    @Test("权限准备前即占用启动状态，重复请求不清除状态，取消后释放")
+    func preparationReservesStartAndCancellationReleasesIt() async throws {
+        let pending = LockedBox<CheckedContinuation<Void, Never>?>(nil)
+        let recorder = MeetingRecorderService(prepareForRecording: {
+            await withCheckedContinuation { pending.value = $0 }
+        })
+        let startup = Task { try await recorder.startRecording(config: RecordingConfig(source: .microphone)) }
+        try await waitUntil { pending.value != nil }
+        #expect(recorder.isStarting)
+        #expect(!recorder.isRecording)
+        #expect(recorder.hasResourcesPreventingUpdate)
+        #expect(!recorder.hasCaptureResources, "启动预约不能阻止更新后的权限准备")
+        do {
+            _ = try await recorder.startRecording(config: RecordingConfig(source: .microphone))
+            Issue.record("启动中不能再次进入权限准备或采集")
+        } catch let error as MeetingRecorderError {
+            if case .alreadyStarting = error {} else { Issue.record("启动中不能误报为已有录音") }
+        } catch { Issue.record("重复请求应明确报告启动中：\(error)") }
+        #expect(recorder.isStarting, "被拒绝的请求不能释放正在启动的会话")
+        startup.cancel()
+        pending.value?.resume()
+        do { _ = try await startup.value; Issue.record("取消后不能继续启动") }
+        catch { #expect(error is CancellationError) }
+        #expect(!recorder.isStarting)
+        #expect(!recorder.hasResourcesPreventingUpdate)
+    }
+
+    @Test("同轮排队的开始请求仅启动一次，重复请求无弹窗，真实失败后可重试")
+    func viewModelCoalescesStartsAndAllowsRetryAfterFailure() async throws {
+        var preparations = 0
+        var pending: CheckedContinuation<Void, Never>?
+        let recorder = MeetingRecorderService(prepareForRecording: {
+            preparations += 1
+            await withCheckedContinuation { pending = $0 }
+            throw PreparationFailure.expected
+        })
+        let schema = Schema([AudioRecording.self, TranscriptSegment.self, LLMConfig.self, QuickNote.self])
+        let container = try ModelContainer(for: schema,
+            configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
+        let context = ModelContext(container)
+        let viewModel = RecordingViewModel(meetingRecorder: recorder)
+        let config = RecordingConfig(source: .microphone)
+        viewModel.startMeetingRecording(config: config, context: context)
+        viewModel.startMeetingRecording(config: config, context: context)
+        try await waitUntil { pending != nil }
+        #expect(viewModel.isMeetingRecordingStarting)
+        #expect(!viewModel.isMeetingRecording)
+        viewModel.startMeetingRecording(config: config, context: context)
+        #expect(!viewModel.showError)
+        #expect(preparations == 1)
+        pending?.resume()
+        pending = nil
+        try await waitUntil { viewModel.showError }
+        #expect(!viewModel.isMeetingRecordingStarting)
+        #expect(viewModel.errorMessage?.contains("test recording preparation failure") == true)
+        #expect(preparations == 1)
+
+        viewModel.showError = false
+        viewModel.startMeetingRecording(config: config, context: context)
+        try await waitUntil { pending != nil }
+        #expect(preparations == 2)
+        #expect(viewModel.isMeetingRecordingStarting)
+        pending?.resume()
+        pending = nil
+        try await waitUntil { viewModel.showError }
+        #expect(!viewModel.isMeetingRecordingStarting)
+        #expect(!recorder.hasResourcesPreventingUpdate)
     }
 }

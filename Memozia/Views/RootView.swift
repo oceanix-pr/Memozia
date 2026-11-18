@@ -630,6 +630,7 @@ struct RootView: View {
                 handleSyncResult(result, isManualRefresh: true)
             },
             isMeetingRecording: viewModel.isMeetingRecording,
+            isMeetingRecordingStarting: viewModel.isMeetingRecordingStarting,
             contextMenuContent: { items in
                 AnyView(contextMenuContent(for: items).disabled(MediaCleanupService.shared.isRunning))
             },
@@ -794,6 +795,7 @@ struct RootView: View {
     #if os(macOS)
     /// 切换会议录音状态
     private func toggleMeetingRecording() {
+        guard !viewModel.isMeetingRecordingStarting else { return }
         guard !blockWriteIfPersistenceUnavailable(.createEntry) else { return }
         if viewModel.isMeetingRecording {
             Task {
@@ -809,6 +811,7 @@ struct RootView: View {
 
     /// 菜单栏请求开始录音
     private func handleMenuBarStartRecording() {
+        guard !viewModel.isMeetingRecordingStarting else { return }
         guard !blockWriteIfPersistenceUnavailable(.createEntry) else { return }
         guard !viewModel.isMeetingRecording else { return }
         let config = settingsVM.makeRecordingConfig(experience: experienceStore.current)
@@ -843,6 +846,7 @@ struct RootView: View {
     ///   选定目标后自动 3 秒倒计时开录；出口完全自由（可改存截图/复制/钉住）；
     ///   窗口目标由悬停拾取升级为独立窗口录制，不再走列表 Sheet
     private func beginScreenRecording(targetRaw raw: String) {
+        guard !viewModel.isMeetingRecordingStarting else { return }
         guard let kind = ScreenTargetKind(rawValue: raw) else { return }
         switch kind {
         case .fullScreen:
@@ -857,6 +861,7 @@ struct RootView: View {
     /// 真正启动录屏：声源/质量读自录屏偏好（菜单栏「捕获屏幕」与设置页共用），
     /// 互斥不再静默：录音/录屏进行中给出明确提示
     private func startScreenRecording(target: ScreenRecordingTarget) {
+        guard !viewModel.isMeetingRecordingStarting else { return }
         guard !blockWriteIfPersistenceUnavailable(.createEntry) else { return }
         guard !viewModel.isMeetingRecording else {
             viewModel.errorMessage = String(localized: "正在录音/录屏，请先停止后再开始新的录屏。")

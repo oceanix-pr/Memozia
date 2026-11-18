@@ -2070,7 +2070,11 @@ final class RecordingViewModel {
 
     /// 会议录音服务（参考 whisperLocalService 的单例模式）
     /// 直接暴露给 View 观察，避免 computed property 不追踪 @Observable 依赖
-    let meetingRecorder = MeetingRecorderService.shared
+    let meetingRecorder: MeetingRecorderService
+
+    init(meetingRecorder: MeetingRecorderService = .shared) {
+        self.meetingRecorder = meetingRecorder
+    }
 
     /// B-6: 启动时重置上次崩溃遗留的 .processing 状态
     /// - Parameter context: SwiftData 上下文
@@ -2124,6 +2128,8 @@ final class RecordingViewModel {
 
     /// 是否正在录音（绑定 UI，从 meetingRecorder 直接读取以保证 @Observable 依赖追踪）
     var isMeetingRecording: Bool { meetingRecorder.isRecording }
+    /// 权限准备、设备协商和首包等待均属于启动中，所有录音入口共用这一状态。
+    var isMeetingRecordingStarting: Bool { meetingRecorder.isStarting }
 
     #if os(macOS)
     // MARK: - 录屏状态（音频复用 meetingRecorder 现有双轨分片管线，另挂视频轨）
@@ -2178,6 +2184,7 @@ final class RecordingViewModel {
     #endif
 
     private func startRecordingCore(config: RecordingConfig, context: ModelContext) {
+        guard !isMeetingRecordingStarting, !isMeetingRecording else { return }
         // 合并进行中禁止开始新录音：消除同秒 stop→start 竞态
         //（上一条录音的合并还在写文件夹时就开启新会话，20260910 事故的放大器）
         guard !isMergingAudio else {
@@ -2186,6 +2193,8 @@ final class RecordingViewModel {
         }
         Task { [weak self] in
             guard let self else { return }
+            // 多个入口可能在同一轮主线程事件中排入 Task；真正执行时再复查一次。
+            guard !isMeetingRecordingStarting, !isMeetingRecording else { return }
             do {
                 _ = try await meetingRecorder.startRecording(config: config)
                 activeRecordingSource = config.source
@@ -2205,12 +2214,14 @@ final class RecordingViewModel {
         target: ScreenRecordingTarget,
         quality: ScreenRecordingQuality
     ) {
+        guard !isMeetingRecordingStarting, !isMeetingRecording else { return }
         guard !isMergingAudio else {
             showErrorMessage(String(localized: "上一条录音正在合并，请稍候再开始新录音。"))
             return
         }
         Task { [weak self] in
             guard let self else { return }
+            guard !isMeetingRecordingStarting, !isMeetingRecording else { return }
             do {
                 let finalAudioURL = try await meetingRecorder.startRecording(config: config)
                 let folderDir = finalAudioURL.deletingLastPathComponent()

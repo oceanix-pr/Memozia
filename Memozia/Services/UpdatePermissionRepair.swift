@@ -141,7 +141,7 @@ final class UpdatePermissionRepair {
                 !ProcessInfo.processInfo.arguments.contains(BackgroundWorker.launchFlag) &&
                 DatabaseOwnershipLock.isHeld && !MemoziaPrivacyPolicy.needsConsent(),
             hasPriorInstallation: UserDefaults.standard.bool(forKey: "hasCompletedOnboarding"),
-            hasCaptureResources: MeetingRecorderService.shared.hasResourcesPreventingUpdate ||
+            hasCaptureResources: MeetingRecorderService.shared.hasCaptureResources ||
                 ScreenshotManager.shared.hasResourcesPreventingUpdate || ScreenVideoRecorder.hasResourcesPreventingUpdate
         )
     }

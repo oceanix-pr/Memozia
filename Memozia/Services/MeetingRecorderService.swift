@@ -30,6 +30,9 @@ final class MeetingRecorderService: @unchecked Sendable {
     /// 共享实例（参考 WhisperLocalService 的单例模式）
     static let shared = MeetingRecorderService()
 
+    /// 允许离线验证权限准备期间的启动互斥，不触碰真实采集或条目目录。
+    private let prepareForRecording: @MainActor () async throws -> Void
+
     // MARK: - 可观察状态（UI 绑定）
 
     /// 是否正在录音
@@ -199,11 +202,14 @@ final class MeetingRecorderService: @unchecked Sendable {
     /// mixed 模式：合并后的最终文件 URL（停止录音时生成）
     private var pendingMergeFinalURL: URL?
 
-    /// 按资源存在判定，覆盖启动失败或标志提前复位的异常态。
-    var hasResourcesPreventingUpdate: Bool {
-        isStarting || isRecording || isMerging || isStoppingCapture || isRotating
+    /// 权限准备尚未创建采集资源；不能把启动预约误判为需要保留的活跃授权。
+    /// 分片目录/子服务仍按资源存在判定，覆盖启动失败或标志提前复位的异常态。
+    var hasCaptureResources: Bool {
+        isRecording || isMerging || isStoppingCapture || isRotating
             || segmentFolderDir != nil || micCapture.isCapturing || systemCapture.hasResourcesPreventingUpdate
     }
+
+    var hasResourcesPreventingUpdate: Bool { isStarting || hasCaptureResources }
 
     /// 当前活动录音的文件夹名集合（周期巡检/手动刷新时排除：
     /// 静音/睡眠间隙可能使活动分片 mtime 变旧，避免把正在写入的分片误判为崩溃遗留）
@@ -225,7 +231,10 @@ final class MeetingRecorderService: @unchecked Sendable {
     private var sysActiveBeforeSleep = false
     #endif
 
-    init() {
+    init(prepareForRecording: @escaping @MainActor () async throws -> Void = {
+        await UpdatePermissionRepair.shared.prepareIfNeeded()
+    }) {
+        self.prepareForRecording = prepareForRecording
         micCapture.nextSegmentForFormatChange = { [weak self] in
             guard let self, let folderDir = self.segmentFolderDir,
                   let baseName = self.segmentBaseName else { return nil }
@@ -358,18 +367,18 @@ final class MeetingRecorderService: @unchecked Sendable {
     /// - Parameter config: 录音配置
     /// - Returns: 录音文件 URL（mixed 模式下为合并后的最终文件，录音停止后才生成）
     func startRecording(config: RecordingConfig) async throws -> URL {
-        await UpdatePermissionRepair.shared.prepareIfNeeded()
+        guard !isStarting else { throw MeetingRecorderError.alreadyStarting }
+        guard !isRecording else { throw MeetingRecorderError.alreadyRecording }
+        // 在任何 await 前占用启动状态，权限准备期间也必须阻止另一入口重入。
+        isStarting = true
+        defer { isStarting = false }
+
+        try await prepareForRecording()
         try Task.checkCancellation()
         guard !AppUpdateService.shared.isPreparingToInstall else {
             throw NSError(domain: "app.memozia.Updates", code: 2,
                           userInfo: [NSLocalizedDescriptionKey: String(localized: "请稍后重试更新。")])
         }
-        guard !isRecording, !isStarting else { throw MeetingRecorderError.alreadyRecording }
-        // 进入即占用“启动中”：并发第二次调用直接失败，避免其失败分支的清理
-        //（stopAllCaptures/resetSegmentState）误伤第一个会话已建立的分片与采集
-        isStarting = true
-        defer { isStarting = false }
-
         self.config = config
         lastError = nil
         micRecoveryError = nil
@@ -1490,6 +1499,7 @@ enum MuteSource: String {
 enum MeetingRecorderError: LocalizedError {
     case insufficientDiskSpace(Int64)
     case exportTimeout
+    case alreadyStarting
     case alreadyRecording
     /// 录音文件夹创建失败（父目录不可写/磁盘满/同秒重名冲突超上限）
     case folderCreationFailed
@@ -1503,6 +1513,8 @@ enum MeetingRecorderError: LocalizedError {
             return String(localized: "音频合并超时，导出已被中断。分片文件已保留在录音文件夹，重新刷新后可自动恢复。")
         case .alreadyRecording:
             return String(localized: "当前已有录音正在进行，请先停止后再开始新录音。")
+        case .alreadyStarting:
+            return String(localized: "正在启动录音…")
         case .folderCreationFailed:
             return String(localized: "创建录音文件夹失败，请检查存储目录是否可写、磁盘空间是否充足后重试。")
         }

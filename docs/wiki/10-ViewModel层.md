@@ -63,8 +63,8 @@ extractTodos：summary → [PII scrub] → TodoExtractionService.extract
 | 成员 | 职责 |
 |------|------|
 | `meetingRecorder` | 直接暴露服务实例供 View 观察 |
-| `isMeetingRecording` / `recordingElapsed` / `isRecordingMuted` / `recordingMuteSource` | UI 绑定计算属性（转发服务状态） |
-| `startMeetingRecording(config:context:)` | Task 包裹启动，错误弹窗 |
+| `isMeetingRecording` / `isMeetingRecordingStarting` / `recordingElapsed` / `isRecordingMuted` / `recordingMuteSource` | UI 绑定计算属性（转发服务状态）；启动中显示等待状态并禁用重复入口 |
+| `startMeetingRecording(config:context:)` | 排队前及 Task 执行时复查启动/录音状态，重复请求直接忽略；真实启动失败弹窗 |
 | `stopMeetingRecording(context:source:)` | `isMergingAudio` + `mergePhase` 标志（转发 `MeetingRecorderService`，界面按「检查分片 → 回声消除 → 混音导出 → 保存」显示进度；仅回声消除阶段经 `cancelEchoReduction()` 提供取消）→ stopRecording → lastError 提示（合并降级/系统音频停止）→ `AudioConverter.getDuration` → 创建 `AudioRecording` + `saveContextWithRetry`（短退避重试，应对长录音合并后瞬时 fd 耗尽）→ `saveMetaToFolder` → 选中展示 |
 
 ### 1.6 数据管理域

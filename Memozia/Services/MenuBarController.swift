@@ -387,6 +387,7 @@ final class MenuBarController: NSObject {
 
     private func refreshState() {
         let isRecording = recorder.isRecording
+        let isStarting = recorder.isStarting
         let isScreenRecording = recorder.isScreenRecording
         let isMuted = recorder.isMicMuted
         let muteSource = recorder.muteSource
@@ -403,7 +404,7 @@ final class MenuBarController: NSObject {
         // 旧写法每秒无条件重建 3 个 NSImage、重写全部菜单项标题、遍历语言子菜单，
         // 空闲时一整天都在做无变化的赋值。签名相同即整轮跳过；
         // 任何一项变化（录音/录屏起停、静音切换、主窗口显隐、语言切换、录屏偏好切换）都会在下一次 tick 立即刷新。
-        let signature = "\(isRecording)|\(isScreenRecording)|\(isMuted)|\(muteSource)|\(isMainWindowVisible)|\(selectedLanguage)|\(screenSourceRaw)|\(screenQualityRaw)|\(microphoneSignature)|\(experience.rawValue)"
+        let signature = "\(isRecording)|\(isStarting)|\(isScreenRecording)|\(isMuted)|\(muteSource)|\(isMainWindowVisible)|\(selectedLanguage)|\(screenSourceRaw)|\(screenQualityRaw)|\(microphoneSignature)|\(experience.rawValue)"
         guard signature != lastRefreshSignature else { return }
         lastRefreshSignature = signature
 
@@ -417,7 +418,9 @@ final class MenuBarController: NSObject {
 
         // 2) 菜单项：录屏时停止项表达为「停止录制」，与录音（纯音频）区分
         let stopTitle = isScreenRecording ? String(localized: "停止录制") : String(localized: "停止录音")
-        toggleRecordingItem.title = isRecording ? stopTitle : String(localized: "开始会议录音")
+        toggleRecordingItem.title = isStarting ? String(localized: "正在启动录音…")
+            : (isRecording ? stopTitle : String(localized: "开始会议录音"))
+        toggleRecordingItem.isEnabled = !isStarting
         toggleRecordingItem.image = NSImage(
             systemSymbolName: isRecording ? "stop.circle.fill" : "record.circle",
             accessibilityDescription: nil
@@ -430,7 +433,9 @@ final class MenuBarController: NSObject {
 
         // 3) 状态信息（不显示时长，只显示简单状态）；录屏时状态前缀为「录屏中」。
         //    静音来源文案与录音徽章共用 MicMuteCommand，避免同一状态两处说法不同
-        if isRecording {
+        if isStarting {
+            statusInfoItem.title = String(localized: "正在启动录音…")
+        } else if isRecording {
             if isMuted {
                 let src = MicMuteCommand.sourceLabel(muteSource)
                 let mutedFormat = isScreenRecording
@@ -464,8 +469,9 @@ final class MenuBarController: NSObject {
         // 6) 录屏直达项：录音/录屏进行中禁用并提示（互斥不再点了没反应），
         //    偏好 radio 同步刷新（覆盖设置页修改 UserDefaults 的路径）
         for item in screenRecordingStartItems {
-            item.isEnabled = !isRecording
-            item.toolTip = isRecording ? String(localized: "录音/录屏进行中，请先停止后再开始录屏") : nil
+            item.isEnabled = !isRecording && !isStarting
+            item.toolTip = isStarting ? String(localized: "正在启动录音…")
+                : (isRecording ? String(localized: "录音/录屏进行中，请先停止后再开始录屏") : nil)
         }
         refreshScreenRecordingMenuStates()
 
@@ -484,6 +490,7 @@ final class MenuBarController: NSObject {
     /// （只做主线程检查，不做 executor 断言）进入 MainActor 上下文。
     @objc nonisolated private func toggleRecording() {
         MainActor.assumeOnMainThread {
+            guard !recorder.isStarting else { return }
             if recorder.isRecording {
                 // 停止录音：通过通知让 RecordingViewModel 处理录音文件入库
                 NotificationCenter.default.post(name: .menuBarStopRecording, object: nil)

@@ -22,6 +22,7 @@ struct RecordingListView: View {
     @Binding var editingItemID: String?
     var onRefresh: @MainActor () async -> Void = {}
     var isMeetingRecording: Bool = false
+    var isMeetingRecordingStarting: Bool = false
     /// 菜单直接挂在持有 selection 的 List 上，避免外层容器截断列表的选择上下文。
     var contextMenuContent: (Set<ListItem>) -> AnyView = { _ in AnyView(EmptyView()) }
     var onToggleMeetingRecording: () -> Void = {}
@@ -562,12 +563,17 @@ struct RecordingListView: View {
             Button {
                 onToggleMeetingRecording()
             } label: {
-                Label(isMeetingRecording ? "停止" : "录音",
-                      systemImage: isMeetingRecording ? "stop.circle.fill" : "record.circle")
+                if isMeetingRecordingStarting {
+                    Label("正在启动录音…", systemImage: "hourglass")
+                } else {
+                    Label(isMeetingRecording ? "停止" : "录音",
+                          systemImage: isMeetingRecording ? "stop.circle.fill" : "record.circle")
+                }
             }
             .controlSize(.large)
+            .disabled(isMeetingRecordingStarting)
             .tint(isMeetingRecording ? .red : nil)
-            .help(isMeetingRecording ? "停止录音" : "开始会议录音")
+            .help(isMeetingRecordingStarting ? "正在启动录音…" : (isMeetingRecording ? "停止录音" : "开始会议录音"))
         }
 
         // 统一「捕获」纯按钮（下拉菜单已取消，目标选择与静/动出口全部收敛到截图悬浮工具栏）：
