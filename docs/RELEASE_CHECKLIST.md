@@ -2,7 +2,7 @@
 
 仅在发布或开源任务中读取。本清单保留历史审查的待核查事项，不代表已完成安全、许可证或商店审核。
 
-已配置 Memozia 独立更新源与 Sparkle 公钥，发布流程见 [GitHub 发布](GITHUB_RELEASE.md)。反馈邮箱和 Developer ID 签名团队仍需配置；现有分发为明确标注的未公证预览包。
+已配置 Memozia 独立更新源、Sparkle 公钥与反馈邮箱，发布流程见 [GitHub 发布](GITHUB_RELEASE.md)。Developer ID 签名团队仍需配置。现有分发为明确标注的未公证预览包。
 
 ## 隐私与合规
 
@@ -15,7 +15,7 @@
 - [ ] App Store 隐私标签（App Privacy）与应用内政策、`PrivacyInfo.xcprivacy` 三者一致；逐项核对云端转写/LLM/视觉、模型下载、iCloud 现状。
 - [ ] 若启用 iCloud/CloudKit 同步或自动更新：先更新政策并提升主版本号，再验证重新同意流程，避免“功能上线但政策未披露”。
 - [ ] 在发布包中走查「设置 → 关于 → 隐私政策」：版本号、声纹单独同意开关、撤回同意（退出并重新征求）均可操作。
-- [ ] 配置并验证 `MEMOZIA_CONTACT_EMAIL`；确认安全报告与隐私投诉渠道有效，并同步应用内政策和 `SECURITY.md`。
+- [ ] 确认发布包使用 `project.yml` 中配置的 `MEMOZIA_CONTACT_EMAIL`，验证反馈邮件草稿的收件地址及邮箱可达性。确认 `SECURITY.md` 的私密漏洞报告渠道和应用内隐私投诉渠道有效。
 
 ## 构建与分发
 

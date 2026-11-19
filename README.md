@@ -63,7 +63,7 @@ See the app's privacy policy and the [product reference](docs/PRODUCT_REFERENCE.
 - [Local meeting notes with WhisperKit and Ollama](docs/articles/local-meeting-notes.md)
 - [Recording microphone and system audio on macOS](docs/articles/macos-audio-capture.md)
 - [Segmented recording, recovery, and long-meeting transcription](docs/articles/long-recording-recovery.md)
-- [Report a bug or suggest a feature](https://github.com/oceanix-pr/Memozia/issues/new/choose)
+- Email bug reports and feature requests to [oceanix-pr@outlook.com](mailto:oceanix-pr@outlook.com).
 - [Contribution guide](CONTRIBUTING.md) · [Build from source](docs/BUILDING.md) · [Architecture and implementation](docs/wiki/en/Home.md)
 - [Security policy](SECURITY.md) · [Third-party notices](THIRD_PARTY_NOTICES.md)
 

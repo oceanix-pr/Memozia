@@ -2,6 +2,9 @@ name: Feature request
 description: Describe a workflow you want to improve.
 title: "[Feature] "
 body:
+  - type: markdown
+    attributes:
+      value: "You can also email feature requests to [oceanix-pr@outlook.com](mailto:oceanix-pr@outlook.com)."
   - type: textarea
     id: problem
     attributes:

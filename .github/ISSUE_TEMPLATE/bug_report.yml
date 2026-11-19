@@ -4,7 +4,10 @@ title: "[Bug] "
 body:
   - type: markdown
     attributes:
-      value: "Use fictional examples. Do not attach private meeting material, API keys, or unredacted diagnostics. Security reports belong in SECURITY.md."
+      value: |
+        You can also email bug reports to [oceanix-pr@outlook.com](mailto:oceanix-pr@outlook.com).
+
+        Use fictional examples. Do not attach private meeting material, API keys, or unredacted diagnostics. Security reports belong in SECURITY.md.
   - type: input
     id: version
     attributes:

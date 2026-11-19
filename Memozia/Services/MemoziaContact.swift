@@ -1,7 +1,6 @@
 import Foundation
 
-/// No contact address is embedded in the public source snapshot. A release build may
-/// supply MEMOZIA_CONTACT_EMAIL after the mailbox has been verified.
+/// The default mailbox comes from project.yml and can be overridden at build time.
 enum MemoziaContact {
     static var email: String? {
         guard let raw = Bundle.main.object(forInfoDictionaryKey: "MemoziaContactEmail") as? String else {
@@ -16,5 +15,24 @@ enum MemoziaContact {
             return nil
         }
         return value
+    }
+
+    static func feedbackURL(to recipient: String, subject: String, body: String) -> URL? {
+        let unreserved = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+        // RFC 6068 uses CRLF for line breaks in the message body.
+        let normalizedBody = body.replacingOccurrences(of: #"\r\n?|\n"#, with: "\r\n", options: .regularExpression)
+        guard let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: unreserved),
+              let encodedBody = normalizedBody.addingPercentEncoding(withAllowedCharacters: unreserved) else {
+            return nil
+        }
+
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = recipient
+        components.percentEncodedQueryItems = [
+            URLQueryItem(name: "subject", value: encodedSubject),
+            URLQueryItem(name: "body", value: encodedBody)
+        ]
+        return components.url
     }
 }

@@ -55,7 +55,7 @@
 - [WhisperKit 与 Ollama 本地会议纪要指南](docs/articles/local-meeting-notes.md)（英文，附中文要点）
 - [macOS 双路音频采集实践](docs/articles/macos-audio-capture.md)（英文，附中文要点）
 - [长会议分片、恢复和转写](docs/articles/long-recording-recovery.md)（英文，附中文要点）
-- [反馈问题或建议](https://github.com/oceanix-pr/Memozia/issues/new/choose)
+- Bug 和功能需求可发送至 [oceanix-pr@outlook.com](mailto:oceanix-pr@outlook.com)。
 - [贡献指南](CONTRIBUTING.md) · [源码构建](docs/BUILDING.md) · [项目 Wiki](docs/wiki/Home.md)
 - [安全政策](SECURITY.md) · [第三方声明](THIRD_PARTY_NOTICES.md)
 

@@ -36,8 +36,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "9.8.2"
-    CURRENT_PROJECT_VERSION: "162"
+    MARKETING_VERSION: "9.8.3"
+    CURRENT_PROJECT_VERSION: "163"
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     DEAD_CODE_STRIPPING: YES
     ENABLE_USER_SCRIPT_SANDBOXING: YES
@@ -124,7 +124,7 @@ targets:
         INFOPLIST_KEY_NSRemindersUsageDescription: "闻墨集 需要访问提醒事项以将 AI 拆解的待办写入系统提醒事项"
         CODE_SIGN_ENTITLEMENTS: Memozia/Resources/Memozia.entitlements
         MEMOZIA_UNNOTARIZED_BUILD: NO
-        MEMOZIA_CONTACT_EMAIL: ""
+        MEMOZIA_CONTACT_EMAIL: "oceanix-pr@outlook.com"
     preBuildScripts:
       # 准备标准 ONNX Runtime framework 布局，并将 Sherpa dylib 替换为同版本 no-TTS 构建。
       - path: Scripts/fix_onnxruntime_framework.sh

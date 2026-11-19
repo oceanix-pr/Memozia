@@ -167,6 +167,7 @@
 		A689EBF696DF71074A70194A /* AppCommandCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F8C1229316A9219309D98F2 /* AppCommandCatalogTests.swift */; };
 		A72A0734070536C2233268CE /* MicrophoneDeviceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6268E7FC0A8888B77365F888 /* MicrophoneDeviceRegistry.swift */; };
 		A776E4691A4046AA96AED182 /* TranscriptCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9410F4082A11D338B8C70BAF /* TranscriptCache.swift */; };
+		A8FD72FA0E8A198AD9A339DB /* MemoziaContactTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D22E7819BA73BA2784AD33 /* MemoziaContactTests.swift */; };
 		AA802D6BAC814F8C4A8F0E0B /* TodoExtractionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7A00F0B400FE0A0E53DC4F /* TodoExtractionServiceTests.swift */; };
 		AACA4B31819F8EF5A84247AB /* RecordingCaptureHealthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 886DFF49FFC46F97C78C4521 /* RecordingCaptureHealthTests.swift */; };
 		AAE51622A2C9FDBB01D5F880 /* TranscriptSegment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C3392252F518E6DC4E6C13 /* TranscriptSegment.swift */; };
@@ -350,6 +351,7 @@
 		65E3AD2834D53D2854743F9D /* WaveformService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformService.swift; sourceTree = "<group>"; };
 		667A8EC26549497D62635203 /* UpdateInstallationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateInstallationCoordinator.swift; sourceTree = "<group>"; };
 		66A27CE1311EBFCE4A97A2FD /* CurrentTimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentTimeService.swift; sourceTree = "<group>"; };
+		66D22E7819BA73BA2784AD33 /* MemoziaContactTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoziaContactTests.swift; sourceTree = "<group>"; };
 		6707B5E3D520C8CB5FFE0DD8 /* RecordingElapsedLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingElapsedLabel.swift; sourceTree = "<group>"; };
 		69F1252EE9D5F78ACBDE71F0 /* EncryptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionService.swift; sourceTree = "<group>"; };
 		6A839D9B325DA60A44F6D23C /* GlobalHotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotkeyManager.swift; sourceTree = "<group>"; };
@@ -768,6 +770,7 @@
 				0B8D5A74DCB967C371DF619C /* MarkdownPDFRendererTests.swift */,
 				48B99383EDE3EA09BC2331AB /* MCPReadOnlyTests.swift */,
 				35A801AA0059815E0E2DCC0B /* MediaCleanupTests.swift */,
+				66D22E7819BA73BA2784AD33 /* MemoziaContactTests.swift */,
 				3A001927A5C7729DDCEDC6F7 /* MemoziaTests.swift */,
 				5FFF72154C0609A405DED829 /* MenuBarIconRendererTests.swift */,
 				292AE0E0959F3F31FD0C456C /* MicCaptureRecoveryTests.swift */,
@@ -1315,6 +1318,7 @@
 				EBA59E856DFF987B61B86838 /* MCPReadOnlyTests.swift in Sources */,
 				752DA55A20C9BC51BCA961AC /* MarkdownPDFRendererTests.swift in Sources */,
 				6D723966CFA03E94A1B67274 /* MediaCleanupTests.swift in Sources */,
+				A8FD72FA0E8A198AD9A339DB /* MemoziaContactTests.swift in Sources */,
 				6E77337A0E9538971D230C66 /* MemoziaTests.swift in Sources */,
 				5F6D68B00AAA93010C6BB968 /* MenuBarIconRendererTests.swift in Sources */,
 				651CDE46EF471D2EA892A7C9 /* MicCaptureRecoveryTests.swift in Sources */,
@@ -1473,7 +1477,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 162;
+				CURRENT_PROJECT_VERSION = 163;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1489,7 +1493,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.8.2;
+				MARKETING_VERSION = 9.8.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1541,7 +1545,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/Frameworks",
 				);
-				MEMOZIA_CONTACT_EMAIL = "";
+				MEMOZIA_CONTACT_EMAIL = "oceanix-pr@outlook.com";
 				MEMOZIA_UNNOTARIZED_BUILD = NO;
 				MEMOZIA_UPDATE_FEED_URL = "https://raw.githubusercontent.com/oceanix-pr/Memozia/updates/stable/appcast.xml";
 				MEMOZIA_UPDATE_PUBLIC_KEY = "gHvPetN6ASgDzgkt5aIgdUmCY/Mh3qhVKulgLmqCnrI=";
@@ -1612,7 +1616,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 162;
+				CURRENT_PROJECT_VERSION = 163;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1634,7 +1638,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.8.2;
+				MARKETING_VERSION = 9.8.3;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -1670,7 +1674,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/Frameworks",
 				);
-				MEMOZIA_CONTACT_EMAIL = "";
+				MEMOZIA_CONTACT_EMAIL = "oceanix-pr@outlook.com";
 				MEMOZIA_UNNOTARIZED_BUILD = NO;
 				MEMOZIA_UPDATE_FEED_URL = "https://raw.githubusercontent.com/oceanix-pr/Memozia/updates/stable/appcast.xml";
 				MEMOZIA_UPDATE_PUBLIC_KEY = "gHvPetN6ASgDzgkt5aIgdUmCY/Mh3qhVKulgLmqCnrI=";

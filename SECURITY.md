@@ -33,7 +33,7 @@ See the [security overview][security-overview] for current status and findings.
 
 Security fixes target the latest code on the default branch. Backports to older releases are considered based on the vulnerability's impact. Available updates are listed in [Releases][releases].
 
-For ordinary bugs, feature requests, or translation feedback, use the [issue forms][issues].
+Email ordinary bug reports and feature requests to [oceanix-pr@outlook.com][feedback-email]. For translation feedback, use the [issue forms][issues].
 
 <a name="zh-cn"></a>
 
@@ -66,7 +66,7 @@ For ordinary bugs, feature requests, or translation feedback, use the [issue for
 
 安全修复以当前默认分支的最新代码为目标；历史版本是否回补按漏洞影响决定。可用更新见 [Releases][releases]。
 
-普通故障、功能建议和翻译反馈请使用 [Issue 表单][issues]。
+普通故障和功能建议可发送至 [oceanix-pr@outlook.com][feedback-email]。翻译反馈请使用 [Issue 表单][issues]。
 
 <a name="zh-tw"></a>
 
@@ -99,7 +99,7 @@ For ordinary bugs, feature requests, or translation feedback, use the [issue for
 
 安全修復以目前預設分支的最新程式碼為目標；是否將修補套用至舊版本，依漏洞影響決定。可用更新請見 [Releases][releases]。
 
-一般故障、功能建議和翻譯意見請使用 [Issue 表單][issues]。
+一般問題和功能建議可寄至 [oceanix-pr@outlook.com][feedback-email]。翻譯意見請使用 [Issue 表單][issues]。
 
 <a name="ja"></a>
 
@@ -132,7 +132,7 @@ GitHub にサインインし、[Memozia の非公開脆弱性報告フォーム]
 
 セキュリティ修正は、デフォルトブランチの最新コードを対象とします。旧リリースへの修正適用は、脆弱性の影響に応じて判断します。利用可能な更新は [Releases][releases] を確認してください。
 
-通常の不具合、機能の提案、翻訳へのフィードバックには、[Issue フォーム][issues]を利用してください。
+通常の不具合の報告や機能の要望は [oceanix-pr@outlook.com][feedback-email] にお送りください。翻訳へのフィードバックには [Issue フォーム][issues]を利用してください。
 
 <a name="ko"></a>
 
@@ -165,7 +165,7 @@ GitHub에 로그인한 뒤 [Memozia 비공개 취약점 신고 양식][private-r
 
 보안 수정은 기본 브랜치의 최신 코드를 대상으로 합니다. 이전 릴리스에 대한 수정 적용 여부는 취약점의 영향에 따라 결정합니다. 제공되는 업데이트는 [Releases][releases]에서 확인해 주세요.
 
-일반 오류, 기능 제안, 번역 의견은 [Issue 양식][issues]을 이용해 주세요.
+일반 오류 신고와 기능 제안은 [oceanix-pr@outlook.com][feedback-email]으로 보내 주세요. 번역 의견은 [Issue 양식][issues]을 이용해 주세요.
 
 <a name="es"></a>
 
@@ -198,7 +198,7 @@ Consulta el estado y los resultados en la [vista general de seguridad][security-
 
 Las correcciones de seguridad se aplican al código más reciente de la rama predeterminada. Su adaptación a versiones anteriores se evalúa según el impacto de la vulnerabilidad. Consulta las actualizaciones disponibles en [Releases][releases].
 
-Para errores habituales, propuestas de funciones o comentarios sobre traducciones, utiliza los [formularios de incidencias][issues].
+Envía los informes de errores habituales y las propuestas de funciones a [oceanix-pr@outlook.com][feedback-email]. Para comentarios sobre traducciones, utiliza los [formularios de incidencias][issues].
 
 <a name="fr"></a>
 
@@ -231,9 +231,10 @@ Consultez l'état et les résultats dans la [vue d'ensemble de la sécurité][se
 
 Les correctifs de sécurité ciblent le code le plus récent de la branche par défaut. Leur adaptation aux anciennes versions est évaluée selon l'impact de la vulnérabilité. Les mises à jour disponibles figurent dans [Releases][releases].
 
-Pour les bugs courants, les suggestions de fonctionnalités ou les retours sur les traductions, utilisez les [formulaires de signalement][issues].
+Envoyez les signalements de bugs courants et les suggestions de fonctionnalités à [oceanix-pr@outlook.com][feedback-email]. Pour les retours sur les traductions, utilisez les [formulaires de signalement][issues].
 
 [private-report]: https://github.com/oceanix-pr/Memozia/security/advisories/new
+[feedback-email]: mailto:oceanix-pr@outlook.com
 [releases]: https://github.com/oceanix-pr/Memozia/releases
 [issues]: https://github.com/oceanix-pr/Memozia/issues/new/choose
 [advisories]: https://github.com/oceanix-pr/Memozia/security/advisories

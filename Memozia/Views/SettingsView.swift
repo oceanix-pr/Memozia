@@ -1858,7 +1858,9 @@ struct SettingsView: View {
         .frame(maxWidth: .infinity)
         .navigationTitle("关于")
         .sheet(isPresented: $showFeedback) {
-            FeedbackView()
+            if let email = MemoziaContact.email {
+                FeedbackView(recipient: email)
+            }
         }
         .sheet(isPresented: $showHelp) {
             HelpView()

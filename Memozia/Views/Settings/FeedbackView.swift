@@ -1,19 +1,14 @@
 import SwiftUI
-import SwiftData
-import os
-#if canImport(AppKit)
-import AppKit
-#endif
-#if canImport(Carbon)
-import Carbon.HIToolbox
-#endif
 
 // MARK: - 用户反馈视图
 struct FeedbackView: View {
+    let recipient: String
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @State private var feedbackType: FeedbackType = .suggestion
     @State private var feedbackContent = ""
     @State private var contactEmail = ""
+    @State private var showMailOpenError = false
 
     enum FeedbackType: String, CaseIterable, Identifiable {
         case suggestion = "功能建议"
@@ -53,17 +48,13 @@ struct FeedbackView: View {
                 Section("联系方式（可选）") {
                     TextField("邮箱地址", text: $contactEmail)
                         .textFieldStyle(.roundedBorder)
-                        #if os(iOS)
-                        /* iOS 专属分支（工程已改为仅 macOS，注释保留以备不时之需）
-                        .keyboardType(.emailAddress)
-                        */
-                        #endif
                 }
 
                 Section {
-                    Text("感谢您的反馈！我们将认真阅读每一条建议。\n点击发送将通过系统邮件应用提交。")
+                    Text("反馈邮箱：\(recipient)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
                 }
             }
             .formStyle(.grouped)
@@ -73,12 +64,14 @@ struct FeedbackView: View {
                     Button("取消") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("发送") {
-                        sendFeedback()
-                        dismiss()
-                    }
-                    .disabled(feedbackContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    Button("打开邮件草稿", action: openFeedbackEmail)
+                        .disabled(feedbackContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
+            }
+            .alert("无法打开邮件应用", isPresented: $showMailOpenError) {
+                Button("好", role: .cancel) {}
+            } message: {
+                Text("反馈邮箱：\(recipient)")
             }
         }
         #if os(macOS)
@@ -86,8 +79,7 @@ struct FeedbackView: View {
         #endif
     }
 
-    private func sendFeedback() {
-        guard let email = MemoziaContact.email else { return }
+    private func openFeedbackEmail() {
         let subject = String(localized: "[Memozia 反馈] \(feedbackType.localizedName)")
         let body = String(localized: """
         反馈类型：\(feedbackType.localizedName)
@@ -98,17 +90,16 @@ struct FeedbackView: View {
         联系方式：\(contactEmail.isEmpty ? String(localized: "未提供") : contactEmail)
         """)
 
-        let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        let encodedBody = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-
-        if let url = URL(string: "mailto:\(email)?subject=\(encodedSubject)&body=\(encodedBody)") {
-            #if os(macOS)
-            NSWorkspace.shared.open(url)
-            #else
-            /* iOS 专属分支（工程已改为仅 macOS，注释保留以备不时之需）
-            UIApplication.shared.open(url)
-            */
-            #endif
+        guard let url = MemoziaContact.feedbackURL(to: recipient, subject: subject, body: body) else {
+            showMailOpenError = true
+            return
+        }
+        openURL(url) { accepted in
+            if accepted {
+                dismiss()
+            } else {
+                showMailOpenError = true
+            }
         }
     }
 }

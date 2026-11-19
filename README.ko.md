@@ -48,6 +48,8 @@
 
 기록과 노트는 기본적으로 Mac에 저장됩니다. 클라우드 전사는 음성을, 원격 언어·시각 모델은 요청에 필요한 텍스트나 이미지 등을 전송합니다. 텍스트 비식별화는 이미지와 동영상 프레임에는 적용되지 않습니다. API 키와 암호화 키는 macOS 키체인을 사용합니다. 모델 다운로드와 업데이트 확인도 네트워크를 사용합니다.
 
-[문제 신고](https://github.com/oceanix-pr/Memozia/issues/new/choose) · [기여 가이드](CONTRIBUTING.md) · [소스 빌드](docs/BUILDING.md) · [기술 문서](docs/articles/README.md)
+버그 신고와 기능 요청은 [oceanix-pr@outlook.com](mailto:oceanix-pr@outlook.com)으로 보내 주세요.
+
+[기여 가이드](CONTRIBUTING.md) · [소스 빌드](docs/BUILDING.md) · [기술 문서](docs/articles/README.md)
 
 소스 코드는 [MIT 라이선스](LICENSE)입니다. 의존 라이브러리, 사전, 다운로드한 모델에는 각자의 라이선스가 적용됩니다. 이름이나 아이콘 등의 상표 사용권은 소스 코드 라이선스에 포함되지 않습니다.

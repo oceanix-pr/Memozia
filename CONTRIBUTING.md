@@ -13,7 +13,7 @@ Good first contributions include:
 - Improve keyboard navigation or an accessibility label on one screen, with steps to reproduce the issue.
 - Add a short, fictional recording or text example that makes a reported problem reproducible.
 
-Use the [issue forms](https://github.com/oceanix-pr/Memozia/issues/new/choose) for bugs, feature requests, and documentation or translation feedback.
+Email bug reports and feature requests to [oceanix-pr@outlook.com](mailto:oceanix-pr@outlook.com). For public reports and documentation or translation feedback, use the [issue forms](https://github.com/oceanix-pr/Memozia/issues/new/choose).
 
 ## Development
 

@@ -48,6 +48,8 @@
 
 記録とノートは標準で Mac に保存されます。クラウド文字起こしは音声を、リモートの言語・画像モデルは必要なテキストや画像などを送信します。テキストのマスキングは画像や動画フレームには適用されません。API キーと暗号化キーは macOS キーチェーンを使います。モデルのダウンロードと更新確認も通信を行います。
 
-[問題を報告する](https://github.com/oceanix-pr/Memozia/issues/new/choose) · [貢献ガイド](CONTRIBUTING.md) · [ソースからのビルド](docs/BUILDING.md) · [技術記事](docs/articles/README.md)
+不具合の報告や機能の要望は [oceanix-pr@outlook.com](mailto:oceanix-pr@outlook.com) にお送りください。
+
+[貢献ガイド](CONTRIBUTING.md) · [ソースからのビルド](docs/BUILDING.md) · [技術記事](docs/articles/README.md)
 
 ソースコードは [MIT ライセンス](LICENSE) です。依存ライブラリ、辞書、ダウンロードしたモデルにはそれぞれのライセンスが適用されます。名称やアイコンなどの商標利用権はソースコードのライセンスに含まれません。
