@@ -4,6 +4,8 @@ import Foundation
 /// 两路采集共用 host clock；只保存文件名和相对时间，不保存设备标识或会议内容。
 struct RecordingSegmentTimeline: Codable, Sendable, Equatable {
     static let fileName = "capture_timeline.json"
+    private static let silenceFilePrefix = "capture_silence_"
+    private static let silenceFileSuffix = ".caf"
     var version = 1
     var starts: [String: TimeInterval] = [:]
     var end: TimeInterval?
@@ -16,6 +18,12 @@ struct RecordingSegmentTimeline: Codable, Sendable, Equatable {
     }
 
     var duration: TimeInterval? { end.map { max(0, $0 - origin) } }
+
+    static func isSilenceFile(named name: String) -> Bool {
+        guard name.hasPrefix(silenceFilePrefix), name.hasSuffix(silenceFileSuffix) else { return false }
+        let id = name.dropFirst(silenceFilePrefix.count).dropLast(silenceFileSuffix.count)
+        return UUID(uuidString: String(id)) != nil
+    }
 
     static func canReduceEcho(mic: [URL], system: [URL], timeline: Self?) async -> Bool {
         guard let timeline, !mic.isEmpty, mic.count == system.count else { return false }
@@ -64,7 +72,7 @@ struct RecordingSegmentTimeline: Codable, Sendable, Equatable {
         }
         if let seconds = timeline?.duration, seconds > cursor.seconds, let folder = urls.first?.deletingLastPathComponent() {
             // AAC 导出会丢弃纯 empty edit 的末尾；插入真实零采样，保证缺失尾段也保留时长。
-            let silenceURL = folder.appendingPathComponent("capture_silence_\(UUID()).caf")
+            let silenceURL = folder.appendingPathComponent("\(silenceFilePrefix)\(UUID())\(silenceFileSuffix)")
             temporaryFiles.append(silenceURL)
             try writeSilence(to: silenceURL)
             let asset = AVURLAsset(url: silenceURL)

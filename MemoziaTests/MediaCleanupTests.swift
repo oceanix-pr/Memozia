@@ -292,6 +292,45 @@ struct MediaCleanupTests {
         }
     }
 
+    @Test func sourceCleanupCountsCaptureSilenceAndCanRetryWithoutMainAudio() async throws {
+        try await withSandbox { _, context in
+            let recording = try recording(context)
+            let folder = recording.folderURL
+            let audio = recording.fileURL
+            let silence = folder.appendingPathComponent("capture_silence_\(UUID()).caf")
+            let retainedFiles = ["capture_report.json", "\(recording.folderName)_mic_tmp_0001.caf",
+                                 "\(recording.folderName)_sys_tmp_0001.wav", "capture_silence_notes.caf"].map {
+                folder.appendingPathComponent($0)
+            }
+            let contents = Data(repeating: 0, count: 8192)
+            for url in retainedFiles + [silence] { try contents.write(to: url) }
+            let item = ListItem.recording(recording)
+            let request = try #require(MediaCleanupRequest(kind: .originals, items: [item]))
+            #expect(Set(request.targets.map(\.url)) == [audio, silence])
+            #expect(request.targets.allSatisfy { $0.kind == .audio })
+            #expect(request.estimatedBytes == 4096 + 8192)
+            #expect(FileManager.default.fileExists(atPath: silence.path))
+
+            // 确认载荷创建后出现的新文件不在本次清理范围内。
+            let remainingSilence = folder.appendingPathComponent("capture_silence_\(UUID()).caf")
+            try contents.write(to: remainingSilence)
+            let service = MediaCleanupService(isBusy: { false })
+            let result = try await service.cleanup(request, context: context, persistence: .readWrite)
+            #expect(result.cleanedCount == 2 && result.freedBytes == request.estimatedBytes && result.failures.isEmpty)
+            #expect([audio, silence].allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
+            #expect(FileManager.default.fileExists(atPath: remainingSilence.path))
+            let audioRemovedAt = try #require(recording.audioRemovedAt)
+
+            let retry = try #require(MediaCleanupRequest(kind: .originals, items: [item]))
+            #expect(retry.targets.map(\.url) == [remainingSilence] && retry.skippedEntryCount == 0)
+            let retried = try await service.cleanup(retry, context: context, persistence: .readWrite)
+            #expect(retried.cleanedCount == 1 && retried.freedBytes == 8192 && retried.failures.isEmpty)
+            #expect(!FileManager.default.fileExists(atPath: remainingSilence.path))
+            #expect(recording.audioRemovedAt == audioRemovedAt)
+            #expect(retainedFiles.allSatisfy { FileManager.default.fileExists(atPath: $0.path) })
+        }
+    }
+
     @Test func batchResultListsEveryFailedOriginalAndContinuesTheRest() async throws {
         try await withSandbox { _, context in
             let first = try imageNote(context, folder: "20261103120010")

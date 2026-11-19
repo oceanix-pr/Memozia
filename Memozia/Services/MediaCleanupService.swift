@@ -33,12 +33,23 @@ struct MediaCleanupRequest {
             default: return nil
             }
         }
+
+        @MainActor
+        func candidates(for item: ListItem) -> [Target] {
+            guard let url = originalURL(for: item) else { return [] }
+            let original = Target(kind: self, item: item, url: url, isCaptureSilence: false)
+            guard self == .audio else { return [original] }
+            return [original] + MediaCleanupService.captureSilenceFiles(in: item.folderURL).map {
+                Target(kind: .audio, item: item, url: $0, isCaptureSilence: true)
+            }
+        }
     }
 
     struct Target {
         let kind: Kind
         let item: ListItem
         let url: URL
+        let isCaptureSilence: Bool
     }
 
     let kind: Kind
@@ -61,12 +72,12 @@ struct MediaCleanupRequest {
         var paths = Set<String>()
         var entriesWithSources = Set<String>()
         for item in items.sorted(by: { $0.id < $1.id }) {
-            for fileKind in kinds {
-                guard let url = fileKind.originalURL(for: item),
-                      MediaCleanupService.isOriginalFile(url, in: item.folderURL) else { continue }
+            let folder = item.folderURL
+            let candidates = kinds.flatMap { $0.candidates(for: item) }
+            for target in candidates where MediaCleanupService.isOriginalFile(target.url, in: folder) {
                 entriesWithSources.insert(item.id)
-                guard paths.insert(url.standardizedFileURL.path).inserted else { continue }
-                targets.append(Target(kind: fileKind, item: item, url: url))
+                guard paths.insert(target.url.standardizedFileURL.path).inserted else { continue }
+                targets.append(target)
             }
         }
         guard !targets.isEmpty else { return nil }
@@ -110,7 +121,7 @@ final class MediaCleanupService {
     private(set) var completedTargetCount = 0
     private(set) var targetCount = 0
     private let isBusy: @MainActor () -> Bool
-    private let logger = Logger(subsystem: "app.memozia", category: "MediaCleanup")
+    private static let logger = Logger(subsystem: "app.memozia", category: "MediaCleanup")
 
     init(isBusy: @escaping @MainActor () -> Bool = MediaCleanupService.hasConflictingWork) {
         self.isBusy = isBusy
@@ -159,9 +170,26 @@ final class MediaCleanupService {
             || BackgroundTaskQueue.hasEntries()
     }
 
+    fileprivate static func captureSilenceFiles(in folder: URL) -> [URL] {
+        do {
+            let names = try FileManager.default.contentsOfDirectory(atPath: folder.path)
+            return names.filter(RecordingSegmentTimeline.isSilenceFile(named:)).map {
+                folder.appendingPathComponent($0, isDirectory: false)
+            }
+        } catch CocoaError.fileReadNoSuchFile {
+            return []
+        } catch {
+            logger.error("扫描录音静音补齐文件失败：\(error.localizedDescription, privacy: .private)")
+            return []
+        }
+    }
+
     nonisolated static func isOriginalFile(_ url: URL, in folder: URL) -> Bool {
+        let manager = FileManager.default
         guard url.standardizedFileURL.deletingLastPathComponent().path == folder.standardizedFileURL.path,
-              let attributes = try? FileManager.default.attributesOfItem(atPath: url.path) else { return false }
+              let folderAttributes = try? manager.attributesOfItem(atPath: folder.path),
+              folderAttributes[.type] as? FileAttributeType == .typeDirectory,
+              let attributes = try? manager.attributesOfItem(atPath: url.path) else { return false }
         // URLResourceValues 会缓存文件类型，不能用于删除前验证（原路径可能刚被替换）。
         return attributes[.type] as? FileAttributeType == .typeRegular
     }
@@ -191,7 +219,7 @@ final class MediaCleanupService {
     func cleanup(_ request: MediaCleanupRequest, context: ModelContext, persistence: PersistenceGuard) async throws -> Result {
         if let rejection = persistence.rejection(for: .deleteEntry) { throw rejection }
         guard !isRunning, !isBusy() else {
-            logger.notice("媒体清理暂未执行：资源仍被占用，选中 \(request.selectedItemCount) 个条目，目标 \(request.targets.count) 个文件")
+            Self.logger.notice("媒体清理暂未执行：资源仍被占用，选中 \(request.selectedItemCount) 个条目，目标 \(request.targets.count) 个文件")
             throw CleanupError.busy
         }
         isRunning = true
@@ -200,17 +228,21 @@ final class MediaCleanupService {
         defer { isRunning = false }
         try context.save()
         var result = Result(skippedEntryCount: request.skippedEntryCount)
-        logger.info("媒体清理开始：选中 \(request.selectedItemCount) 个条目，目标 \(request.targets.count) 个文件，无源件 \(request.skippedEntryCount) 个条目")
+        Self.logger.info("媒体清理开始：选中 \(request.selectedItemCount) 个条目，目标 \(request.targets.count) 个文件，无源件 \(request.skippedEntryCount) 个条目")
         for target in request.targets {
             defer { completedTargetCount += 1 }
             do {
                 try Task.checkCancellation()
-                guard !isBusy(), target.kind.originalURL(for: target.item) == target.url else { throw CleanupError.busy }
+                guard !isBusy(), let originalURL = target.kind.originalURL(for: target.item) else { throw CleanupError.busy }
+                let isOriginal = originalURL.standardizedFileURL.path == target.url.standardizedFileURL.path
+                guard target.isCaptureSilence ? !isOriginal : isOriginal else { throw CleanupError.busy }
                 switch target.item {
                 case .recording(let recording):
                     guard recording.modelContext === context, !recording.isDeleted,
                           recording.transcriptionStatus != .processing, recording.summaryStatus != .processing,
                           recording.visualStatus != .processing, recording.todoStatus != .processing else { throw CleanupError.busy }
+                    // 补齐用的零采样文件不承载录音内容，清理时无需改写镜像或录音状态。
+                    if target.isCaptureSilence { break }
                     if target.kind == .video {
                         guard await VideoUnderstandingService.hasReusableFrameCache(in: recording.framesDirectoryURL) else {
                             throw VideoUnderstandingService.VideoUnderstandingError.frameCacheMissing
@@ -237,6 +269,7 @@ final class MediaCleanupService {
                 let bytes = try await Self.removeOriginalFile(at: target.url, in: target.item.folderURL)
                 result.cleanedCount += 1
                 result.freedBytes += bytes
+                if target.isCaptureSilence { continue }
                 // 只在实际删除成功后更新文件引用；失败保留模型与原件。
                 switch target.item {
                 case .recording(let recording):
@@ -247,12 +280,12 @@ final class MediaCleanupService {
                 }
                 try context.save()
             } catch {
-                logger.error("媒体清理未完成：\(error.localizedDescription, privacy: .private)")
+                Self.logger.error("媒体清理未完成：\(error.localizedDescription, privacy: .private)")
                 result.failures.append(String(format: String(localized: "%1$@（%2$@）：%3$@"),
                                               target.item.title, target.kind.title, UserFacingError.summary(for: error)))
             }
         }
-        logger.info("媒体清理结束：清理 \(result.cleanedCount) 个文件，失败 \(result.failures.count) 个文件，无源件 \(result.skippedEntryCount) 个条目")
+        Self.logger.info("媒体清理结束：清理 \(result.cleanedCount) 个文件，失败 \(result.failures.count) 个文件，无源件 \(result.skippedEntryCount) 个条目")
         return result
     }
 
