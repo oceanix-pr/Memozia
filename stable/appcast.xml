@@ -3,25 +3,24 @@
     <channel>
         <title>Memozia</title>
         <item>
-            <title>9.8.4</title>
-            <pubDate>Thu, 19 Nov 2026 20:22:30 +0800</pubDate>
-            <sparkle:version>164</sparkle:version>
-            <sparkle:shortVersionString>9.8.4</sparkle:shortVersionString>
+            <title>9.8.5</title>
+            <pubDate>Sat, 21 Nov 2026 22:01:35 +0800</pubDate>
+            <sparkle:version>165</sparkle:version>
+            <sparkle:shortVersionString>9.8.5</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.4 (164)
+            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.5 (165)
 
-- **Clean Up Originals** now includes leftover silence-padding audio files (`capture_silence_<UUID>.caf`) in the selected recording folders. The confirmation dialog counts these files and includes their size in the estimated space to recover.
-- Recordings whose main audio has already been removed can still have these leftover files cleaned up from the list context menu.
-- Report bugs or request features from **Settings → About → Feedback**. **Open Email Draft** prepares your message for review in your email app, and the form provides a copyable contact address.
+- In **Settings → About → Feedback**, choose the app that should open your email draft. The list comes from macOS and includes the apps registered to handle email links on your Mac. Mail clients appear before browsers.
+- **Open Email Draft** opens the selected app with the recipient, subject, and feedback filled in. Your feedback stays in Memozia until you close the form, so you can try another app if a compose window does not appear. Review and send the message in your mail app.
 
-This unnotarized preview supports Apple Silicon (arm64) on macOS 15 or later. The app is ad-hoc signed with Hardened Runtime enabled. The update ZIP is signed with Sparkle Ed25519.
+This unnotarized preview runs on Apple Silicon (arm64) with macOS 15 or later. The app is ad-hoc signed with Hardened Runtime enabled. Sparkle verifies the update ZIP using Ed25519.
 
-Memozia 9.7.0 and later can check for updates in the app. For a first installation or an upgrade from an earlier version, extract the ZIP and copy `Memozia.app` to Applications.
+Memozia 9.7.0 and later can check for updates in the app. For a first installation, extract the ZIP and copy `Memozia.app` to Applications.
 
-The macOS unit suite recorded 550 passes and seven environment-gated skips, including the source-cleanup regression and update installation safeguards. Live capture, installation during a real recording, actual worker handoff, and an in-place upgrade with system permission retention were not exercised end to end.
+The macOS unit suite recorded 551 passes and seven environment-gated skips. The feedback form was exercised with Apple Mail, including the recipient, subject, body, and returning to the original form. Live installation during a recording, handoff to a running background worker, and macOS permission prompts during an in-place upgrade remain manual checks.
 ]]></description>
-            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.4/Memozia-v9.8.4-164-arm64.zip" length="35936949" type="application/octet-stream" sparkle:edSignature="3qX44UfyNJ0FymcXMDe3e5BBcLxaOgUrYMPA0EBxf2T/1oZRQf99yirdnVqmnKTziz9eRhdrujqmduqZvGX+BA=="/>
+            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.5/Memozia-v9.8.5-165-arm64.zip" length="35955122" type="application/octet-stream" sparkle:edSignature="VD9GchNsz7zaHeP8M2tC+X97cRhZv1XpEyiCaZc9az2mAd7AEXcYrKZfTQKtnAPDnOnALNmqRjVsi57WLM6ICA=="/>
         </item>
     </channel>
 </rss>
