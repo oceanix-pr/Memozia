@@ -163,15 +163,6 @@ targets:
       # 用 shared 产品管理 Swift 模块、头文件与 ONNX Runtime；构建阶段替换 Sherpa dylib。
       - package: SherpaOnnx
         product: sherpa-onnx-shared
-    scheme:
-      # 必须早于构建计划解析 framework 符号链接；target preBuild 已经太晚。
-      preActions:
-        - name: Prepare Onnxruntime Framework Layout
-          settingsTarget: Memozia
-          script: '"$SRCROOT/Scripts/fix_onnxruntime_framework.sh"'
-      testTargets:
-        - MemoziaTests
-        - MemoziaUITests
 
   MemoziaMCPHelper:
     type: tool
@@ -219,6 +210,24 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         TEST_TARGET_NAME: Memozia
 
+
+schemes:
+  Memozia:
+    build:
+      targets:
+        Memozia: all
+      # 必须早于构建计划解析 framework 符号链接；target preBuild 已经太晚。
+      preActions:
+        - name: Prepare Onnxruntime Framework Layout
+          settingsTarget: Memozia
+          script: '"$SRCROOT/Scripts/fix_onnxruntime_framework.sh"'
+    test:
+      # 隐私政策的措辞断言使用简体中文原文。
+      language: zh-Hans
+      region: CN
+      targets:
+        - MemoziaTests
+        - MemoziaUITests
 
 packages:
   MCP:
