@@ -1,4 +1,7 @@
 import Foundation
+#if os(macOS)
+import AppKit
+#endif
 
 /// The default mailbox comes from project.yml and can be overridden at build time.
 enum MemoziaContact {
@@ -35,4 +38,17 @@ enum MemoziaContact {
         ]
         return components.url
     }
+
+    #if os(macOS)
+    @MainActor
+    static func mailApplications(
+        handlersForURL: (URL) -> [URL] = NSWorkspace.shared.urlsForApplications(toOpen:)
+    ) -> [URL] {
+        let mailHandlers = handlersForURL(URL(string: "mailto:")!)
+        // A browser can accept mailto without a configured webmail composer. Offer
+        // mail-specific handlers first, preserving Launch Services' order in each group.
+        let webHandlers = Set(handlersForURL(URL(string: "https://example.invalid")!))
+        return mailHandlers.filter { !webHandlers.contains($0) } + mailHandlers.filter(webHandlers.contains)
+    }
+    #endif
 }

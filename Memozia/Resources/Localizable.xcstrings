@@ -60379,6 +60379,136 @@
         }
       }
     },
+    "如果没有出现草稿，可更换邮件应用，或复制反馈内容和邮箱地址后手动发送。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إذا لم تظهر المسودة، اختر تطبيق بريد آخر أو انسخ ملاحظاتك وعنوان المستلم وأرسل الرسالة يدويًا."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falls kein Entwurf erscheint, wähle eine andere E-Mail-App oder kopiere dein Feedback und die Empfängeradresse und sende die Nachricht selbst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If no draft appears, choose another mail app or copy your feedback and the recipient’s address to send it yourself."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si no aparece el borrador, elige otra aplicación de correo o copia tus comentarios y la dirección del destinatario para enviarlos manualmente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si aucun brouillon ne s’affiche, choisissez une autre application de messagerie ou copiez vos commentaires et l’adresse du destinataire pour envoyer le message vous-même."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अगर ड्राफ़्ट न खुले, तो कोई दूसरा ईमेल ऐप चुनें या अपनी प्रतिक्रिया और प्राप्तकर्ता का पता कॉपी करके खुद ईमेल भेजें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jika draf tidak muncul, pilih aplikasi email lain atau salin masukan Anda dan alamat penerima untuk mengirimnya sendiri."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se la bozza non appare, scegli un’altra app di posta oppure copia il tuo feedback e l’indirizzo del destinatario e invia il messaggio manualmente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下書きが表示されない場合は、別のメールアプリを選ぶか、フィードバックの内容と宛先をコピーして手動で送信してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "초안이 열리지 않으면 다른 메일 앱을 선택하거나 피드백 내용과 받는 사람 주소를 복사해 직접 보내세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verschijnt er geen concept? Kies dan een andere e-mailapp of kopieer je feedback en het adres van de ontvanger om de e-mail zelf te versturen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeśli nie pojawi się wersja robocza, wybierz inną aplikację pocztową lub skopiuj swoją opinię i adres odbiorcy, aby wysłać wiadomość samodzielnie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se o rascunho não aparecer, escolha outro aplicativo de e-mail ou copie seus comentários e o endereço do destinatário para enviar a mensagem manualmente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если черновик не появился, выберите другое почтовое приложение или скопируйте отзыв и адрес получателя и отправьте письмо вручную."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Om inget utkast visas kan du välja en annan e-postapp eller kopiera dina synpunkter och mottagarens adress och skicka meddelandet själv."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หากฉบับร่างไม่ปรากฏ ให้เลือกแอปอีเมลอื่น หรือคัดลอกข้อเสนอแนะและที่อยู่ของผู้รับเพื่อส่งอีเมลด้วยตนเอง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taslak görünmüyorsa başka bir e-posta uygulaması seçin veya geri bildiriminizi ve alıcının adresini kopyalayıp iletiyi kendiniz gönderin."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Якщо чернетка не з’явилася, виберіть інший поштовий застосунок або скопіюйте відгук і адресу отримувача та надішліть лист самостійно."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nếu bản nháp không xuất hiện, hãy chọn ứng dụng email khác hoặc sao chép nội dung phản hồi và địa chỉ người nhận để tự gửi."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果没有出现草稿，可更换邮件应用，或复制反馈内容和邮箱地址后手动发送。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果沒有出現草稿，可改用其他郵件應用程式，或複製意見內容和收件地址後自行寄送。"
+          }
+        }
+      }
+    },
     "姓名" : {
       "localizations" : {
         "ar" : {
@@ -177768,6 +177898,136 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "透過工具列「擷取」按鈕、選單列「截圖」子選單或全域快速鍵（預設 ⌃⌘S，可在設定中修改）啟動；⌃⌘W 可直接全螢幕截圖入庫"
+          }
+        }
+      }
+    },
+    "邮件应用" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تطبيق البريد"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-Mail-App"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mail app"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicación de correo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Application de messagerie"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ईमेल ऐप"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikasi email"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App di posta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メールアプリ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메일 앱"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-mailapp"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplikacja pocztowa"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicativo de e-mail"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Почтовое приложение"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-postapp"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แอปอีเมล"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-posta uygulaması"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поштовий застосунок"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng email"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "邮件应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "郵件應用程式"
           }
         }
       }

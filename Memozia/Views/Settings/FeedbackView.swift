@@ -1,13 +1,19 @@
+#if os(macOS)
+import AppKit
+import OSLog
 import SwiftUI
 
 // MARK: - 用户反馈视图
 struct FeedbackView: View {
+    private static let logger = Logger(subsystem: "app.memozia", category: "Feedback")
     let recipient: String
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.openURL) private var openURL
     @State private var feedbackType: FeedbackType = .suggestion
     @State private var feedbackContent = ""
     @State private var contactEmail = ""
+    @State private var mailApplications: [URL] = []
+    @State private var selectedMailApplication: URL?
+    @State private var isOpeningMail = false
     @State private var showMailOpenError = false
 
     enum FeedbackType: String, CaseIterable, Identifiable {
@@ -51,21 +57,37 @@ struct FeedbackView: View {
                 }
 
                 Section {
+                    if mailApplications.isEmpty {
+                        Text("无法打开邮件应用")
+                    } else {
+                        Picker("邮件应用", selection: $selectedMailApplication) {
+                            ForEach(mailApplications, id: \.self) { application in
+                                Text(verbatim: FileManager.default.displayName(atPath: application.path))
+                                    .tag(Optional(application))
+                            }
+                        }
+                        .disabled(isOpeningMail)
+                    }
                     Text("反馈邮箱：\(recipient)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .textSelection(.enabled)
+                } footer: {
+                    Text("如果没有出现草稿，可更换邮件应用，或复制反馈内容和邮箱地址后手动发送。")
                 }
             }
             .formStyle(.grouped)
             .navigationTitle("用户反馈")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button("关闭") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("打开邮件草稿", action: openFeedbackEmail)
-                        .disabled(feedbackContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    Button("打开邮件草稿") {
+                        Task { await openFeedbackEmail() }
+                    }
+                    .disabled(isOpeningMail || selectedMailApplication == nil
+                              || feedbackContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
             .alert("无法打开邮件应用", isPresented: $showMailOpenError) {
@@ -74,12 +96,18 @@ struct FeedbackView: View {
                 Text("反馈邮箱：\(recipient)")
             }
         }
-        #if os(macOS)
         .frame(minWidth: 450, minHeight: 400)
-        #endif
+        .onAppear(perform: refreshMailApplications)
     }
 
-    private func openFeedbackEmail() {
+    private func refreshMailApplications() {
+        mailApplications = MemoziaContact.mailApplications()
+        if let selectedMailApplication, mailApplications.contains(selectedMailApplication) { return }
+        selectedMailApplication = mailApplications.first
+    }
+
+    private func openFeedbackEmail() async {
+        guard !isOpeningMail, let application = selectedMailApplication else { return }
         let subject = String(localized: "[Memozia 反馈] \(feedbackType.localizedName)")
         let body = String(localized: """
         反馈类型：\(feedbackType.localizedName)
@@ -94,12 +122,20 @@ struct FeedbackView: View {
             showMailOpenError = true
             return
         }
-        openURL(url) { accepted in
-            if accepted {
-                dismiss()
-            } else {
-                showMailOpenError = true
-            }
+
+        isOpeningMail = true
+        defer { isOpeningMail = false }
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.addsToRecentItems = false
+        do {
+            // Acceptance only confirms delivery of the URL. Keep the form available for retry.
+            _ = try await NSWorkspace.shared.open([url], withApplicationAt: application, configuration: configuration)
+        } catch {
+            let failure = error as NSError
+            Self.logger.error("打开邮件草稿失败：\(failure.domain, privacy: .public) \(failure.code)")
+            refreshMailApplications()
+            showMailOpenError = true
         }
     }
 }
+#endif
