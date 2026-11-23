@@ -35,7 +35,7 @@ Do not edit the generated `.xcodeproj` manually. Configure an available signing 
 
 ## 3. Models and first run
 
-- Consent precedes experience-specific onboarding. Onboarding no longer includes a model download page; prepare models on first use or manage them in Pro settings. Request microphone, speech, screen recording, Accessibility, and Reminders permissions as required by the chosen feature.
+- Consent precedes experience-specific onboarding. Onboarding no longer includes a model download page; prepare models on first use or manage them in Pro settings. Request microphone, system audio, speech, screen recording, Accessibility, and Reminders permissions as required by the chosen feature.
 - On macOS 26+, `SystemTranscription`/`SystemTranscriptionService` use SpeechAnalyzer with system-managed language assets, independent of Whisper folders. `STTMode.defaultMode` and experience resolution select according to system capability; older systems retain WhisperKit.
 - Local Whisper uses a selected folder, defaulted by `WhisperModelFolder.defaultPath`; CoreML/tokenizer files must be complete. Loading resolves nested model folders.
 - Model downloads use `WhisperModelOption.catalog` and the chosen Hugging Face/HF-Mirror source (mirror default). Pass the endpoint explicitly to `WhisperKit.download`, then move `<folder>/models/<repo>/<tier>` to `<folder>/<tier>` and load it. `TaskCenter.whisperDownloadJob` supports genuine pause/resume by preserving downloaded pieces and `.cache` metadata on cancellation.
@@ -89,7 +89,7 @@ AudioConverter uses provider/receiver async APIs on macOS 26+ and retains Reader
 | Background worker | `--background-worker` consumes the real queue; use isolated test data only; see Architecture §3 |
 | Reminders URL | `reminders_url_diagnostic` enables RemindersURLDiagnostic; output is not permanent documentation context |
 | Long-recording save failure | File descriptors, free disk, PersistenceReporting; ProcessLimits raises startup limits |
-| Silent system capture | Screen permission/restart and initial packet PTS alignment |
+| Silent system capture | System audio recording permission, output device, and first-packet host time |
 | Shortcuts/language | Saved combinations, system conflicts, AppleLanguages and restart |
 | TCC diagnostics | Explicit development troubleshooting only; no automatic production permission reset |
 

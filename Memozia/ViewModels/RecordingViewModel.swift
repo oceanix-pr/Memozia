@@ -2200,6 +2200,10 @@ final class RecordingViewModel {
                 activeRecordingSource = config.source
                 attachMeetingRecorderHooks(config: config, context: context)
             } catch {
+                if config.source != .microphone, let notice = RecordingPermissionNotice(systemAudioError: error) {
+                    meetingRecorder.recordingPermissionNotice = notice
+                    return
+                }
                 showErrorMessage(String(localized: "录音启动失败：\(UserFacingError.summary(for: error))"))
             }
         }

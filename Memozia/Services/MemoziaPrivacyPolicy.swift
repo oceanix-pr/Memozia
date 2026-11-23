@@ -16,10 +16,10 @@ import Foundation
 enum MemoziaPrivacyPolicy {
 
     /// 当前政策版本。语义：主版本号变动 = 实质性变更（需重新同意）。
-    static let version = "7.0"
+    static let version = "7.1"
 
     /// 生效日期（yyyy-MM-dd）
-    static let effectiveDate = "2026-11-13"
+    static let effectiveDate = "2026-11-23"
 
     /// 页眉展示用的版本文案
     static var versionLine: String {
@@ -117,7 +117,8 @@ enum MemoziaPrivacyPolicy {
             String(localized: "系统权限与用途"),
             String(localized: """
             • 麦克风：录制你的语音。仅在你开始录音时启用，停止录音后释放。
-            • 屏幕录制：通过 ScreenCaptureKit 采集系统输出音频、截图或录屏。可在「设置 → 录音 → 来源」中选择不录制系统音频。
+            • 系统录音：录制其他应用播放的声音。选择仅用麦克风时跳过这项权限。
+            • 屏幕录制：在你截图或录屏时访问画面。
             • 语音识别：调用 macOS 系统语音识别框架，在本地把录音转成文字。
             • 提醒事项：在你点击「写入提醒事项」，或在「设置 → 待办」主动请求权限后，读取可写列表并把 AI 拆解的待办写入你选择的列表。
             • 辅助功能（当前版本未启用）：设置中保留了「自动跟随会议软件静音」开关，但当前版本不会启动辅助功能检测。若将来启用，只会读取 Teams、Zoom、腾讯会议等会议软件静音按钮的界面状态，用于自动暂停或恢复麦克风采集；不截取屏幕、不读取会议内容、不上传，启用前会更新本政策。

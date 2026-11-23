@@ -81,34 +81,5 @@ struct ScreenCaptureAuthorizationTests {
         catch { #expect(error is CancellationError) }
         #expect(!entered.value)
     }
-
-    @Test("旧授权请求迟到失败不能释放新录音的启动预约")
-    func stoppedAuthorizationCannotClearNextStart() async throws {
-        let requests = LockedBox<[CheckedContinuation<SCShareableContent, any Error>]>([])
-        let capture = SystemAudioCaptureService(loadContent: {
-            try await withCheckedThrowingContinuation { continuation in
-                var pending = requests.value
-                pending.append(continuation)
-                requests.value = pending
-            }
-        })
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Authorization-\(UUID()).wav")
-        let old = Task { try await capture.start(to: url) }
-        let firstDeadline = ContinuousClock.now.advanced(by: .seconds(2))
-        while requests.value.count < 1, ContinuousClock.now < firstDeadline { await Task.yield() }
-        try #require(requests.value.count == 1)
-        _ = await capture.stop()
-        let next = Task { try await capture.start(to: url) }
-        let secondDeadline = ContinuousClock.now.advanced(by: .seconds(2))
-        while requests.value.count < 2, ContinuousClock.now < secondDeadline { await Task.yield() }
-        try #require(requests.value.count == 2)
-        requests.value[0].resume(throwing: CocoaError(.userCancelled))
-        do { try await old.value; Issue.record("旧请求不应启动采集") } catch {}
-        #expect(capture.hasResourcesPreventingUpdate, "新一轮仍在等待授权，旧请求不得释放其资源状态")
-        requests.value[1].resume(throwing: CocoaError(.userCancelled))
-        do { try await next.value; Issue.record("失败请求不应启动采集") } catch {}
-        #expect(!capture.hasResourcesPreventingUpdate)
-        #expect(!FileManager.default.fileExists(atPath: url.path))
-    }
 }
 #endif

@@ -140,6 +140,7 @@
 		8A2D533F1F1E64B1B5B8FFF4 /* EntryQueryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767FE66ED50575E106965B3 /* EntryQueryService.swift */; };
 		8B87A7D547CD0A057C8B9481 /* HotkeySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFDD9FEADF3689607DC82A7C /* HotkeySettingsView.swift */; };
 		8BDF8A53739F336EEF30FEDB /* TimeInterval+Formatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06E37A9B674FE13A32343D43 /* TimeInterval+Formatting.swift */; };
+		8C989E4FAA9C314D122C145E /* RecordingPermissionBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56889C108C6A2302CDD7476A /* RecordingPermissionBanner.swift */; };
 		8E88EC929654809F4A29C693 /* RemindersURLDiagnostic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7279C075A13CB368C3AE3803 /* RemindersURLDiagnostic.swift */; };
 		8F89595888224877BECAF609 /* ExportModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDCB6251B97A8DC65A1AF955 /* ExportModifiers.swift */; };
 		8FB37C2588A78EE1085C4542 /* TSPhrases.txt in Resources */ = {isa = PBXBuildFile; fileRef = B0E68CE59CAE14A456729FA6 /* TSPhrases.txt */; };
@@ -177,6 +178,7 @@
 		ADBED96C37319D52C5FD4CE3 /* TodoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54779C9E2CE0F757117894F8 /* TodoItem.swift */; };
 		ADD9FB7B8DE79EFFB275E223 /* MCPServerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D17C48FFF7CB8C452722824 /* MCPServerController.swift */; };
 		AFA0023C6E158EA2C4478322 /* WaveformAnalyzerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520B70FD0BC7E4ED54A9B4B1 /* WaveformAnalyzerTests.swift */; };
+		B5921787FB1AEB6D435FF407 /* SystemAudioTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FC6B916D5CB30D619D6C2DB /* SystemAudioTap.swift */; };
 		B68F88DCC93A900F91756E72 /* QuickNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39F6E107AFE0D886522B61BC /* QuickNote.swift */; };
 		B7DA230BBBF2CA53897B6AB0 /* MemoziaSmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BC90D61B8E84171A93E4078 /* MemoziaSmokeUITests.swift */; };
 		B852DEA1736C45E5647E1A51 /* PIIScrubService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E33AF3D8E2135B4FFAC8DF /* PIIScrubService.swift */; };
@@ -273,6 +275,7 @@
 		0D24691CE159ED8A2C42F7A6 /* TranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptView.swift; sourceTree = "<group>"; };
 		0DA0A29938B6812E4574EF9D /* DictionarySettingsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionarySettingsViews.swift; sourceTree = "<group>"; };
 		0E7A00F0B400FE0A0E53DC4F /* TodoExtractionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoExtractionServiceTests.swift; sourceTree = "<group>"; };
+		0FC6B916D5CB30D619D6C2DB /* SystemAudioTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAudioTap.swift; sourceTree = "<group>"; };
 		117F0191ECCEE2EDC0FB70E8 /* RecordingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingViewModel.swift; sourceTree = "<group>"; };
 		13ADF75D5823A732D0E8A0EA /* EchoCancellerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoCancellerTests.swift; sourceTree = "<group>"; };
 		154996EBF74FB92C1892EB49 /* BackgroundTaskQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskQueue.swift; sourceTree = "<group>"; };
@@ -331,6 +334,7 @@
 		54779C9E2CE0F757117894F8 /* TodoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoItem.swift; sourceTree = "<group>"; };
 		5499E4B97A9C06A6FA1343BA /* MicCaptureRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicCaptureRecovery.swift; sourceTree = "<group>"; };
 		550322D288B280595B0EF630 /* NativeSpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeSpeechService.swift; sourceTree = "<group>"; };
+		56889C108C6A2302CDD7476A /* RecordingPermissionBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingPermissionBanner.swift; sourceTree = "<group>"; };
 		58C99A3F959051F7C853E4B7 /* SystemNotice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemNotice.swift; sourceTree = "<group>"; };
 		59D1586B48BE493758C1CAE4 /* MemoziaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoziaApp.swift; sourceTree = "<group>"; };
 		5AF8A44F2501190B9F5E9A1F /* RacingWatchdog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RacingWatchdog.swift; sourceTree = "<group>"; };
@@ -647,6 +651,7 @@
 				05479F298456E5A8024D97DB /* SummaryHistory.swift */,
 				E4BE88C531AA538F8A07AF41 /* SummarySources.swift */,
 				6D60C241C2043D250C30F339 /* SystemAudioCaptureService.swift */,
+				0FC6B916D5CB30D619D6C2DB /* SystemAudioTap.swift */,
 				D3BD6CFBAA69C6E211B6F4A7 /* SystemTranscriptionService.swift */,
 				E8267E0BA447E6EAC4FFCB64 /* TaskCenter.swift */,
 				9F3A14721C6DF9E6AA3FADBB /* TodoExtractionService.swift */,
@@ -837,6 +842,7 @@
 				7D3048EF1254C283ADC62CF9 /* LifecycleTasksModifier.swift */,
 				6707B5E3D520C8CB5FFE0DD8 /* RecordingElapsedLabel.swift */,
 				F4D349637BB6FA30A44FFDB2 /* RecordingMergeRequest.swift */,
+				56889C108C6A2302CDD7476A /* RecordingPermissionBanner.swift */,
 				B96C5123FAF1AC9A7341ED04 /* RootDeletionRequest.swift */,
 				58C99A3F959051F7C853E4B7 /* SystemNotice.swift */,
 			);
@@ -1227,6 +1233,7 @@
 				AD195C2101800A6E094DE4B5 /* RecordingListView.swift in Sources */,
 				6D4F7DA7754846C3D3F6FE39 /* RecordingMergeRequest.swift in Sources */,
 				E3F9FABB2B7651D707666736 /* RecordingMergeService.swift in Sources */,
+				8C989E4FAA9C314D122C145E /* RecordingPermissionBanner.swift in Sources */,
 				1607789CF05266CD01539553 /* RecordingProgressStatus.swift in Sources */,
 				9E9FB29599D9A54489BED520 /* RecordingSegmentTimeline.swift in Sources */,
 				31C6AC06659E4C5539889CE2 /* RecordingViewModel.swift in Sources */,
@@ -1257,6 +1264,7 @@
 				229B401AD5E175BBF9500799 /* SummarySources.swift in Sources */,
 				3A254A7CDE4FDF32DEEA484B /* SummaryView.swift in Sources */,
 				BC8670BF32839319DE6578B3 /* SystemAudioCaptureService.swift in Sources */,
+				B5921787FB1AEB6D435FF407 /* SystemAudioTap.swift in Sources */,
 				81B21117B9C413F35C33F14E /* SystemNotice.swift in Sources */,
 				09256B51E4E16132A88DA390 /* SystemTranscriptionService.swift in Sources */,
 				7B32B8C545EE6B373C8ADA98 /* TaskCenter.swift in Sources */,
@@ -1477,7 +1485,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 165;
+				CURRENT_PROJECT_VERSION = 166;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1493,7 +1501,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.8.5;
+				MARKETING_VERSION = 9.8.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1616,7 +1624,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 165;
+				CURRENT_PROJECT_VERSION = 166;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1638,7 +1646,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.8.5;
+				MARKETING_VERSION = 9.8.6;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

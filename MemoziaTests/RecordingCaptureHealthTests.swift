@@ -4,9 +4,8 @@ import Testing
 @testable import Memozia
 
 struct RecordingCaptureHealthTests {
-    /// 显式启用且已有采集权限才运行；不弹授权框、不修改权限或用户录音。
-    @Test(.enabled(if: ProcessInfo.processInfo.environment["MEMOZIA_VERIFY_AUDIO_CAPTURE"] == "1"
-                   && SystemAudioCaptureService.preflightPermission()))
+    /// 显式启用真机采集时运行。首次使用由 macOS 请求系统录音权限。
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["MEMOZIA_VERIFY_AUDIO_CAPTURE"] == "1"))
     func systemCaptureReconnectAndStopFinalizeWithoutStaleInterruption() async throws {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("Memozia-capture-verification-\(UUID().uuidString)", isDirectory: true)
@@ -40,6 +39,133 @@ struct RecordingCaptureHealthTests {
         #expect(!result.writerFailed)
         let audio = try AVAudioFile(forReading: output)
         #expect(audio.length > 0)
+    }
+
+    /// Exercise HAL and the system audio permission. Trigger an output cycle in another process
+    /// at zero volume, count PCM frames, and discard them all without opening a recording file.
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["MEMOZIA_VERIFY_AUDIO_TAP_ACCESS"] == "1"))
+    func realAudioTapStartsWithoutCreatingRecording() async throws {
+        let received = LockedBox(false)
+        let tap = SystemAudioTap(output: .init(queue: DispatchQueue(label: "test.audio-tap"),
+            receive: { _, pcm, _ in if pcm.frameLength > 0 { received.value = true } },
+            dropped: { _ in }, interrupted: { _, error in Issue.record(error) }))
+        defer { tap.invalidate() }
+        try await tap.start()
+        let player = Process()
+        player.executableURL = URL(fileURLWithPath: "/usr/bin/afplay")
+        player.arguments = ["-v", "0", "/System/Library/Sounds/Glass.aiff"]
+        try player.run()
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        while !received.value, .now < deadline { try await Task.sleep(for: .milliseconds(20)) }
+        if player.isRunning { player.terminate() }
+        await tap.stop()
+        #expect(received.value)
+    }
+
+    @Test("旧授权请求迟到失败不能释放新录音的启动预约")
+    func stoppedAuthorizationCannotClearNextStart() async throws {
+        let requests = LockedBox<[CheckedContinuation<Void, any Error>]>([])
+        let capture = SystemAudioCaptureService(startTap: { _ in
+            try await withCheckedThrowingContinuation { continuation in
+                var pending = requests.value
+                pending.append(continuation)
+                requests.value = pending
+            }
+        })
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Authorization-\(UUID()).wav")
+        let old = Task { try await capture.start(to: url) }
+        let firstDeadline = ContinuousClock.now.advanced(by: .seconds(2))
+        while requests.value.count < 1, ContinuousClock.now < firstDeadline { await Task.yield() }
+        try #require(requests.value.count == 1)
+        _ = await capture.stop()
+        let next = Task { try await capture.start(to: url) }
+        let secondDeadline = ContinuousClock.now.advanced(by: .seconds(2))
+        while requests.value.count < 2, ContinuousClock.now < secondDeadline { await Task.yield() }
+        try #require(requests.value.count == 2)
+        requests.value[0].resume(throwing: CocoaError(.userCancelled))
+        do { try await old.value; Issue.record("旧请求不应启动采集") } catch {}
+        #expect(capture.hasResourcesPreventingUpdate, "新一轮仍在等待授权，旧请求不得释放其资源状态")
+        requests.value[1].resume(throwing: CocoaError(.userCancelled))
+        do { try await next.value; Issue.record("失败请求不应启动采集") } catch {}
+        #expect(!capture.hasResourcesPreventingUpdate)
+        #expect(!FileManager.default.fileExists(atPath: url.path))
+    }
+
+    /// Exercise the same borrowed HAL buffer → owned Core Media sample → WAV path as live capture,
+    /// using a stereo test signal. No permission or audio device is needed.
+    @Test("系统音频复制借用的 PCM、对齐首包时间、轮转分片并在唤醒后继续写入", arguments: [false, true])
+    func syntheticTapRecording(interleaved: Bool) async throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let tapBox = LockedBox<SystemAudioTap?>(nil)
+        let recovered = LockedBox(false)
+        let capture = SystemAudioCaptureService(startTap: { tapBox.value = $0 })
+        capture.onEvent = { event in
+            if case .recovered = event.kind { recovered.value = true }
+        }
+        let timeline = RecordingSegmentTimelineStore()
+        let first = folder.appendingPathComponent("first.wav")
+        let second = folder.appendingPathComponent("second.wav")
+        let rate = 44_100.0
+        let format = try #require(AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: rate,
+                                                channels: 2, interleaved: interleaved))
+        let pcm = try #require(AVAudioPCMBuffer(pcmFormat: format, frameCapacity: 441))
+        pcm.frameLength = 441
+        let base = mach_absolute_time()
+        func send(_ index: Int, to tap: SystemAudioTap, pcm: AVAudioPCMBuffer, level: Float) {
+            let buffers = UnsafeMutableAudioBufferListPointer(pcm.mutableAudioBufferList)
+            for (channel, plane) in buffers.enumerated() {
+                let count = Int(plane.mDataByteSize) / MemoryLayout<Float>.size
+                let samples = plane.mData!.assumingMemoryBound(to: Float.self)
+                for n in 0..<count {
+                    let left = pcm.format.isInterleaved ? n.isMultiple(of: 2) : channel == 0
+                    samples[n] = left ? level : -level / 2
+                }
+            }
+            let host = base + AVAudioTime.hostTime(forSeconds: Double(index) / 100)
+            tap.consume(pcm.audioBufferList, hostTime: host, format: pcm.format)
+            // HAL may overwrite or free the buffer immediately on return.
+            for plane in buffers { if let data = plane.mData { memset(data, 0, Int(plane.mDataByteSize)) } }
+        }
+        try await capture.start(to: first, timeline: timeline)
+        let original = try #require(tapBox.value)
+        for index in 0..<10 { send(index, to: original, pcm: pcm, level: 0.25) }
+        #expect(await capture.rotateWriter(to: second))
+        for index in 10..<14 { send(index, to: original, pcm: pcm, level: -0.25) }
+        let origin = capture.captureID
+        #expect(await capture.resumeAfterWake(expectedCaptureID: origin))
+        let replacement = try #require(tapBox.value)
+        #expect(replacement !== original)
+        let newFormat = try #require(AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 48_000,
+                                                   channels: 2, interleaved: !interleaved))
+        let newPCM = try #require(AVAudioPCMBuffer(pcmFormat: newFormat, frameCapacity: 480))
+        newPCM.frameLength = 480
+        for index in 14..<20 {
+            send(index, to: original, pcm: pcm, level: 0.75)
+            send(index, to: replacement, pcm: newPCM, level: -0.25)
+        }
+        let stopped = await capture.stop()
+        #expect(!stopped.writerFailed && !stopped.wasInterrupted)
+        #expect(recovered.value)
+        #expect(!capture.hasResourcesPreventingUpdate)
+
+        for (url, level) in [(first, Float(0.25)), (second, Float(-0.25))] {
+            let file = try AVAudioFile(forReading: url)
+            #expect(file.fileFormat.sampleRate == 48_000)
+            #expect(file.fileFormat.channelCount == 2)
+            #expect(abs(Double(file.length) / 48_000 - 0.1) < 0.002)
+            let read = try #require(AVAudioPCMBuffer(pcmFormat: file.processingFormat,
+                                                    frameCapacity: AVAudioFrameCount(max(1, file.length))))
+            try file.read(into: read)
+            let samples = try #require(read.floatChannelData)
+            let middle = Int(read.frameLength) / 2
+            #expect(abs(samples[0][middle] - level) < 0.02)
+            #expect(abs(samples[1][middle] + level / 2) < 0.02)
+        }
+        try await timeline.save(in: folder)
+        let stored = try #require(try RecordingSegmentTimeline.load(in: folder))
+        #expect(abs((try stored.offset(for: second)) - 0.1) < 0.01)
     }
 
     @Test func normalStopHasNoWarning() {

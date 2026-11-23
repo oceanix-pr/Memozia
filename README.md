@@ -41,7 +41,7 @@ Record your microphone and system audio, or import an existing recording. Review
 
 1. **Install.** Download the ZIP from [Releases](https://github.com/oceanix-pr/Memozia/releases), unzip it, and move `Memozia.app` to Applications. The current preview is for Apple Silicon and is not signed with Apple Developer ID or notarized. Read its release notes for macOS first-open instructions. Installing the app does not require Xcode.
 2. **Prepare speech and summary models.** Follow the in-app component preparation when you first transcribe. For local summaries, connect a running [Ollama or LM Studio service](docs/articles/local-meeting-notes.md). You can also configure a cloud service. The settings you choose determine which content leaves your Mac.
-3. **Record or import.** Start a meeting recording, or use Import to bring in audio or video. On first use, grant the permissions needed for your chosen recording source.
+3. **Record or import.** Start a meeting recording, or use Import to bring in audio or video. On first use, allow the microphone or system audio for your chosen source. Screenshots and screen video use a separate screen permission.
 4. **Review and act.** Use One-Click Processing or work through transcription and summary separately. Review the transcript and summary, then edit the action items. Writing to macOS Reminders requires your confirmation.
 
 ## Why Memozia

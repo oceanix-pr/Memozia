@@ -25,13 +25,13 @@
 |------|--------|
 | SwiftUI / SwiftData | 全 UI + 持久化 |
 | AVFoundation | 麥克風採集（AVAudioEngine/AVAudioFile）、寫入（AVAssetWriter）、混音（AVMutableComposition/AVAssetExportSession）、時長探測（AVAssetReader） |
-| ScreenCaptureKit | 系統音訊採集（SCStream）+ 截圖凍結/直拍（SCScreenshotManager、SCShareableContent） |
+| ScreenCaptureKit | 錄屏（SCStream）與截圖凍結/直拍（SCScreenshotManager、SCShareableContent） |
 | Vision | OCR（VNRecognizeTextRequest） |
 | Speech | 系統語音識別（SpeechAnalyzer / SpeechTranscriber，macOS 26+，語言資產由系統管理） |
 | CryptoKit | AES-GCM 加密 |
 | AppKit | 選單欄（NSStatusItem）、截圖面板（NSPanel/NSView）、視窗管理、分享（NSSharingServicePicker） |
 | Carbon（HIToolbox） | 全域性熱鍵（RegisterEventHotKey） |
-| CoreAudio | 麥克風靜音監聽（kAudioDevicePropertyMute） |
+| CoreAudio | 系統音訊程序 tap、麥克風靜音監聽（kAudioDevicePropertyMute） |
 | ApplicationServices（AXUIElement） | 會議 App 靜音按鈕檢測 |
 | EventKit | 提醒事項寫入（EKReminder） |
 | Metal | 批次轉寫併發估算（recommendedMaxWorkingSetSize）——批次入口已下線，僅遺留輔助 `calculateMaxConcurrency` 使用，暫無呼叫方 |

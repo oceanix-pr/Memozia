@@ -107,7 +107,8 @@ extension MainActor {
 |------|------|----------|
 | 麥克風（NSMicrophoneUsageDescription） | 會議錄音 | TCC 彈窗 |
 | 語音識別（NSSpeechRecognitionUsageDescription） | 系統語音轉寫（macOS 26+） | 按功能請求 TCC 授權 |
-| 螢幕錄製 | 系統音訊採集（SCStream）+ 截圖（SCScreenshotManager） | 系統設定，**授權後需重啟應用** |
+| 系統錄音 | 其他 App 播放的聲音（Core Audio tap） | 僅系統音訊與混合錄音按需申請 |
+| 螢幕錄製 | 截圖和錄屏（ScreenCaptureKit） | 首次截圖或錄屏時申請 |
 | 輔助功能（Accessibility） | AppMuteDetector AX 樹輪詢 | 系統設定 |
 | 提醒事項（NSRemindersUsageDescription） | 待辦寫入 EKReminder | TCC 彈窗 |
 | 網路客戶端（entitlements） | 雲端 API / 模型下載 | entitlements |

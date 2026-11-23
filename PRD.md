@@ -67,7 +67,7 @@ Memozia 是一款**隐私优先**的会议录音转写与智能总结应用：�
 
 | 编号 | 需求 | 状态 |
 |---|---|---|
-| FR-1.1 | 支持三种录音源：**麦克风**（AVAudioEngine）、**系统音频**（ScreenCaptureKit，仅音频流）、**混音**（AVMutableComposition 合成后导出 m4a） | 已实现 |
+| FR-1.1 | 支持三种录音源：**麦克风**（AVAudioEngine）、**系统音频**（Core Audio 进程 tap，仅系统录音权限）、**混音**（AVMutableComposition 合成后导出 m4a） | 已实现 |
 | FR-1.2 | 录音在**菜单栏**控制：开始/停止录音、隐藏主窗口（共享屏幕场景，Dock 图标可切换 accessory 模式）、剪贴板新建待办、设置、退出；录屏进行中状态项显示「录屏中」、切换项显示「停止录制」 | 已实现 |
 | FR-1.3 | **静音双检测**：① 系统级——CoreAudio `kAudioDevicePropertyMute` 监听默认输入设备；② 应用级——Accessibility API 轮询 Teams/Zoom 等会议软件静音按钮状态（1s 轮询，仅匹配按钮角色且中文关键词复合条件），静音时 UI 明确提示，避免"以为在录其实没声" | 已实现 |
 | FR-1.4 | 录音文件分片滚动写入，录音目录按 `yyyyMMddHHmmss` 唯一创建 | 已实现 |
@@ -405,7 +405,8 @@ RootView（NavigationSplitView，工具栏选择 + 拖拽导入）
 | 权限 | 用途 | 触发时机 |
 |---|---|---|
 | 麦克风（NSMicrophoneUsageDescription） | 会议录音 | 首次开始麦克风录音 |
-| 屏幕录制（ScreenCaptureKit / CGWindowListCreateImage） | 采集系统音频 + **智能截图（M17）** | 首次开启系统音频模式或首次截图；授权后需重启 App |
+| 系统录音（Core Audio tap） | 采集其他应用播放的声音 | 混合或仅系统音频录音首次启动时申请 |
+| 屏幕录制（ScreenCaptureKit） | 截图和录屏 | 首次截图或录屏时申请 |
 | 辅助功能（Accessibility） | 检测 Teams/Zoom 静音按钮 | 开启应用静音检测 |
 | 提醒事项（NSRemindersUsageDescription） | 写入 AI 拆解的待办 | 首次写入待办 |
 | 网络（client） | 云端 STT/LLM、模型下载 | — |

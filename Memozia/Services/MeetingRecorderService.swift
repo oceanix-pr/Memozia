@@ -4,7 +4,6 @@ import os.log
 #if os(macOS)
 import CoreAudio
 import AppKit
-import ScreenCaptureKit
 #else
 /* iOS 专属分支（工程已改为仅 macOS，注释保留以备不时之需）
 import UIKit
@@ -18,7 +17,7 @@ import UIKit
 /// macOS 支持完整功能（麦克风+系统音频+静音检测）；iOS 仅支持麦克风采集。
 ///
 /// 设计要点：
-/// - MVP 阶段：mixed 模式优先录制麦克风，系统音频作为可选增强（失败时降级）
+/// - 混合模式先准备系统声音，再启动麦克风和分片写入。
 /// - 系统 mute 检测触发时自动暂停麦克风采集；本地手动静音开关作为补充
 /// - 应用层静音检测（AppMuteDetector）可自动跟随 Teams/Zoom 的静音状态
 @MainActor
@@ -38,9 +37,11 @@ final class MeetingRecorderService: @unchecked Sendable {
     /// 是否正在录音
     var isRecording = false
     /// 是否正在启动（从进入 startRecording 到采集真正就绪）。
-    /// 与 `isRecording` 分开：启动要跨越权限弹窗、SCShareableContent 等长挂起点，
+    /// 与 `isRecording` 分开：启动可能需要等待系统授权和首包音频，
     /// 期间 isRecording 仍为 false，仅靠它无法阻止第二次点击进入并覆写共享的分片状态
     private(set) var isStarting = false
+    /// 主窗口和菜单栏共用的授权状态，在用户处理前保留操作入口。
+    var recordingPermissionNotice: RecordingPermissionNotice?
     /// 本次会话是否同时录制屏幕画面（录屏）。录屏复用本服务的音频管线，视图层（菜单栏）
     /// 需要据此把状态与停止项显示为「录屏中 / 停止录制」；与 `isRecording` 同生命周期，
     /// 采集停止即复位
@@ -158,7 +159,7 @@ final class MeetingRecorderService: @unchecked Sendable {
     /// 麦克风采集（macOS + iOS 均可用）
     private let micCapture = MicCaptureService()
     #if os(macOS)
-    private let systemCapture = SystemAudioCaptureService()
+    private let systemCapture: SystemAudioCaptureService
     private let muteMonitor = MicMuteMonitor()
     private let appMuteDetector = AppMuteDetector()
     #endif
@@ -231,10 +232,14 @@ final class MeetingRecorderService: @unchecked Sendable {
     private var sysActiveBeforeSleep = false
     #endif
 
-    init(prepareForRecording: @escaping @MainActor () async throws -> Void = {
-        await UpdatePermissionRepair.shared.prepareIfNeeded()
-    }) {
+    init(
+        prepareForRecording: @escaping @MainActor () async throws -> Void = {
+            await UpdatePermissionRepair.shared.prepareIfNeeded()
+        },
+        systemCapture: SystemAudioCaptureService = SystemAudioCaptureService()
+    ) {
         self.prepareForRecording = prepareForRecording
+        self.systemCapture = systemCapture
         micCapture.nextSegmentForFormatChange = { [weak self] in
             guard let self, let folderDir = self.segmentFolderDir,
                   let baseName = self.segmentBaseName else { return nil }
@@ -257,24 +262,11 @@ final class MeetingRecorderService: @unchecked Sendable {
                       self.isRecording, !self.isStoppingCapture,
                       self.systemCapture.isCurrentEvent(event) else { return }
                 switch event.kind {
-                case .interrupted(let error):
+                case .interrupted:
                     self.captureHealth.handle(.interrupted(), sessionID: session)
                     // 睡眠期间仅记录事实，唤醒后根据实际恢复结果更新横幅。
                     guard self.sleepStartDate == nil else { return }
-                    let nsError = error as NSError
-                    let message: String
-                    if nsError.domain == SCStreamErrorDomain,
-                       nsError.code == SCStreamError.Code.userStopped.rawValue {
-                        message = String(localized: "系统音频共享已被停止，后续系统声音将无法录入。")
-                    } else {
-                        message = String(localized: "系统音频采集已中断，中断期间的系统声音无法录入。")
-                    }
-                    if nsError.domain == SCStreamErrorDomain,
-                       nsError.code == SCStreamError.Code.systemStoppedStream.rawValue {
-                        self.onRecordingStatus?(self.lastError ?? message)
-                    } else {
-                        self.onRecordingWarning?(message)
-                    }
+                    self.onRecordingWarning?(String(localized: "系统音频采集已中断，中断期间的系统声音无法录入。"))
                 case .writerFailed:
                     self.captureHealth.handle(.interrupted(writerFailure: true), sessionID: session)
                     self.onRecordingWarning?(String(localized: "系统音频写入失败，当前分片可能不完整。请停止录音并检查磁盘。"))
@@ -371,6 +363,7 @@ final class MeetingRecorderService: @unchecked Sendable {
         guard !isRecording else { throw MeetingRecorderError.alreadyRecording }
         // 在任何 await 前占用启动状态，权限准备期间也必须阻止另一入口重入。
         isStarting = true
+        recordingPermissionNotice = nil
         defer { isStarting = false }
 
         try await prepareForRecording()
@@ -379,6 +372,28 @@ final class MeetingRecorderService: @unchecked Sendable {
             throw NSError(domain: "app.memozia.Updates", code: 2,
                           userInfo: [NSLocalizedDescriptionKey: String(localized: "请稍后重试更新。")])
         }
+        // D-1: 磁盘空间预检。分片采用 PCM（崩溃安全容器）：双轨约 1GB/小时，
+        // 单轨麦克风约 345MB/小时（见下方分片说明）。旧注释写“至少 100MB”与实现不符，
+        // 且 500MB 实际只够写半小时：保留作为硬门槛，录音中另有阶梯式检查与临界止损
+        let freeSpace = try? FileManager.default.attributesOfFileSystem(
+            forPath: AudioRecording.storageDirectory.path
+        )[.systemFreeSize] as? NSNumber
+        if let freeBytes = freeSpace?.int64Value {
+            if freeBytes < 500 * 1024 * 1024 {
+                throw MeetingRecorderError.insufficientDiskSpace(freeBytes)
+            }
+        } else {
+            // 读不到容量时不阻止开始录音（录音中另有阶梯检查与临界止损），但必须留痕：
+            // 旧实现把"读失败"和"空间充足"合并成同一条静默路径，事后无从排查
+            logger.error("录音前磁盘预检无法读取剩余容量，本次跳过预检；录音中的阶梯检查仍然生效")
+        }
+
+        // 在分配条目目录和启动麦克风前取得授权；系统轨直接复用同一份内容。
+        let preparedTap = try await prepareSystemAudio(for: config.source)
+        var tapInstalled = false
+        defer { if !tapInstalled { preparedTap?.invalidate() } }
+        try Task.checkCancellation()
+
         self.config = config
         lastError = nil
         micRecoveryError = nil
@@ -406,22 +421,6 @@ final class MeetingRecorderService: @unchecked Sendable {
         attachCaptureCallbacks(session: captureSession)
         diskProbeFailures = 0
         diskProbeFailureReported = false
-
-        // D-1: 磁盘空间预检。分片采用 PCM（崩溃安全容器）：双轨约 1GB/小时，
-        // 单轨麦克风约 345MB/小时（见下方分片说明）。旧注释写“至少 100MB”与实现不符，
-        // 且 500MB 实际只够写半小时：保留作为硬门槛，录音中另有阶梯式检查与临界止损
-        let freeSpace = try? FileManager.default.attributesOfFileSystem(
-            forPath: AudioRecording.storageDirectory.path
-        )[.systemFreeSize] as? NSNumber
-        if let freeBytes = freeSpace?.int64Value {
-            if freeBytes < 500 * 1024 * 1024 {
-                throw MeetingRecorderError.insufficientDiskSpace(freeBytes)
-            }
-        } else {
-            // 读不到容量时不阻止开始录音（录音中另有阶梯检查与临界止损），但必须留痕：
-            // 旧实现把"读失败"和"空间充足"合并成同一条静默路径，事后无从排查
-            logger.error("录音前磁盘预检无法读取剩余容量，本次跳过预检；录音中的阶梯检查仍然生效")
-        }
 
         // 生成录音文件路径：统一存到 ~/Documents/Memozia/yyyyMMddHHmmss/ 子文件夹
         // 原子创建独占文件夹名：并发录音/导入落在同一秒也不会共用目录互相覆盖
@@ -453,36 +452,16 @@ final class MeetingRecorderService: @unchecked Sendable {
 
             // 根据配置启动对应的采集服务（均写入第 1 片分片）
             let firstMicURL = micSegmentURLs[0]
-            switch config.source {
-            case .microphone:
-                try await startMicCapture(url: firstMicURL)
-            case .systemAudio:
+            if config.source == .systemAudio {
                 micSegmentURLs = []
-                #if os(macOS)
-                sysSegmentURLs = [Self.sysSegmentURL(folderDir: folderDir, baseName: baseName, index: 1)]
-                try await startSystemCapture(url: sysSegmentURLs[0])
-                #else
-                /* iOS 专属分支（工程已改为仅 macOS，注释保留以备不时之需）
-                // iOS 不支持系统音频采集，降级为麦克风
-                try startMicCapture(url: firstMicURL)
-                */
-                #endif
-            case .mixed:
-                // mixed 模式：先检查系统音频权限，未授权则阻止录音启动
-                // 避免出现"麦克风已开始录但系统音频权限未决"的竞态
-                #if os(macOS)
-                let authorizedContent: SCShareableContent
-                do { authorizedContent = try await ScreenCaptureAuthorization.content() }
-                catch ScreenCaptureAuthorization.Failure.denied { throw SystemAudioError.permissionNotGranted }
-                try Task.checkCancellation()
-                #endif
-                // 权限已确认，启动麦克风 + 系统音频（分别写入分片，停止时拼接合并）
+            } else {
                 try await startMicCapture(url: firstMicURL)
-                #if os(macOS)
+            }
+            if let preparedTap {
                 sysSegmentURLs = [Self.sysSegmentURL(folderDir: folderDir, baseName: baseName, index: 1)]
                 try await systemCapture.start(to: sysSegmentURLs[0], timeline: segmentTimeline,
-                                              authorizedContent: authorizedContent)
-                #endif
+                                              preparedTap: preparedTap)
+                tapInstalled = true
             }
 
             // 首包已经按初始静音偏好写入；这里只更新界面，恢复重建保持该状态。
@@ -1168,9 +1147,11 @@ final class MeetingRecorderService: @unchecked Sendable {
     }
 
     #if os(macOS)
-    /// 启动系统音频采集（仅 macOS）
-    private func startSystemCapture(url: URL) async throws {
-        try await systemCapture.start(to: url, timeline: segmentTimeline)
+    func prepareSystemAudio(for source: RecordingSource) async throws -> SystemAudioTap? {
+        guard source != .microphone else { return nil }
+        recordingPermissionNotice = .waiting
+        defer { recordingPermissionNotice = nil }
+        return try await systemCapture.prepareTap()
     }
 
     private func setupMuteMonitor() {
@@ -1317,7 +1298,7 @@ final class MeetingRecorderService: @unchecked Sendable {
 
     // MARK: - 睡眠/唤醒处理（合盖场景）
     //
-    // 合盖睡眠会停掉 AVAudioEngine、终止 SCStream；麦克风大概率随配置变化通知自愈，
+    // 合盖睡眠会停掉 AVAudioEngine、中断系统音频 tap；麦克风大概率随配置变化通知自愈，
     // 但系统音频断后不会自动重连。因此录音期间监听唤醒事件，醒来后主动恢复两条链路。
 
     /// 安装睡眠/唤醒通知观察者（仅录音期间有效）
@@ -1352,7 +1333,7 @@ final class MeetingRecorderService: @unchecked Sendable {
     }
 
     /// 系统即将睡眠：记录睡眠开始时间与睡前两轨状态
-    /// （唤醒后 SCStream 的错误回调已把采集状态抹掉，不提前记录就无从判断该不该重连）
+    /// （唤醒后 系统音频 tap 的中断回调已把采集状态抹掉，不提前记录就无从判断该不该重连）
     private func handleSystemWillSleep() {
         guard isRecording, let session = activeCaptureSession, !isStoppingCapture else { return }
         sleepStartDate = Date()

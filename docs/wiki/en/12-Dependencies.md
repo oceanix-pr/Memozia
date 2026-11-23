@@ -25,13 +25,13 @@ The pre-build [fix_onnxruntime_framework.sh](../../../Scripts/fix_onnxruntime_fr
 |---|---|
 | SwiftUI / SwiftData | UI and persistence |
 | AVFoundation | AVAudioEngine/AVAudioFile capture, AVAssetWriter, composition/export, duration inspection |
-| ScreenCaptureKit | System audio through SCStream; capture/freeze through SCScreenshotManager and SCShareableContent |
+| ScreenCaptureKit | Screen video through SCStream; capture/freeze through SCScreenshotManager and SCShareableContent |
 | Vision | VNRecognizeTextRequest OCR |
 | Speech | SpeechAnalyzer/SpeechTranscriber, macOS 26+, system-managed language assets |
 | CryptoKit | AES-GCM |
 | AppKit | Status item, screenshot panels/views, windows, NSSharingServicePicker |
 | Carbon / HIToolbox | RegisterEventHotKey global shortcuts |
-| CoreAudio | Microphone mute-property observation |
+| CoreAudio | System audio process taps and microphone mute-property observation |
 | ApplicationServices | AXUIElement meeting-app mute detection |
 | EventKit | EKReminder creation |
 | Metal | `recommendedMaxWorkingSetSize` in unused legacy batch-concurrency helper |

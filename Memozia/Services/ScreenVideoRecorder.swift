@@ -109,8 +109,7 @@ enum ScreenRecordingQuality: String, CaseIterable, Sendable {
 /// 设计约束（与录屏方案分析一致）：
 /// - 音频 m4a 仍由 MeetingRecorderService 现有双轨分片管线负责；本服务只产出视频文件
 ///   （可选内嵌**系统声**音轨供回放；麦克风人声在 m4a 转写轨里，v1 不进 mp4）。
-/// - 与系统音频服务各自持有独立 SCStream：同一次屏幕录制权限覆盖多条流，
-///   避免把音频服务的占位丢弃路径改成条件写入带来的回归面。
+/// - 视频文件的画面和可选内嵌系统声来自 ScreenCaptureKit；独立会议音轨使用 Core Audio tap。
 ///
 /// 并发模型：@unchecked Sendable + NSLock 保护跨线程状态；采样回调统一在
 /// `sampleQueue` 串行处理（与 SystemAudioCaptureService 同一约定）。

@@ -662,127 +662,127 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يحتاج Memozia إلى إذن تسجيل الشاشة لالتقاط صوت النظام ولقطات الشاشة وتسجيلات الشاشة."
+            "value" : "يحتاج Memozia إلى الوصول إلى الشاشة لالتقاط صور لها وتسجيل فيديو للشاشة."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia benötigt Zugriff auf die Bildschirmaufnahme, um Systemaudio, Bildschirmfotos und Bildschirmvideos aufzunehmen."
+            "value" : "Memozia benötigt Bildschirmzugriff für Bildschirmfotos und Bildschirmvideos."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia needs screen recording access to capture system audio, screenshots and screen recordings."
+            "value" : "Memozia needs screen access to take screenshots and record screen video."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia necesita permiso de grabación de pantalla para capturar audio del sistema, capturas de pantalla y vídeos de la pantalla."
+            "value" : "Memozia necesita acceder a la pantalla para hacer capturas y grabar vídeos de la pantalla."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia a besoin de l’accès à l’enregistrement de l’écran pour capturer le son système, des captures d’écran et des vidéos de l’écran."
+            "value" : "Memozia a besoin d’accéder à l’écran pour effectuer des captures d’écran et enregistrer des vidéos de l’écran."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia को सिस्टम ऑडियो, स्क्रीनशॉट और स्क्रीन रिकॉर्डिंग कैप्चर करने के लिए स्क्रीन रिकॉर्डिंग की अनुमति चाहिए।"
+            "value" : "स्क्रीनशॉट लेने और स्क्रीन का वीडियो रिकॉर्ड करने के लिए Memozia को स्क्रीन ऐक्सेस चाहिए।"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia memerlukan izin perekaman layar untuk menangkap audio sistem, tangkapan layar, dan rekaman layar."
+            "value" : "Memozia memerlukan akses layar untuk mengambil tangkapan layar dan merekam video layar."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia richiede l’accesso alla registrazione dello schermo per acquisire audio di sistema, schermate e video dello schermo."
+            "value" : "Memozia richiede l’accesso allo schermo per acquisire istantanee e registrare video dello schermo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia はシステム音声、スクリーンショット、画面録画を取得するために画面収録の許可が必要です。"
+            "value" : "スクリーンショットの撮影と画面収録のために画面へのアクセスが必要です。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia는 시스템 오디오, 스크린샷 및 화면 녹화를 캡처하기 위해 화면 기록 권한이 필요합니다."
+            "value" : "Memozia에서 스크린샷을 찍거나 화면을 녹화하려면 화면 접근 권한이 필요합니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia heeft toestemming voor schermopname nodig om systeemaudio, schermafbeeldingen en schermvideo’s vast te leggen."
+            "value" : "Memozia heeft toegang tot het scherm nodig voor schermafbeeldingen en schermvideo’s."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia wymaga zgody na nagrywanie ekranu, aby przechwytywać dźwięk systemowy, zrzuty i nagrania ekranu."
+            "value" : "Memozia potrzebuje dostępu do ekranu, aby robić zrzuty ekranu i nagrywać obraz z ekranu."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Memozia precisa de acesso à gravação do ecrã para captar áudio do sistema, capturas de ecrã e vídeos do ecrã."
+            "value" : "O Memozia precisa acessar a tela para fazer capturas e gravar vídeos da tela."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia нужен доступ к записи экрана для захвата системного звука, снимков и видео экрана."
+            "value" : "Memozia нужен доступ к экрану для создания снимков и записи видео с экрана."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia behöver tillgång till skärminspelning för att fånga systemljud, skärmbilder och skärmvideor."
+            "value" : "Memozia behöver tillgång till skärmen för att ta skärmavbilder och spela in skärmvideo."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia ต้องใช้สิทธิ์บันทึกหน้าจอเพื่อจับเสียงระบบ ภาพหน้าจอ และวิดีโอหน้าจอ"
+            "value" : "Memozia ต้องเข้าถึงหน้าจอเพื่อถ่ายภาพหน้าจอและบันทึกวิดีโอหน้าจอ"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia, sistem sesini, ekran görüntülerini ve ekran videolarını yakalamak için ekran kaydı iznine ihtiyaç duyar."
+            "value" : "Memozia, ekran görüntüsü almak ve ekran videosu kaydetmek için ekrana erişmek ister."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia потрібен дозвіл на запис екрана для захоплення системного звуку, знімків і відео екрана."
+            "value" : "Memozia потрібен доступ до екрана для знімків екрана та запису відео з екрана."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Memozia cần quyền ghi màn hình để thu âm thanh hệ thống, chụp ảnh và quay màn hình."
+            "value" : "Memozia cần truy cập màn hình để chụp ảnh và quay video màn hình."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "闻墨集 需要录制屏幕以捕获系统音频、截图和录屏"
+            "value" : "Memozia 需要访问屏幕以截图或录制屏幕视频。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "聞墨集 需要錄製螢幕以擷取系統音訊、截圖和錄影"
+            "value" : "Memozia 需要存取螢幕以截圖或錄製螢幕影片。"
           }
         }
       }

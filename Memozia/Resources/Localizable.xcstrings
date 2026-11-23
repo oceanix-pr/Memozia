@@ -783,6 +783,1046 @@
         }
       }
     },
+    "正在准备系统录音…" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جارٍ تحضير تسجيل صوت النظام…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systemaudioaufnahme wird vorbereitet…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparing system audio recording…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando la grabación del audio del sistema…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Préparation de l’enregistrement de l’audio du système…"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिस्टम ऑडियो रिकॉर्डिंग तैयार की जा रही है…"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menyiapkan perekaman audio sistem…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparazione della registrazione dell’audio di sistema…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システムオーディオ録音を準備中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 오디오 녹음 준비 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systeemaudio-opname voorbereiden…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przygotowywanie nagrywania dźwięku systemowego…"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando a gravação de áudio do sistema…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подготовка записи системного звука…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Förbereder inspelning av systemljud…"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังเตรียมบันทึกเสียงระบบ…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem sesi kaydı hazırlanıyor…"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Підготовка запису системного звуку…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang chuẩn bị ghi âm thanh hệ thống…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在准备系统录音…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在準備系統錄音…"
+          }
+        }
+      }
+    },
+    "录音尚未开始" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يبدأ التسجيل بعد"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Aufnahme hat noch nicht begonnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recording hasn’t started"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La grabación aún no ha comenzado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’enregistrement n’a pas commencé"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "रिकॉर्डिंग अभी शुरू नहीं हुई है"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perekaman belum dimulai"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La registrazione non è ancora iniziata"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "録音はまだ開始されていません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "녹음이 아직 시작되지 않았습니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De opname is nog niet gestart"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagrywanie jeszcze się nie rozpoczęło"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A gravação ainda não começou"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запись ещё не началась"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inspelningen har inte startat"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยังไม่ได้เริ่มการบันทึกเสียง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kayıt henüz başlamadı"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запис ще не розпочався"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa bắt đầu ghi âm"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "录音尚未开始"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "錄音尚未開始"
+          }
+        }
+      }
+    },
+    "未能及时收到系统音频。请检查系统录音权限和声音输出设备，然后重试。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يصل صوت النظام في الوقت المحدد. تحقّق من إذن تسجيل صوت النظام وجهاز الإخراج ثم أعد المحاولة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systemaudio wurde nicht rechtzeitig empfangen. Prüfe die Berechtigung für Systemaudio und das Ausgabegerät und versuche es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System audio did not arrive in time. Check system audio recording permission and your output device, then try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se recibió a tiempo el audio del sistema. Comprueba el permiso de grabación y el dispositivo de salida y vuelve a intentarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’audio du système n’a pas été reçu à temps. Vérifiez l’autorisation d’enregistrement et la sortie audio, puis réessayez."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिस्टम ऑडियो समय पर नहीं मिला। रिकॉर्डिंग की अनुमति और आउटपुट डिवाइस जाँचकर फिर कोशिश करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio sistem tidak diterima tepat waktu. Periksa izin perekaman dan perangkat keluaran, lalu coba lagi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’audio di sistema non è arrivato in tempo. Controlla il permesso di registrazione e il dispositivo di uscita, poi riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システムオーディオを時間内に受信できませんでした。録音の許可と出力装置を確認し、もう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 오디오를 제시간에 받지 못했습니다. 시스템 오디오 녹음 권한과 출력 기기를 확인한 뒤 다시 시도하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er is niet op tijd systeemaudio ontvangen. Controleer de opnametoestemming en het uitvoerapparaat en probeer het opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dźwięk systemowy nie dotarł na czas. Sprawdź uprawnienie do nagrywania i urządzenie wyjściowe, a następnie spróbuj ponownie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O áudio do sistema não chegou a tempo. Verifique a permissão de gravação e o dispositivo de saída e tente novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Системный звук не поступил вовремя. Проверьте разрешение на запись и устройство вывода и повторите попытку."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systemljudet kom inte fram i tid. Kontrollera behörigheten för systemljud och ljudutgången och försök igen."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่ได้รับเสียงระบบภายในเวลาที่กำหนด โปรดตรวจสอบสิทธิ์บันทึกเสียงระบบและอุปกรณ์ส่งออกแล้วลองอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem sesi zamanında alınamadı. Kayıt iznini ve ses çıkış aygıtını kontrol edip yeniden deneyin."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Системний звук не надійшов вчасно. Перевірте дозвіл на запис і пристрій виведення та спробуйте знову."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không nhận được âm thanh hệ thống kịp thời. Hãy kiểm tra quyền ghi âm và thiết bị đầu ra, rồi thử lại."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未能及时收到系统音频。请检查系统录音权限和声音输出设备，然后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未能及時收到系統音訊。請檢查系統錄音權限和聲音輸出裝置，然後再試一次。"
+          }
+        }
+      }
+    },
+    "系统音频设备不可用" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جهاز صوت النظام غير متاح"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systemaudiogerät nicht verfügbar"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System audio device unavailable"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo de audio del sistema no disponible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Périphérique audio du système indisponible"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिस्टम ऑडियो डिवाइस उपलब्ध नहीं है"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perangkat audio sistem tidak tersedia"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo audio di sistema non disponibile"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システムオーディオ装置を利用できません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 오디오 기기를 사용할 수 없습니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systeemaudioapparaat niet beschikbaar"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systemowe urządzenie audio jest niedostępne"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dispositivo de áudio do sistema indisponível"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Устройство системного звука недоступно"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systemljudsenheten är inte tillgänglig"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อุปกรณ์เสียงระบบไม่พร้อมใช้งาน"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem sesi aygıtı kullanılamıyor"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пристрій системного звуку недоступний"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thiết bị âm thanh hệ thống không khả dụng"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统音频设备不可用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系統音訊裝置無法使用"
+          }
+        }
+      }
+    },
+    "无法读取系统音频格式" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّرت قراءة تنسيق صوت النظام"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Systemaudioformat konnte nicht gelesen werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not read the system audio format"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo leer el formato de audio del sistema"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de lire le format audio du système"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिस्टम ऑडियो का प्रारूप पढ़ा नहीं जा सका"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format audio sistem tidak dapat dibaca"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile leggere il formato audio di sistema"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システムオーディオの形式を読み取れません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시스템 오디오 형식을 읽을 수 없습니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De systeemaudio-indeling kan niet worden gelezen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można odczytać formatu dźwięku systemowego"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível ler o formato de áudio do sistema"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось прочитать формат системного звука"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det gick inte att läsa systemljudets format"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อ่านรูปแบบเสียงระบบไม่ได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistem sesi biçimi okunamadı"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдалося прочитати формат системного звуку"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể đọc định dạng âm thanh hệ thống"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取系统音频格式"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法讀取系統音訊格式"
+          }
+        }
+      }
+    },
+    "请检查声音输出设备，重新打开 Memozia，再开始录音。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحقّق من جهاز إخراج الصوت، ثم أعد فتح Memozia وابدأ التسجيل."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prüfe das Audioausgabegerät, öffne Memozia erneut und starte die Aufnahme."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check your audio output device, reopen Memozia, then start recording again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprueba la salida de audio, vuelve a abrir Memozia e inicia la grabación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifiez la sortie audio, rouvrez Memozia, puis relancez l’enregistrement."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ऑडियो आउटपुट डिवाइस जाँचें, Memozia फिर खोलें और रिकॉर्डिंग शुरू करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Periksa perangkat keluaran audio, buka kembali Memozia, lalu mulai merekam."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controlla l’uscita audio, riapri Memozia e avvia la registrazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声出力装置を確認し、Memozia を開き直して録音を開始してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오디오 출력 기기를 확인한 뒤 Memozia를 다시 열고 녹음을 시작하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controleer de audio-uitvoer, open Memozia opnieuw en start de opname."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdź urządzenie wyjściowe audio, ponownie otwórz Memozia i rozpocznij nagrywanie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifique a saída de áudio, reabra o Memozia e inicie a gravação."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверьте устройство вывода звука, снова откройте Memozia и начните запись."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontrollera ljudutgången, öppna Memozia igen och starta inspelningen."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตรวจสอบอุปกรณ์ส่งออกเสียง เปิด Memozia ใหม่ แล้วเริ่มบันทึกอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ses çıkış aygıtını kontrol edin, Memozia’yı yeniden açın ve kaydı başlatın."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перевірте пристрій виведення звуку, знову відкрийте Memozia та почніть запис."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiểm tra thiết bị đầu ra âm thanh, mở lại Memozia rồi bắt đầu ghi."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请检查声音输出设备，重新打开 Memozia，再开始录音。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請檢查聲音輸出裝置，重新開啟 Memozia，再開始錄音。"
+          }
+        }
+      }
+    },
+    "本次仅录麦克风" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تسجيل الميكروفون فقط هذه المرة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diesmal nur Mikrofon aufnehmen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Microphone Only This Time"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabar solo el micrófono esta vez"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser uniquement le micro cette fois-ci"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस बार केवल माइक्रोफ़ोन रिकॉर्ड करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kali ini rekam mikrofon saja"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa solo il microfono questa volta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今回はマイクのみで録音"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이번에는 마이크만 녹음"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze keer alleen de microfoon opnemen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tym razem nagrywaj tylko mikrofon"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravar apenas o microfone desta vez"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В этот раз записать только микрофон"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spela bara in mikrofonen den här gången"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บันทึกเฉพาะไมโครโฟนในครั้งนี้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu kez yalnızca mikrofonu kaydet"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цього разу записати лише мікрофон"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lần này chỉ thu micrô"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本次仅录麦克风"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本次僅錄麥克風"
+          }
+        }
+      }
+    },
+    "已授权仍无法录音？" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هل ما زال التسجيل متعذرًا بعد منح الإذن؟"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trotz erteilter Berechtigung keine Aufnahme möglich?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already allowed access but still can’t record?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Aún no puedes grabar después de dar permiso?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’enregistrement reste impossible après autorisation ?"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अनुमति देने के बाद भी रिकॉर्ड नहीं हो रहा है?"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masih tidak bisa merekam setelah memberikan izin?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non riesci a registrare dopo aver dato il permesso?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "許可した後も録音できない場合"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "권한을 허용한 후에도 녹음할 수 없나요?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lukt opnemen nog steeds niet nadat je toestemming hebt gegeven?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nadal nie możesz nagrywać mimo przyznania uprawnień?"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ainda não consegue gravar depois de conceder a permissão?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удаётся записать даже после выдачи разрешения?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Går det fortfarande inte att spela in trots att du gett tillstånd?"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยังบันทึกไม่ได้หลังจากให้สิทธิ์แล้วใช่ไหม"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İzin vermenize rağmen kayıt yapamıyor musunuz?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не вдається записати навіть після надання дозволу?"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vẫn không thể ghi âm sau khi cấp quyền?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已授权仍无法录音？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已授權仍無法錄音？"
+          }
+        }
+      }
+    },
     "，约 %d 分钟" : {
       "localizations" : {
         "ar" : {
@@ -1955,7 +2995,6 @@
       }
     },
     "[Memozia 反馈] %@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -10807,6 +11846,7 @@
       }
     },
     "Memozia · 闻墨集" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -20174,132 +21214,132 @@
         }
       }
     },
-    "仅录制系统输出音频。适合在线会议中他人发言内容（需 macOS 14.4+）。" : {
+    "录制其他应用播放的声音，例如线上会议中对方的发言。" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يسجل مخرج صوت النظام فقط. مثالي لالتقاط كلام الآخرين في الاجتماعات عبر الإنترنت (يتطلب macOS 14.4 أو أحدث)."
+            "value" : "يسجّل الصوت الذي تشغّله التطبيقات الأخرى، مثل أصوات المشاركين الآخرين في اجتماع عبر الإنترنت."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nimmt nur die Systemaudioausgabe auf. Ideal, um die Sprache anderer in Online-Meetings zu erfassen (macOS 14.4+ erforderlich)."
+            "value" : "Nimmt den Ton anderer Apps auf, etwa die Stimmen der anderen Teilnehmenden einer Onlinebesprechung."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Records system output audio only. Ideal for capturing others' speech in online meetings (requires macOS 14.4+)."
+            "value" : "Records sound from other apps, such as the other participants in an online meeting."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Graba solo la salida de audio del sistema. Ideal para capturar lo que dicen otros en reuniones en línea (requiere macOS 14.4+)."
+            "value" : "Graba el sonido de otras apps, como las voces de los demás participantes en una reunión en línea."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enregistre uniquement la sortie audio système. Idéal pour capter la parole des autres en réunion en ligne (macOS 14.4+ requis)."
+            "value" : "Enregistre le son des autres apps, par exemple les voix des autres participants à une réunion en ligne."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "केवल सिस्टम ऑडियो आउटपुट रिकॉर्ड करता है। ऑनलाइन मीटिंग में दूसरों का भाषण पकड़ने के लिए आदर्श (macOS 14.4+ आवश्यक)।"
+            "value" : "दूसरे ऐप्स की आवाज़ रिकॉर्ड करता है, जैसे ऑनलाइन मीटिंग में अन्य प्रतिभागियों की आवाज़।"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hanya merekam keluaran audio sistem. Ideal untuk menangkap ucapan orang lain dalam rapat daring (perlu macOS 14.4+)."
+            "value" : "Merekam suara dari aplikasi lain, seperti suara peserta lain dalam rapat daring."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Registra solo l'uscita audio di sistema. Ideale per catturare la voce degli altri nelle riunioni online (richiede macOS 14.4+)."
+            "value" : "Registra l’audio delle altre app, ad esempio le voci degli altri partecipanti a una riunione online."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "システム出力音声のみを録音します。オンライン会議で相手の発言を録るのに最適です（macOS 14.4 以降が必要）。"
+            "value" : "オンライン会議の相手の声など、ほかのアプリが再生する音を録音します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "시스템 출력 오디오만 녹음합니다. 온라인 회의에서 다른 사람의 발언을 녹음하기에 적합합니다(macOS 14.4 이상 필요)."
+            "value" : "온라인 회의에서 다른 참가자의 목소리 등 다른 앱이 재생하는 소리를 녹음합니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Neemt alleen de systeemgeluidsuitvoer op. Ideaal om de spraak van anderen in online vergaderingen vast te leggen (vereist macOS 14.4+)."
+            "value" : "Neemt geluid van andere apps op, zoals de stemmen van andere deelnemers aan een online vergadering."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nagrywa tylko wyjście dźwięku systemowego. Idealne do przechwytywania wypowiedzi innych osób na spotkaniach online (wymaga macOS 14.4+)."
+            "value" : "Nagrywa dźwięk z innych aplikacji, na przykład głosy pozostałych uczestników spotkania online."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Grava apenas a saída de áudio do sistema. Ideal para capturar a fala dos outros em reuniões online (requer macOS 14.4+)."
+            "value" : "Grava o som de outros apps, como as vozes dos demais participantes de uma reunião online."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Записывает только системный вывод звука. Идеально для записи речи других участников онлайн-собраний (требуется macOS 14.4+)."
+            "value" : "Записывает звук из других приложений, например голоса собеседников на онлайн-встрече."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Spelar bara in systemets ljudutgång. Perfekt för att fånga andras tal i onlinemöten (kräver macOS 14.4+)."
+            "value" : "Spelar in ljud från andra appar, till exempel de andra deltagarnas röster i ett onlinemöte."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "บันทึกเฉพาะเสียงออกของระบบ เหมาะกับการจับคำพูดของผู้อื่นในการประชุมออนไลน์ (ต้องมี macOS 14.4 ขึ้นไป)"
+            "value" : "บันทึกเสียงที่แอปอื่นเล่น เช่น เสียงของผู้เข้าร่วมคนอื่นในการประชุมออนไลน์"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yalnızca sistem ses çıkışını kaydeder. Çevrim içi toplantılarda başkalarının konuşmasını yakalamak için idealdir (macOS 14.4+ gerekir)."
+            "value" : "Çevrim içi toplantıdaki diğer katılımcıların sesleri gibi diğer uygulamalardan gelen sesleri kaydeder."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Записує лише системний вихід звуку. Ідеально для запису мовлення інших учасників онлайн-нарад (потрібен macOS 14.4+)."
+            "value" : "Записує звук з інших програм, наприклад голоси інших учасників онлайн-зустрічі."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chỉ ghi âm thanh đầu ra của hệ thống. Phù hợp để ghi lời nói của người khác trong cuộc họp trực tuyến (cần macOS 14.4+)."
+            "value" : "Ghi âm thanh do ứng dụng khác phát, chẳng hạn như tiếng của những người khác trong cuộc họp trực tuyến."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "仅录制系统输出音频。适合在线会议中他人发言内容（需 macOS 14.4+）。"
+            "value" : "录制其他应用播放的声音，例如线上会议中对方的发言。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "僅錄制系統輸出音訊。適合線上會議中他人發言內容（需 macOS 14.4+）。"
+            "value" : "錄製其他 App 播放的聲音，例如線上會議中對方的發言。"
           }
         }
       }
@@ -24860,137 +25900,6 @@
         }
       }
     },
-    "会议录音功能需要访问以下权限：\n• 麦克风：录制本机麦克风输入的语音\n• 系统音频：通过 ScreenCaptureKit 录制系统输出音频，需「屏幕录制」权限\n\n权限仅在你主动开始录音时启用，停止录音后立即释放。系统音频录制可在设置中开关。" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "يتطلب تسجيل الاجتماع الأذونات التالية:\n• الميكروفون: تسجيل الصوت من مدخل الميكروفون في هذا الجهاز\n• صوت النظام: تسجيل صوت مخرجات النظام عبر ScreenCaptureKit، ويحتاج إلى إذن «تسجيل الشاشة»\n\nلا تُفعَّل الأذونات إلا أثناء التسجيل وتُحرَّر فورًا عند الإيقاف. يمكن تشغيل تسجيل صوت النظام من الإعدادات."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Für die Besprechungsaufnahme sind folgende Berechtigungen erforderlich:\n• Mikrofon: Sprache über den Mikrofoneingang dieses Geräts aufnehmen\n• Systemaudio: Systemausgabe-Audio über ScreenCaptureKit aufnehmen, wofür die Berechtigung „Bildschirmaufnahme“ nötig ist\n\nDie Berechtigungen sind nur während der Aufnahme aktiv und werden nach dem Stoppen sofort freigegeben. Die Systemaudio-Aufnahme lässt sich in den Einstellungen umschalten."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meeting recording requires the following permissions:\n• Microphone: record voice from this device's microphone input\n• System audio: record system output audio via ScreenCaptureKit, which requires Screen Recording permission\n\nPermissions are enabled only while you actively record and released immediately after you stop. System audio recording can be toggled in Settings."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La grabación de reuniones requiere los siguientes permisos:\n• Micrófono: grabar la voz de la entrada de micrófono de este dispositivo\n• Audio del sistema: grabar la salida de audio del sistema mediante ScreenCaptureKit, lo que requiere el permiso de Grabación de pantalla\n\nLos permisos se activan solo mientras grabas y se liberan en cuanto detienes. La grabación de audio del sistema se puede activar en Ajustes."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L'enregistrement de réunion nécessite les autorisations suivantes :\n• Microphone : enregistrer la voix depuis l'entrée micro de cet appareil\n• Audio système : enregistrer la sortie audio du système via ScreenCaptureKit, ce qui requiert l'autorisation d'enregistrement de l'écran\n\nLes autorisations sont activées uniquement pendant l'enregistrement et libérées dès l'arrêt. L'enregistrement de l'audio système peut être activé dans les réglages."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "मीटिंग रिकॉर्डिंग के लिए निम्न अनुमतियाँ आवश्यक हैं:\n• माइक्रोफ़ोन: इस डिवाइस के माइक्रोफ़ोन इनपुट से आवाज़ रिकॉर्ड करना\n• सिस्टम ऑडियो: ScreenCaptureKit के ज़रिए सिस्टम आउटपुट ऑडियो रिकॉर्ड करना, जिसके लिए स्क्रीन रिकॉर्डिंग अनुमति चाहिए\n\nअनुमतियाँ केवल रिकॉर्डिंग के दौरान सक्रिय रहती हैं और रोकते ही मुक्त हो जाती हैं। सिस्टम ऑडियो रिकॉर्डिंग सेटिंग्स में चालू/बंद की जा सकती है।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Perekaman rapat memerlukan izin berikut:\n• Mikrofon: merekam suara dari input mikrofon perangkat ini\n• Audio sistem: merekam audio keluaran sistem melalui ScreenCaptureKit, yang memerlukan izin Perekaman Layar\n\nIzin hanya aktif saat Anda merekam dan langsung dilepas setelah berhenti. Perekaman audio sistem dapat diaktifkan di Pengaturan."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La registrazione delle riunioni richiede le seguenti autorizzazioni:\n• Microfono: registrare la voce dall'ingresso microfono di questo dispositivo\n• Audio di sistema: registrare l'uscita audio di sistema tramite ScreenCaptureKit, che richiede l'autorizzazione Registrazione schermo\n\nLe autorizzazioni sono attive solo mentre registri e vengono rilasciate subito dopo l'arresto. La registrazione dell'audio di sistema si attiva dalle Impostazioni."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "会議の録音には次の権限が必要です：\n• マイク：本機のマイク入力からの音声を録音\n• システムオーディオ：ScreenCaptureKit でシステム出力音声を録音（「画面収録」権限が必要）\n\n権限は録音を開始したときだけ有効になり、停止後すぐに解放されます。システムオーディオの録音は設定で切り替えられます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "회의 녹음에는 다음 권한이 필요합니다:\n• 마이크: 이 기기의 마이크 입력 음성 녹음\n• 시스템 오디오: ScreenCaptureKit으로 시스템 출력 오디오 녹음(화면 기록 권한 필요)\n\n권한은 녹음을 시작할 때만 활성화되고 중지하면 즉시 해제됩니다. 시스템 오디오 녹음은 설정에서 켜고 끌 수 있습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vergaderingen opnemen vereist de volgende machtigingen:\n• Microfoon: stem opnemen via de microfooningang van dit apparaat\n• Systeemaudio: systeemuitvoer opnemen via ScreenCaptureKit, waarvoor de machtiging Schermopname nodig is\n\nMachtigingen zijn alleen actief tijdens het opnemen en worden direct na stoppen vrijgegeven. Het opnemen van systeemaudio is in te schakelen in Instellingen."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nagrywanie spotkań wymaga następujących uprawnień:\n• Mikrofon: nagrywanie głosu z wejścia mikrofonowego tego urządzenia\n• Dźwięk systemowy: nagrywanie dźwięku wyjściowego systemu przez ScreenCaptureKit, co wymaga uprawnienia „Nagrywanie ekranu”\n\nUprawnienia są aktywne tylko podczas nagrywania i zwalniane zaraz po zatrzymaniu. Nagrywanie dźwięku systemowego można włączać w Ustawieniach."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A gravação de reuniões exige as seguintes permissões:\n• Microfone: gravar a voz da entrada de microfone deste dispositivo\n• Áudio do sistema: gravar a saída de áudio do sistema via ScreenCaptureKit, o que requer a permissão de Gravação de Tela\n\nAs permissões são ativadas apenas durante a gravação e liberadas assim que você para. A gravação de áudio do sistema pode ser alternada nos Ajustes."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Для записи встреч требуются следующие разрешения:\n• Микрофон: запись голоса с микрофонного входа этого устройства\n• Системный звук: запись системного звука через ScreenCaptureKit, требуется разрешение «Запись экрана»\n\nРазрешения действуют только во время записи и освобождаются сразу после остановки. Запись системного звука включается в настройках."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mötesinspelning kräver följande behörigheter:\n• Mikrofon: spela in röst från enhetens mikrofoningång\n• Systemljud: spela in systemets utljud via ScreenCaptureKit, vilket kräver behörigheten Skärminspelning\n\nBehörigheterna är aktiva endast medan du spelar in och släpps direkt när du stoppar. Inspelning av systemljud kan slås på i Inställningar."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "การบันทึกเสียงประชุมต้องใช้สิทธิ์ต่อไปนี้:\n• ไมโครโฟน: บันทึกเสียงจากอินพุตไมโครโฟนของอุปกรณ์นี้\n• เสียงระบบ: บันทึกเสียงเอาต์พุตของระบบผ่าน ScreenCaptureKit ซึ่งต้องใช้สิทธิ์การบันทึกหน้าจอ\n\nสิทธิ์จะเปิดใช้เฉพาะขณะที่คุณบันทึกเท่านั้น และจะถูกปล่อยทันทีเมื่อหยุด การบันทึกเสียงระบบเปิดปิดได้ในการตั้งค่า"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toplantı kaydı için aşağıdaki izinler gerekir:\n• Mikrofon: bu cihazın mikrofon girişinden ses kaydetme\n• Sistem sesi: ScreenCaptureKit ile sistem çıkış sesini kaydetme; bunun için Ekran Kaydı izni gerekir\n\nİzinler yalnızca kayıt sırasında etkinleşir ve durdurunca hemen serbest bırakılır. Sistem sesi kaydı Ayarlar'dan açılıp kapatılabilir."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Для запису зустрічей потрібні такі дозволи:\n• Мікрофон: запис голосу з входу мікрофона цього пристрою\n• Системний звук: запис вихідного звуку системи через ScreenCaptureKit, потрібен дозвіл «Запис екрана»\n\nДозволи діють лише під час запису й звільняються одразу після зупинки. Запис системного звуку вмикається в налаштуваннях."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ghi âm cuộc họp cần các quyền sau:\n• Micrô: ghi âm giọng nói từ đầu vào micrô của thiết bị này\n• Âm thanh hệ thống: ghi âm đầu ra âm thanh hệ thống qua ScreenCaptureKit, cần quyền Ghi màn hình\n\nQuyền chỉ được bật trong khi bạn ghi âm và được giải phóng ngay khi bạn dừng. Tính năng ghi âm thanh hệ thống có thể bật/tắt trong Cài đặt."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "会议录音功能需要访问以下权限：\n• 麦克风：录制本机麦克风输入的语音\n• 系统音频：通过 ScreenCaptureKit 录制系统输出音频，需「屏幕录制」权限\n\n权限仅在你主动开始录音时启用，停止录音后立即释放。系统音频录制可在设置中开关。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "會議錄音功能需要存取以下權限：\n• 麥克風：錄製本機麥克風輸入的語音\n• 系統音訊：透過 ScreenCaptureKit 錄製系統輸出音訊，需「螢幕錄製」權限\n\n權限僅在你主動開始錄音時啟用，停止錄音後立即釋放。系統音訊錄製可在設定中開關。"
-          }
-        }
-      }
-    },
     "会议录音转写与智能总结工具" : {
       "localizations" : {
         "ar" : {
@@ -27464,7 +28373,6 @@
       }
     },
     "保存到本地数据库时出错（常见原因是磁盘已写满）。当前界面上的改动可能在重启后丢失，请检查磁盘剩余空间后重试；本次运行的详细原因已记入应用日志（category: Persistence）。" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -39954,7 +40862,6 @@
       }
     },
     "加密保护未生效" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -43467,6 +44374,7 @@
       }
     },
     "发送" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -48666,136 +49574,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "同意時間：%@"
-          }
-        }
-      }
-    },
-    "同时录制麦克风与系统音频（MVP 阶段优先麦克风，系统音频作为补充）。" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "يسجل الميكروفون وصوت النظام معًا (الميكروفون له الأولوية؛ صوت النظام مكمل)."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nimmt Mikrofon und Systemaudio gleichzeitig auf (Mikrofon hat Vorrang; Systemaudio ist ergänzend)."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Record microphone and system audio together (microphone takes priority; system audio is supplementary)."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Graba el micrófono y el audio del sistema a la vez (el micrófono tiene prioridad; el audio del sistema es complementario)."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enregistre le micro et l'audio système ensemble (le micro est prioritaire, l'audio système est complémentaire)."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "माइक्रोफ़ोन और सिस्टम ऑडियो एक साथ रिकॉर्ड करता है (माइक्रोफ़ोन प्राथमिक; सिस्टम ऑडियो पूरक)।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Merekam mikrofon dan audio sistem sekaligus (mikrofon diprioritaskan; audio sistem sebagai pelengkap)."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Registra microfono e audio di sistema insieme (il microfono ha la priorità; l'audio di sistema è complementare)."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "マイクとシステム音声を同時に録音します（マイク優先、システム音声は補完）。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "마이크와 시스템 오디오를 동시에 녹음합니다(마이크 우선, 시스템 오디오는 보조)."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Neemt microfoon en systeemgeluid tegelijk op (microfoon heeft prioriteit; systeemgeluid is aanvullend)."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nagrywa jednocześnie mikrofon i dźwięk systemowy (mikrofon ma priorytet; dźwięk systemowy jest uzupełnieniem)."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grava microfone e áudio do sistema juntos (o microfone tem prioridade; o áudio do sistema é complementar)."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Записывает микрофон и системный звук одновременно (микрофон в приоритете; системный звук — дополнение)."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spelar in mikrofon och systemljud samtidigt (mikrofonen prioriteras; systemljud är komplementärt)."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "บันทึกไมโครโฟนและเสียงระบบพร้อมกัน (ไมโครโฟนสำคัญกว่า เสียงระบบเป็นส่วนเสริม)"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mikrofon ve sistem sesini birlikte kaydeder (mikrofon önceliklidir; sistem sesi tamamlayıcıdır)."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Записує мікрофон і системний звук одночасно (мікрофон має пріоритет; системний звук — додатковий)."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ghi đồng thời micro và âm thanh hệ thống (micro được ưu tiên; âm thanh hệ thống là bổ sung)."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "同时录制麦克风与系统音频（MVP 阶段优先麦克风，系统音频作为补充）。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "同時錄制麥克風與系統音訊（MVP 階段優先麥克風，系統音訊作爲補充）。"
           }
         }
       }
@@ -85105,7 +85883,6 @@
       }
     },
     "待办写入失败：提醒事项授权已失效。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中重新开启 Memozia 后重试。" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -85236,7 +86013,6 @@
       }
     },
     "待办列表为空，无需写入" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -90834,7 +91610,6 @@
       }
     },
     "截图" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -96431,7 +97206,6 @@
       }
     },
     "找不到字典文件 %@.%@" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -99683,7 +100457,6 @@
       }
     },
     "提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -99814,7 +100587,6 @@
       }
     },
     "提醒事项同步更新失败，本地已保存。可重新点击「写入提醒事项」重试。" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -105800,7 +106572,6 @@
       }
     },
     "数据解密失败" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -117774,7 +118545,6 @@
       }
     },
     "未授权提醒事项访问，无法写入待办。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中开启 Memozia，或在「应用设置 → 待办」中点击「请求授权」后重试。" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -121678,7 +122448,6 @@
       }
     },
     "本次运行中有内容加密失败（Keychain 不可用或被锁定），为避免丢数据已以明文保存，这些内容仍可正常读写但不受加密保护。请确认钥匙串访问正常后重新启动应用。" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -134822,7 +135591,6 @@
       }
     },
     "润色标题失败：大模型返回了空内容，请重试。" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -153440,132 +154208,132 @@
         }
       }
     },
-    "系统音频采集需要「屏幕录制」权限。请到「系统设置 → 隐私与安全性 → 屏幕录制」中授权 Memozia，然后重新开始录音。授权后需重启应用生效。\n如不需要录制系统音频，可在「设置 → 录音」中切换为「仅麦克风」模式。" : {
+    "请在「系统设置 → 隐私与安全性 → 录屏与系统录音」中允许 Memozia 仅录制系统音频，然后重新开始录音。" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يتطلب التقاط صوت النظام إذن «تسجيل الشاشة». امنحه لـ Memozia في «إعدادات النظام → الخصوصية والأمان → تسجيل الشاشة»، ثم ابدأ التسجيل من جديد. بعد المنح، أعد تشغيل التطبيق.\nإذا لم تكن بحاجة إلى صوت النظام، بدّل إلى وضع «الميكروفون فقط» في «الإعدادات → التسجيل»."
+            "value" : "في إعدادات النظام ← الخصوصية والأمن ← تسجيل الشاشة وصوت النظام، اسمح لـ Memozia بتسجيل صوت النظام فقط، ثم ابدأ التسجيل مجددًا."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die Systemaudio-Erfassung benötigt die Berechtigung „Bildschirmaufnahme“. Bitte erteilen Sie sie Memozia unter „Systemeinstellungen → Datenschutz & Sicherheit → Bildschirmaufnahme“ und starten Sie die Aufnahme neu. Nach der Erteilung ist ein App-Neustart nötig.\nFalls Sie kein Systemaudio benötigen, wechseln Sie unter „Einstellungen → Aufnahme“ zum Modus „Nur Mikrofon“."
+            "value" : "Erlaube Memozia in Systemeinstellungen → Datenschutz & Sicherheit → Aufnahme von Bildschirm & Systemaudio, nur Systemaudio aufzunehmen. Starte die Aufnahme dann erneut."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "System audio capture requires the Screen Recording permission. Please grant it to Memozia in System Settings → Privacy & Security → Screen Recording, then start recording again. Restart the app after granting permission.\nIf you don't need system audio, switch to \"Microphone Only\" under Settings → Recording."
+            "value" : "In System Settings → Privacy & Security → Screen & System Audio Recording, allow Memozia to record system audio only, then start recording again."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La captura de audio del sistema requiere el permiso «Grabación de pantalla». Concédelo a Memozia en «Ajustes del Sistema → Privacidad y seguridad → Grabación de pantalla» y vuelve a iniciar la grabación. Tras concederlo, reinicia la app.\nSi no necesitas audio del sistema, cambia al modo «Solo micrófono» en «Ajustes → Grabación»."
+            "value" : "En Ajustes del Sistema → Privacidad y seguridad → Grabación de pantalla y audio del sistema, permite que Memozia grabe solo el audio del sistema y vuelve a iniciar la grabación."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La capture de l'audio système nécessite l'autorisation « Enregistrement de l'écran ». Veuillez l'accorder à Memozia dans « Réglages Système → Confidentialité et sécurité → Enregistrement de l'écran », puis relancez l'enregistrement. Redémarrez l'app après autorisation.\nSi l'audio système n'est pas nécessaire, passez en mode « Micro uniquement » dans « Réglages → Enregistrement »."
+            "value" : "Dans Réglages Système → Confidentialité et sécurité → Enregistrement de l’écran et de l’audio du système, autorisez Memozia à enregistrer uniquement l’audio du système, puis relancez l’enregistrement."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "सिस्टम ऑडियो कैप्चर के लिए «स्क्रीन रिकॉर्डिंग» अनुमति चाहिए। कृपया «सिस्टम सेटिंग्स → गोपनीयता और सुरक्षा → स्क्रीन रिकॉर्डिंग» में Memozia को दें, फिर रिकॉर्डिंग पुनः शुरू करें। अनुमति के बाद ऐप पुनः आरंभ आवश्यक है।\nसिस्टम ऑडियो न चाहिए तो «सेटिंग्स → रिकॉर्डिंग» में «केवल माइक्रोफ़ोन» मोड चुनें।"
+            "value" : "सिस्टम सेटिंग्ज़ → गोपनीयता और सुरक्षा → स्क्रीन और सिस्टम ऑडियो रिकॉर्डिंग में Memozia को केवल सिस्टम ऑडियो रिकॉर्ड करने की अनुमति दें, फिर रिकॉर्डिंग शुरू करें।"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Penangkapan audio sistem memerlukan izin «Perekaman Layar». Silakan berikan ke Memozia di «Pengaturan Sistem → Privasi & Keamanan → Perekaman Layar», lalu mulai rekaman lagi. Setelah memberikan izin, mulai ulang aplikasi.\nJika tidak perlu audio sistem, beralihlah ke mode «Hanya mikrofon» di «Pengaturan → Perekaman»."
+            "value" : "Di Pengaturan Sistem → Privasi & Keamanan → Perekaman Layar dan Audio Sistem, izinkan Memozia merekam audio sistem saja, lalu mulai rekaman kembali."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La cattura dell'audio di sistema richiede l'autorizzazione «Registrazione schermo». Concedila a Memozia in «Impostazioni di Sistema → Privacy e sicurezza → Registrazione schermo», poi riavvia la registrazione. Dopo la concessione, riavvia l'app.\nSe non ti serve l'audio di sistema, passa alla modalità «Solo microfono» in «Impostazioni → Registrazione»."
+            "value" : "In Impostazioni di Sistema → Privacy e sicurezza → Registrazione schermo e audio di sistema, consenti a Memozia di registrare solo l’audio di sistema, poi riavvia la registrazione."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "システム音声の取り込みには「画面収録」権限が必要です。「システム設定 → プライバシーとセキュリティ → 画面収録」で Memozia を許可してから録音を再開してください。許可後はアプリの再起動が必要です。\\\nシステム音声が不要な場合は、「設定 → 録音」で「マイクのみ」に切り替えられます。"
+            "value" : "「システム設定 → プライバシーとセキュリティ → 画面収録とシステムオーディオ録音」で Memozia にシステムオーディオのみの録音を許可し、録音を再開してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "시스템 오디오 캡처에는 '화면 녹화' 권한이 필요합니다. '시스템 설정 → 개인 정보 보호 및 보안 → 화면 녹화'에서 Memozia를 승인한 후 녹음을 다시 시작하세요. 승인 후 앱을 재시작해야 적용됩니다.\n시스템 오디오 녹음이 필요하지 않으면 '설정 → 녹음'에서 '마이크만' 모드로 전환할 수 있습니다."
+            "value" : "시스템 설정 → 개인정보 보호 및 보안 → 화면 및 시스템 오디오 녹음에서 Memozia가 시스템 오디오만 녹음하도록 허용한 뒤 다시 녹음하세요."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Systeemgeluidsopname vereist de machtiging «Schermopname». Verleen deze aan Memozia via «Systeeminstellingen → Privacy en beveiliging → Schermopname» en start de opname opnieuw. Na het verlenen moet de app opnieuw worden gestart.\nAls u geen systeemgeluid nodig heeft, schakel dan over naar de modus «Alleen microfoon» via «Instellingen → Opname»."
+            "value" : "Sta in Systeeminstellingen → Privacy en beveiliging → Scherm- en systeemaudio-opname toe dat Memozia alleen systeemaudio opneemt. Start de opname daarna opnieuw."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Przechwytywanie dźwięku systemowego wymaga uprawnienia «Nagrywanie ekranu». Przyznaj je Memozia w «Ustawienia systemowe → Prywatność i ochrona → Nagrywanie ekranu», a następnie rozpocznij nagrywanie ponownie. Po przyznaniu wymagane jest ponowne uruchomienie aplikacji.\nJeśli nie potrzebujesz dźwięku systemowego, przełącz się na tryb «Tylko mikrofon» w «Ustawienia → Nagrywanie»."
+            "value" : "W Ustawieniach systemowych → Prywatność i ochrona → Nagrywanie ekranu i dźwięku systemowego pozwól Memozia nagrywać tylko dźwięk systemowy, a następnie rozpocznij nagrywanie ponownie."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A captura de áudio do sistema requer a permissão «Gravação de Tela». Conceda-a ao Memozia em «Ajustes do Sistema → Privacidade e Segurança → Gravação de Tela» e inicie a gravação novamente. Após conceder, reinicie o app.\nSe não precisar de áudio do sistema, mude para o modo «Somente microfone» em «Ajustes → Gravação»."
+            "value" : "Nos Ajustes do Sistema → Privacidade e Segurança → Gravação da Tela e do Áudio do Sistema, permita que o Memozia grave apenas o áudio do sistema e inicie a gravação novamente."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Для захвата системного звука требуется разрешение «Запись экрана». Предоставьте его Memozia в «Системные настройки → Конфиденциальность и безопасность → Запись экрана», затем начните запись заново. После предоставления разрешения перезапустите приложение.\nЕсли системный звук не нужен, переключитесь в режим «Только микрофон» в «Настройки → Запись»."
+            "value" : "В разделе «Системные настройки → Конфиденциальность и безопасность → Запись экрана и системного звука» разрешите Memozia записывать только системный звук и начните запись заново."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Systemljudinsamling kräver behörigheten «Skärminspelning». Ge den till Memozia i «Systeminställningar → Integritet och säkerhet → Skärminspelning» och starta sedan inspelningen igen. Efter beviljande krävs omstart av appen.\nOm du inte behöver systemljud, byt till läget «Endast mikrofon» i «Inställningar → Inspelning»."
+            "value" : "Tillåt att Memozia endast spelar in systemljud i Systeminställningar → Integritet och säkerhet → Skärm- och systemljudinspelning och starta sedan inspelningen igen."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "การจับเสียงระบบต้องการสิทธิ์ «การบันทึกหน้าจอ» โปรดให้สิทธิ์ Memozia ใน «การตั้งค่าระบบ → ความเป็นส่วนตัวและความปลอดภัย → การบันทึกหน้าจอ» แล้วเริ่มบันทึกใหม่ หลังให้สิทธิ์ต้องรีสตาร์ทแอป\nหากไม่ต้องการเสียงระบบ ให้เปลี่ยนเป็นโหมด «เฉพาะไมโครโฟน» ใน «การตั้งค่า → การบันทึก»"
+            "value" : "ในการตั้งค่าระบบ → ความเป็นส่วนตัวและความปลอดภัย → การบันทึกหน้าจอและเสียงระบบ ให้อนุญาตให้ Memozia บันทึกเฉพาะเสียงระบบ แล้วเริ่มบันทึกอีกครั้ง"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sistem sesi yakalama «Ekran Kaydı» izni gerektirir. Lütfen «Sistem Ayarları → Gizlilik ve Güvenlik → Ekran Kaydı»nda Memozia'ya verin, ardından kaydı yeniden başlatın. İzin verdikten sonra uygulamayı yeniden başlatmak gerekir.\nSistem sesi gerekmiyorsa «Ayarlar → Kayıt»ta «Yalnızca mikrofon» moduna geçin."
+            "value" : "Sistem Ayarları → Gizlilik ve Güvenlik → Ekran ve Sistem Sesi Kaydı bölümünde Memozia’ya yalnızca sistem sesini kaydetme izni verin ve kaydı yeniden başlatın."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Захоплення системного звуку потребує дозволу «Запис екрана». Надайте його Memozia у «Системні налаштування → Приватність і безпека → Запис екрана», потім почніть запис знову. Після надання потрібно перезапустити застосунок.\nЯкщо системний звук не потрібен, перемкніться на режим «Лише мікрофон» у «Налаштування → Запис»."
+            "value" : "У Системних параметрах → Приватність і безпека → Запис екрана й системного звуку дозвольте Memozia записувати лише системний звук і почніть запис знову."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Thu âm thanh hệ thống cần quyền «Ghi màn hình». Vui lòng cấp cho Memozia trong «Cài đặt hệ thống → Quyền riêng tư & Bảo mật → Ghi màn hình», rồi bắt đầu ghi âm lại. Sau khi cấp quyền cần khởi động lại ứng dụng.\nNếu không cần âm thanh hệ thống, hãy chuyển sang chế độ «Chỉ micro» trong «Cài đặt → Ghi âm»."
+            "value" : "Trong Cài đặt hệ thống → Quyền riêng tư & Bảo mật → Ghi màn hình và âm thanh hệ thống, hãy cho phép Memozia chỉ ghi âm thanh hệ thống, rồi bắt đầu ghi lại."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "系统音频采集需要「屏幕录制」权限。请到「系统设置 → 隐私与安全性 → 屏幕录制」中授权 闻墨集，然后重新开始录音。授权后需重启应用生效。\n如不需要录制系统音频，可在「设置 → 录音」中切换为「仅麦克风」模式。"
+            "value" : "请在「系统设置 → 隐私与安全性 → 录屏与系统录音」中允许 Memozia 仅录制系统音频，然后重新开始录音。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "系統音訊採集需要「螢幕錄制」權限。請到「系統設置 → 隱私與安全性 → 螢幕錄制」中授權 聞墨集，然後重新開始錄音。授權後需重啓應用生效。\n如不需要錄制系統音訊，可在「設置 → 錄音」中切換爲「僅麥克風」模式。"
+            "value" : "請在「系統設定 → 隱私權與安全性 → 螢幕與系統錄音」中允許 Memozia 僅錄製系統音訊，然後重新開始錄音。"
           }
         }
       }
@@ -156826,7 +157594,6 @@
       }
     },
     "联系我们" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -178423,7 +179190,6 @@
       }
     },
     "部分加密内容无法解密，加密密钥可能已更改或 Keychain 中的密钥被删除。对应内容将显示为空，但原始数据仍保留在磁盘与数据库中。请勿删除 Keychain 中的密钥，否则已加密的数据将无法恢复。" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -179075,7 +179841,6 @@
       }
     },
     "部分提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -179206,7 +179971,6 @@
       }
     },
     "部分改动未能保存" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -184411,6 +185175,7 @@
       }
     },
     "闻墨集" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -196385,132 +197150,132 @@
         }
       }
     },
-    "• 麦克风：录制你的语音。仅在你开始录音时启用，停止录音后释放。\n• 屏幕录制：通过 ScreenCaptureKit 采集系统输出音频、截图或录屏。可在「设置 → 录音 → 来源」中选择不录制系统音频。\n• 语音识别：调用 macOS 系统语音识别框架，在本地把录音转成文字。\n• 提醒事项：在你点击「写入提醒事项」，或在「设置 → 待办」主动请求权限后，读取可写列表并把 AI 拆解的待办写入你选择的列表。\n• 辅助功能（当前版本未启用）：设置中保留了「自动跟随会议软件静音」开关，但当前版本不会启动辅助功能检测。若将来启用，只会读取 Teams、Zoom、腾讯会议等会议软件静音按钮的界面状态，用于自动暂停或恢复麦克风采集；不截取屏幕、不读取会议内容、不上传，启用前会更新本政策。\n\n以上权限均可随时在「系统设置 → 隐私与安全性」中撤销。撤销后对应功能不可用，其余功能不受影响。" : {
+    "• 麦克风：录制你的语音。仅在你开始录音时启用，停止录音后释放。\n• 系统录音：录制其他应用播放的声音。选择仅用麦克风时跳过这项权限。\n• 屏幕录制：在你截图或录屏时访问画面。\n• 语音识别：调用 macOS 系统语音识别框架，在本地把录音转成文字。\n• 提醒事项：在你点击「写入提醒事项」，或在「设置 → 待办」主动请求权限后，读取可写列表并把 AI 拆解的待办写入你选择的列表。\n• 辅助功能（当前版本未启用）：设置中保留了「自动跟随会议软件静音」开关，但当前版本不会启动辅助功能检测。若将来启用，只会读取 Teams、Zoom、腾讯会议等会议软件静音按钮的界面状态，用于自动暂停或恢复麦克风采集；不截取屏幕、不读取会议内容、不上传，启用前会更新本政策。\n\n以上权限均可随时在「系统设置 → 隐私与安全性」中撤销。撤销后对应功能不可用，其余功能不受影响。" : {
       "localizations" : {
-        "zh-Hans" : {
+        "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• 麦克风：录制你的语音。仅在你开始录音时启用，停止录音后释放。\n• 屏幕录制：通过 ScreenCaptureKit 采集系统输出音频、截图或录屏。可在「设置 → 录音 → 来源」中选择不录制系统音频。\n• 语音识别：调用 macOS 系统语音识别框架，在本地把录音转成文字。\n• 提醒事项：在你点击「写入提醒事项」，或在「设置 → 待办」主动请求权限后，读取可写列表并把 AI 拆解的待办写入你选择的列表。\n• 辅助功能（当前版本未启用）：设置中保留了「自动跟随会议软件静音」开关，但当前版本不会启动辅助功能检测。若将来启用，只会读取 Teams、Zoom、腾讯会议等会议软件静音按钮的界面状态，用于自动暂停或恢复麦克风采集；不截取屏幕、不读取会议内容、不上传，启用前会更新本政策。\n\n以上权限均可随时在「系统设置 → 隐私与安全性」中撤销。撤销后对应功能不可用，其余功能不受影响。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 麥克風：錄製你的語音。僅在你開始錄音時啟用，停止錄音後釋放。\n• 螢幕錄製：透過 ScreenCaptureKit 擷取系統輸出音訊、截圖或錄影畫面。可在「設定 → 錄音 → 來源」中選擇不錄製系統音訊。\n• 語音辨識：呼叫 macOS 系統語音辨識框架，在本地把錄音轉成文字。\n• 提醒事項：在你點擊「寫入提醒事項」，或在「設定 → 待辦事項」主動請求權限後，讀取可寫清單並把 AI 拆解的待辦事項寫入你選擇的清單。\n• 輔助使用（目前版本未啟用）：設定中保留了「自動跟隨會議軟體靜音」開關，但目前版本不會啟動輔助功能偵測。若將來啟用，只會讀取 Teams、Zoom、騰訊會議等會議軟體靜音按鈕的介面狀態，用於自動暫停或恢復麥克風採集；不截取螢幕、不讀取會議內容、不上傳，啟用前會更新本政策。\n\n以上權限均可隨時在「系統設定 → 隱私權與安全性」中撤銷。撤銷後對應功能不可用，其餘功能不受影響。"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Microphone: Record your voice. Only enabled when you start recording and released when you stop recording.\n• Screen recording: Output audio, screenshots or screen recordings through the ScreenCaptureKit capture system. You can choose not to record system audio in \"Settings → Recording → Source\".\n• Speech recognition: Call the macOS system speech recognition framework to convert recordings into text locally.\n• Reminders: After you click \"Write Reminders\" or actively request permission in \"Settings → To-Do\", read the writable list and write the AI-disassembled to-dos into the list of your choice.\n• Accessibility (not enabled in the current version): The \"Auto-follow conference software mute\" switch is retained in the settings, but the current version does not enable accessibility detection. If enabled in the future, only the interface status of the mute button of conferencing software such as Teams, Zoom, and Tencent Meeting will be read to automatically pause or resume microphone collection; the screen will not be captured, meeting content will not be read, and meeting content will not be uploaded. This policy will be updated before activation.\n\nThe above permissions can be revoked at any time in \"System Settings → Privacy and Security\". After revocation, the corresponding functions will be unavailable, and other functions will not be affected."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• マイク: あなたの声を録音します。記録を開始するときにのみ有効になり、記録を停止すると解放されます。\n• 画面録画:ScreenCaptureKit キャプチャ システムを通じて、オーディオ、スクリーンショット、または画面録画を出力します。 「設定→録音→ソース」でシステムオーディオを録音しないように選択できます。\n• 音声認識: macOS システムの音声認識フレームワークを呼び出して、録音をローカルでテキストに変換します。\n• リマインダー：「リマインダーを書き込む」をクリックするか、「設定 → To-Do」で許可を積極的に要求した後、書き込み可能なリストを読み取り、AI によって分解された To-Do を選択したリストに書き込みます。\n• アクセシビリティ (現在のバージョンでは有効になっていません): 「自動フォロー会議ソフトウェアのミュート」スイッチは設定に残りますが、現在のバージョンではアクセシビリティの検出が有効になっていません。将来的に有効にすると、Teams、Zoom、Tencent Meeting などの会議ソフトウェアのミュート ボタンのインターフェイス ステータスのみが読み取られ、マイク収集が自動的に一時停止または再開されます。画面はキャプチャされず、会議コンテンツは読み取られず、会議コンテンツはアップロードされません。このポリシーはアクティブ化の前に更新されます。\n\n上記の権限は、「システム設定 → プライバシーとセキュリティ」でいつでも取り消すことができます。失効後は、対応する機能が利用できなくなりますが、他の機能には影響ありません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• 마이크: 음성을 녹음합니다. 녹음을 시작할 때만 활성화되고 녹음을 중지하면 해제됩니다.\n• 화면 녹화: ScreenCaptureKit 캡처 시스템을 통해 오디오, 스크린샷 또는 화면 녹화를 출력합니다. \"설정 → 녹음 → 소스\"에서 시스템 오디오를 녹음하지 않도록 선택할 수 있습니다.\n• 음성 인식: macOS 시스템 음성 인식 프레임워크를 호출하여 녹음 내용을 로컬에서 텍스트로 변환합니다.\n• 알림 : '알림 쓰기'를 클릭하거나 '설정 → 할 일'에서 적극적으로 권한을 요청한 후, 쓰기 가능한 목록을 읽고 AI가 분해한 할 일을 원하는 목록에 적어보세요.\n• 접근성(현재 버전에서는 활성화되지 않음): \"자동 팔로우 회의 소프트웨어 음소거\" 스위치는 설정에 유지되지만 현재 버전에서는 접근성 감지를 활성화하지 않습니다. 향후 활성화되면 Teams, Zoom, Tencent Meeting 등 회의 소프트웨어의 음소거 버튼 인터페이스 상태만 읽어 자동으로 마이크 수집을 일시 중지하거나 재개합니다. 화면이 캡처되지 않고, 회의 내용을 읽을 수 없으며, 회의 내용이 업로드되지 않습니다. 이 정책은 활성화되기 전에 업데이트됩니다.\n\n위 권한은 \"시스템 설정 → 개인정보 및 보안\"에서 언제든지 철회 가능합니다. 해지 후에는 해당 기능을 사용할 수 없으며, 다른 기능에는 영향을 미치지 않습니다."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Microphone : enregistrez votre voix. Activé uniquement lorsque vous démarrez l'enregistrement et relâché lorsque vous arrêtez l'enregistrement.\n• Enregistrement d'écran : sortie audio, captures d'écran ou enregistrements d'écran via le système de capture ScreenCaptureKit. Vous pouvez choisir de ne pas enregistrer l'audio du système dans « Paramètres → Enregistrement → Source ».\n• Reconnaissance vocale : appelez le framework de reconnaissance vocale du système macOS pour convertir localement les enregistrements en texte.\n• Rappels : après avoir cliqué sur \"Écrire des rappels\" ou demandé activement l'autorisation dans \"Paramètres → Tâches\", lisez la liste inscriptible et écrivez les tâches démontées par l'IA dans la liste de votre choix.\n• Accessibilité (non activé dans la version actuelle) : Le commutateur « Mise en sourdine du logiciel de conférence de suivi automatique » est conservé dans les paramètres, mais la version actuelle n'active pas la détection d'accessibilité. S'il est activé à l'avenir, seul l'état de l'interface du bouton muet des logiciels de conférence tels que Teams, Zoom et Tencent Meeting sera lu pour mettre automatiquement en pause ou reprendre la collecte du microphone ; l'écran ne sera pas capturé, le contenu de la réunion ne sera pas lu et le contenu de la réunion ne sera pas téléchargé. Cette politique sera mise à jour avant l'activation.\n\nLes autorisations ci-dessus peuvent être révoquées à tout moment dans « Paramètres système → Confidentialité et sécurité ». Après la révocation, les fonctions correspondantes ne seront pas disponibles et les autres fonctions ne seront pas affectées."
+            "value" : "• الميكروفون: سجل صوتك. يتم تمكينه فقط عند بدء التسجيل ويتم تحريره عند إيقاف التسجيل.\n• تسجيل صوت النظام: يسجّل الصوت الذي تشغّله التطبيقات الأخرى. لا يلزم هذا الإذن عند التسجيل بالميكروفون وحده.\n• تسجيل الشاشة: يصل إلى الشاشة عند التقاط صورة لها أو تسجيل فيديو للشاشة.\n• التعرف على الكلام: اتصل بإطار عمل التعرف على الكلام لنظام macOS لتحويل التسجيلات إلى نص محليًا.\n• التذكيرات: بعد النقر فوق \"كتابة تذكيرات\" أو طلب الإذن بشكل نشط في \"الإعدادات → المهام\"، اقرأ القائمة القابلة للكتابة واكتب المهام المفككة بواسطة الذكاء الاصطناعي في القائمة التي تختارها.\n• إمكانية الوصول (غير ممكّنة في الإصدار الحالي): يتم الاحتفاظ بمفتاح \"كتم صوت برنامج المتابعة التلقائية للمؤتمر\" في الإعدادات، لكن الإصدار الحالي لا يتيح اكتشاف إمكانية الوصول. إذا تم تمكينه في المستقبل، فستتم قراءة حالة واجهة زر كتم الصوت الخاص ببرامج المؤتمرات مثل Teams وZoom وTencent Meeting فقط لإيقاف مجموعة الميكروفون مؤقتًا أو استئنافها تلقائيًا؛ لن يتم التقاط الشاشة، ولن تتم قراءة محتوى الاجتماع، ولن يتم تحميل محتوى الاجتماع. سيتم تحديث هذه السياسة قبل التنشيط.\n\nيمكن إلغاء الأذونات المذكورة أعلاه في أي وقت من خلال \"إعدادات النظام ← الخصوصية والأمان\". بعد الإلغاء، لن تكون الوظائف المقابلة متاحة، ولن تتأثر الوظائف الأخرى."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• Mikrofon: Nehmen Sie Ihre Stimme auf. Nur aktiviert, wenn Sie mit der Aufnahme beginnen, und freigegeben, wenn Sie die Aufnahme stoppen.\n• Bildschirmaufzeichnung: Geben Sie Audio, Screenshots oder Bildschirmaufzeichnungen über das ScreenCaptureKit-Erfassungssystem aus. Unter „Einstellungen → Aufnahme → Quelle“ können Sie festlegen, dass kein Systemton aufgezeichnet wird.\n• Spracherkennung: Rufen Sie das Spracherkennungs-Framework des macOS-Systems auf, um Aufnahmen lokal in Text umzuwandeln.\n• Erinnerungen: Nachdem Sie auf „Erinnerungen schreiben“ geklickt oder unter „Einstellungen → Aufgaben“ aktiv um Erlaubnis gebeten haben, lesen Sie die beschreibbare Liste und schreiben Sie die von der KI zerlegten Aufgaben in die Liste Ihrer Wahl.\n• Barrierefreiheit (in der aktuellen Version nicht aktiviert): Der Schalter „Automatische Stummschaltung der Konferenzsoftware“ bleibt in den Einstellungen erhalten, die Barrierefreiheitserkennung ist in der aktuellen Version jedoch nicht aktiviert. Wenn die Funktion in Zukunft aktiviert wird, wird nur der Schnittstellenstatus der Stummschalttaste von Konferenzsoftware wie Teams, Zoom und Tencent Meeting gelesen, um die Mikrofonerfassung automatisch anzuhalten oder fortzusetzen; Der Bildschirm wird nicht erfasst, Besprechungsinhalte werden nicht gelesen und Besprechungsinhalte werden nicht hochgeladen. Diese Richtlinie wird vor der Aktivierung aktualisiert.\n\nDie oben genannten Berechtigungen können jederzeit unter „Systemeinstellungen → Datenschutz und Sicherheit“ widerrufen werden. Nach dem Widerruf sind die entsprechenden Funktionen nicht mehr verfügbar und andere Funktionen sind nicht betroffen."
+            "value" : "• Mikrofon: Nehmen Sie Ihre Stimme auf. Nur aktiviert, wenn Sie mit der Aufnahme beginnen, und freigegeben, wenn Sie die Aufnahme stoppen.\n• Systemaudioaufnahme: Nimmt den Ton anderer Apps auf. Bei reiner Mikrofonaufnahme wird diese Berechtigung übersprungen.\n• Bildschirmaufnahme: Greift für Bildschirmfotos und Bildschirmvideos auf den Bildschirm zu.\n• Spracherkennung: Rufen Sie das Spracherkennungs-Framework des macOS-Systems auf, um Aufnahmen lokal in Text umzuwandeln.\n• Erinnerungen: Nachdem Sie auf „Erinnerungen schreiben“ geklickt oder unter „Einstellungen → Aufgaben“ aktiv um Erlaubnis gebeten haben, lesen Sie die beschreibbare Liste und schreiben Sie die von der KI zerlegten Aufgaben in die Liste Ihrer Wahl.\n• Barrierefreiheit (in der aktuellen Version nicht aktiviert): Der Schalter „Automatische Stummschaltung der Konferenzsoftware“ bleibt in den Einstellungen erhalten, die Barrierefreiheitserkennung ist in der aktuellen Version jedoch nicht aktiviert. Wenn die Funktion in Zukunft aktiviert wird, wird nur der Schnittstellenstatus der Stummschalttaste von Konferenzsoftware wie Teams, Zoom und Tencent Meeting gelesen, um die Mikrofonerfassung automatisch anzuhalten oder fortzusetzen; Der Bildschirm wird nicht erfasst, Besprechungsinhalte werden nicht gelesen und Besprechungsinhalte werden nicht hochgeladen. Diese Richtlinie wird vor der Aktivierung aktualisiert.\n\nDie oben genannten Berechtigungen können jederzeit unter „Systemeinstellungen → Datenschutz und Sicherheit“ widerrufen werden. Nach dem Widerruf sind die entsprechenden Funktionen nicht mehr verfügbar und andere Funktionen sind nicht betroffen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Microphone: Record your voice. Only enabled when you start recording and released when you stop recording.\n• System audio recording: Records sound played by other apps. Microphone-only recording skips this permission.\n• Screen recording: Accesses the screen when you take a screenshot or record screen video.\n• Speech recognition: Call the macOS system speech recognition framework to convert recordings into text locally.\n• Reminders: After you click \"Write Reminders\" or actively request permission in \"Settings → To-Do\", read the writable list and write the AI-disassembled to-dos into the list of your choice.\n• Accessibility (not enabled in the current version): The \"Auto-follow conference software mute\" switch is retained in the settings, but the current version does not enable accessibility detection. If enabled in the future, only the interface status of the mute button of conferencing software such as Teams, Zoom, and Tencent Meeting will be read to automatically pause or resume microphone collection; the screen will not be captured, meeting content will not be read, and meeting content will not be uploaded. This policy will be updated before activation.\n\nThe above permissions can be revoked at any time in \"System Settings → Privacy and Security\". After revocation, the corresponding functions will be unavailable, and other functions will not be affected."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• Micrófono: Graba tu voz. Solo se habilita cuando comienzas a grabar y se libera cuando dejas de grabar.\n• Grabación de pantalla: salida de audio, capturas de pantalla o grabaciones de pantalla a través del sistema de captura ScreenCaptureKit. Puede optar por no grabar el audio del sistema en \"Configuración → Grabación → Fuente\".\n• Reconocimiento de voz: llame al marco de reconocimiento de voz del sistema macOS para convertir grabaciones en texto localmente.\n• Recordatorios: después de hacer clic en \"Escribir recordatorios\" o solicitar permiso activamente en \"Configuración → Tareas pendientes\", lea la lista grabable y escriba las tareas pendientes desmontadas por IA en la lista de su elección.\n• Accesibilidad (no habilitada en la versión actual): el interruptor \"Silencio del software de conferencia de seguimiento automático\" se conserva en la configuración, pero la versión actual no habilita la detección de accesibilidad. Si se habilita en el futuro, solo se leerá el estado de la interfaz del botón de silencio del software de conferencias como Teams, Zoom y Tencent Meeting para pausar o reanudar automáticamente la recolección de micrófonos; no se capturará la pantalla, no se leerá el contenido de la reunión y no se cargará el contenido de la reunión. Esta política se actualizará antes de la activación.\n\nLos permisos anteriores se pueden revocar en cualquier momento en \"Configuración del sistema → Privacidad y seguridad\". Después de la revocación, las funciones correspondientes no estarán disponibles y otras funciones no se verán afectadas."
+            "value" : "• Micrófono: Graba tu voz. Solo se habilita cuando comienzas a grabar y se libera cuando dejas de grabar.\n• Grabación de audio del sistema: Graba el sonido de otras apps. Al grabar solo el micrófono se omite este permiso.\n• Grabación de pantalla: Accede a la pantalla cuando haces una captura o grabas un vídeo de la pantalla.\n• Reconocimiento de voz: llame al marco de reconocimiento de voz del sistema macOS para convertir grabaciones en texto localmente.\n• Recordatorios: después de hacer clic en \"Escribir recordatorios\" o solicitar permiso activamente en \"Configuración → Tareas pendientes\", lea la lista grabable y escriba las tareas pendientes desmontadas por IA en la lista de su elección.\n• Accesibilidad (no habilitada en la versión actual): el interruptor \"Silencio del software de conferencia de seguimiento automático\" se conserva en la configuración, pero la versión actual no habilita la detección de accesibilidad. Si se habilita en el futuro, solo se leerá el estado de la interfaz del botón de silencio del software de conferencias como Teams, Zoom y Tencent Meeting para pausar o reanudar automáticamente la recolección de micrófonos; no se capturará la pantalla, no se leerá el contenido de la reunión y no se cargará el contenido de la reunión. Esta política se actualizará antes de la activación.\n\nLos permisos anteriores se pueden revocar en cualquier momento en \"Configuración del sistema → Privacidad y seguridad\". Después de la revocación, las funciones correspondientes no estarán disponibles y otras funciones no se verán afectadas."
           }
         },
-        "it" : {
+        "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• Microfono: registra la tua voce. Abilitato solo quando inizi a registrare e rilasciato quando interrompi la registrazione.\n• Registrazione dello schermo: consente di riprodurre audio, screenshot o registrazioni dello schermo tramite il sistema di acquisizione ScreenCaptureKit. Puoi scegliere di non registrare l'audio del sistema in \"Impostazioni → Registrazione → Sorgente\".\n• Riconoscimento vocale: richiama il framework di riconoscimento vocale del sistema macOS per convertire localmente le registrazioni in testo.\n• Promemoria: dopo aver fatto clic su \"Scrivi promemoria\" o aver richiesto attivamente l'autorizzazione in \"Impostazioni → Cose da fare\", leggi l'elenco scrivibile e scrivi le cose da fare smontate dall'IA nell'elenco di tua scelta.\n• Accessibilità (non abilitato nella versione corrente): l'interruttore \"Disattivazione audio del software per conferenze con follow automatico\" viene mantenuto nelle impostazioni, ma la versione corrente non abilita il rilevamento dell'accessibilità. Se abilitato in futuro, verrà letto solo lo stato dell'interfaccia del pulsante di disattivazione dell'audio del software per conferenze come Teams, Zoom e Tencent Meeting per mettere in pausa o riprendere automaticamente la raccolta del microfono; lo schermo non verrà catturato, il contenuto della riunione non verrà letto e il contenuto della riunione non verrà caricato. Questa politica verrà aggiornata prima dell'attivazione.\n\nI permessi di cui sopra possono essere revocati in qualsiasi momento in \"Impostazioni di sistema → Privacy e Sicurezza\". Dopo la revoca, le funzioni corrispondenti non saranno più disponibili e le altre funzioni non saranno interessate."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Microfone: Grave sua voz. Habilitado somente quando você inicia a gravação e liberado quando você interrompe a gravação.\n• Gravação de tela: saída de áudio, capturas de tela ou gravações de tela através do sistema de captura ScreenCaptureKit. Você pode optar por não gravar o áudio do sistema em \"Configurações → Gravação → Fonte\".\n• Reconhecimento de fala: chame a estrutura de reconhecimento de fala do sistema macOS para converter gravações em texto localmente.\n• Lembretes: depois de clicar em \"Escrever lembretes\" ou solicitar permissão ativamente em \"Configurações → Tarefas\", leia a lista gravável e escreva as tarefas desmontadas pela IA na lista de sua escolha.\n• Acessibilidade (não habilitada na versão atual): A opção \"Acompanhamento automático do software de conferência sem som\" é mantida nas configurações, mas a versão atual não habilita a detecção de acessibilidade. Se habilitado no futuro, apenas o status da interface do botão mudo de softwares de conferência como Teams, Zoom e Tencent Meeting será lido para pausar ou retomar automaticamente a coleta do microfone; a tela não será capturada, o conteúdo da reunião não será lido e o conteúdo da reunião não será carregado. Esta política será atualizada antes da ativação.\n\nAs permissões acima podem ser revogadas a qualquer momento em “Configurações do Sistema → Privacidade e Segurança”. Após a revogação, as funções correspondentes ficarão indisponíveis e outras funções não serão afetadas."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Микрофон: запишите свой голос. Включается только при начале записи и отпускается, когда запись прекращается.\n• Запись экрана: вывод звука, снимков экрана или записей экрана через систему захвата ScreenCaptureKit. Вы можете отказаться от записи системного звука в «Настройки → Запись → Источник».\n• Распознавание речи: вызовите систему распознавания речи системы macOS для локального преобразования записей в текст.\n• Напоминания: после того, как вы нажмете «Написать напоминания» или активно запросите разрешение в «Настройки → Дела», прочитайте список доступных для записи и запишите задачи, разобранные с помощью ИИ, в список по вашему выбору.\n• Специальные возможности (не включено в текущей версии): переключатель «Автоматическое отключение звука в программе конференции» сохранен в настройках, но текущая версия не включает обнаружение специальных возможностей. Если эта опция будет включена в будущем, будет считываться только состояние интерфейса кнопки отключения звука программного обеспечения для конференц-связи, такого как Teams, Zoom и Tencent Meeting, чтобы автоматически приостановить или возобновить сбор микрофона; экран не будет захвачен, содержимое собрания не будет прочитано и содержимое собрания не будет загружено. Эта политика будет обновлена ​​перед активацией.\n\nВышеуказанные разрешения можно отозвать в любое время в «Настройки системы → Конфиденциальность и безопасность». После отзыва соответствующие функции будут недоступны, а другие функции не будут затронуты."
-          }
-        },
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• الميكروفون: سجل صوتك. يتم تمكينه فقط عند بدء التسجيل ويتم تحريره عند إيقاف التسجيل.\n• تسجيل الشاشة: إخراج الصوت أو لقطات الشاشة أو تسجيلات الشاشة من خلال نظام التقاط ScreenCaptureKit. يمكنك اختيار عدم تسجيل صوت النظام في \"الإعدادات ← التسجيل ← المصدر\".\n• التعرف على الكلام: اتصل بإطار عمل التعرف على الكلام لنظام macOS لتحويل التسجيلات إلى نص محليًا.\n• التذكيرات: بعد النقر فوق \"كتابة تذكيرات\" أو طلب الإذن بشكل نشط في \"الإعدادات → المهام\"، اقرأ القائمة القابلة للكتابة واكتب المهام المفككة بواسطة الذكاء الاصطناعي في القائمة التي تختارها.\n• إمكانية الوصول (غير ممكّنة في الإصدار الحالي): يتم الاحتفاظ بمفتاح \"كتم صوت برنامج المتابعة التلقائية للمؤتمر\" في الإعدادات، لكن الإصدار الحالي لا يتيح اكتشاف إمكانية الوصول. إذا تم تمكينه في المستقبل، فستتم قراءة حالة واجهة زر كتم الصوت الخاص ببرامج المؤتمرات مثل Teams وZoom وTencent Meeting فقط لإيقاف مجموعة الميكروفون مؤقتًا أو استئنافها تلقائيًا؛ لن يتم التقاط الشاشة، ولن تتم قراءة محتوى الاجتماع، ولن يتم تحميل محتوى الاجتماع. سيتم تحديث هذه السياسة قبل التنشيط.\n\nيمكن إلغاء الأذونات المذكورة أعلاه في أي وقت من خلال \"إعدادات النظام ← الخصوصية والأمان\". بعد الإلغاء، لن تكون الوظائف المقابلة متاحة، ولن تتأثر الوظائف الأخرى."
+            "value" : "• Microphone : enregistrez votre voix. Activé uniquement lorsque vous démarrez l'enregistrement et relâché lorsque vous arrêtez l'enregistrement.\n• Audio du système : enregistre le son des autres apps. L’enregistrement au micro seul ne demande pas cette autorisation.\n• Enregistrement de l’écran : accède à l’écran lors d’une capture ou d’un enregistrement vidéo de l’écran.\n• Reconnaissance vocale : appelez le framework de reconnaissance vocale du système macOS pour convertir localement les enregistrements en texte.\n• Rappels : après avoir cliqué sur \"Écrire des rappels\" ou demandé activement l'autorisation dans \"Paramètres → Tâches\", lisez la liste inscriptible et écrivez les tâches démontées par l'IA dans la liste de votre choix.\n• Accessibilité (non activé dans la version actuelle) : Le commutateur « Mise en sourdine du logiciel de conférence de suivi automatique » est conservé dans les paramètres, mais la version actuelle n'active pas la détection d'accessibilité. S'il est activé à l'avenir, seul l'état de l'interface du bouton muet des logiciels de conférence tels que Teams, Zoom et Tencent Meeting sera lu pour mettre automatiquement en pause ou reprendre la collecte du microphone ; l'écran ne sera pas capturé, le contenu de la réunion ne sera pas lu et le contenu de la réunion ne sera pas téléchargé. Cette politique sera mise à jour avant l'activation.\n\nLes autorisations ci-dessus peuvent être révoquées à tout moment dans « Paramètres système → Confidentialité et sécurité ». Après la révocation, les fonctions correspondantes ne seront pas disponibles et les autres fonctions ne seront pas affectées."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• माइक्रोफ़ोन: अपनी आवाज़ रिकॉर्ड करें। केवल तभी सक्षम किया जाता है जब आप रिकॉर्डिंग शुरू करते हैं और जब आप रिकॉर्डिंग बंद करते हैं तो रिलीज़ किया जाता है।\n• स्क्रीन रिकॉर्डिंग: ScreenCaptureKit कैप्चर सिस्टम के माध्यम से आउटपुट ऑडियो, स्क्रीनशॉट या स्क्रीन रिकॉर्डिंग। आप \"सेटिंग्स → रिकॉर्डिंग → सोर्स\" में सिस्टम ऑडियो रिकॉर्ड न करने का विकल्प चुन सकते हैं।\n• वाक् पहचान: रिकॉर्डिंग को स्थानीय रूप से टेक्स्ट में बदलने के लिए macOS सिस्टम वाक् पहचान ढांचे को कॉल करें।\n• अनुस्मारक: \"रिमाइंडर लिखें\" पर क्लिक करने या सक्रिय रूप से \"सेटिंग्स → टू-डू\" में अनुमति का अनुरोध करने के बाद, लिखने योग्य सूची पढ़ें और एआई-डिसेम्बल किए गए कार्यों को अपनी पसंद की सूची में लिखें।\n• एक्सेसिबिलिटी (वर्तमान संस्करण में सक्षम नहीं): सेटिंग्स में \"ऑटो-फॉलो कॉन्फ़्रेंस सॉफ़्टवेयर म्यूट\" स्विच बरकरार रखा गया है, लेकिन वर्तमान संस्करण एक्सेसिबिलिटी डिटेक्शन को सक्षम नहीं करता है। यदि भविष्य में सक्षम किया जाता है, तो माइक्रोफ़ोन संग्रह को स्वचालित रूप से रोकने या फिर से शुरू करने के लिए केवल टीम्स, ज़ूम और टेनसेंट मीटिंग जैसे कॉन्फ्रेंसिंग सॉफ़्टवेयर के म्यूट बटन की इंटरफ़ेस स्थिति पढ़ी जाएगी; स्क्रीन कैप्चर नहीं की जाएगी, मीटिंग सामग्री नहीं पढ़ी जाएगी, और मीटिंग सामग्री अपलोड नहीं की जाएगी। यह नीति सक्रियण से पहले अद्यतन की जाएगी.\n\nउपरोक्त अनुमतियाँ \"सिस्टम सेटिंग्स → गोपनीयता और सुरक्षा\" में किसी भी समय रद्द की जा सकती हैं। निरस्तीकरण के बाद, संबंधित कार्य अनुपलब्ध होंगे, और अन्य कार्य प्रभावित नहीं होंगे।"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• ไมโครโฟน: บันทึกเสียงของคุณ เปิดใช้งานเฉพาะเมื่อคุณเริ่มการบันทึกและปล่อยเมื่อคุณหยุดการบันทึก\n• การบันทึกหน้าจอ: ส่งสัญญาณเสียง ภาพหน้าจอ หรือการบันทึกหน้าจอผ่านระบบจับภาพ ScreenCaptureKit คุณสามารถเลือกที่จะไม่บันทึกเสียงของระบบได้ใน \"การตั้งค่า → การบันทึก → แหล่งที่มา\"\n• การรู้จำเสียง: เรียกใช้เฟรมเวิร์กการรู้จำเสียงของระบบ macOS เพื่อแปลงการบันทึกเป็นข้อความในเครื่อง\n• การแจ้งเตือน: หลังจากที่คุณคลิก \"เขียนการแจ้งเตือน\" หรือขออนุญาตใน \"การตั้งค่า → สิ่งที่ต้องทำ\" ให้อ่านรายการที่เขียนได้และเขียนสิ่งที่ต้องทำที่แยกส่วนโดย AI ลงในรายการที่คุณเลือก\n• การเข้าถึง (ไม่ได้เปิดใช้งานในเวอร์ชันปัจจุบัน): สวิตช์ \"ปิดเสียงซอฟต์แวร์การประชุมตามอัตโนมัติ\" จะยังคงอยู่ในการตั้งค่า แต่เวอร์ชันปัจจุบันไม่ได้เปิดใช้งานการตรวจจับการเข้าถึง หากเปิดใช้งานในอนาคต เฉพาะสถานะอินเทอร์เฟซของปุ่มปิดเสียงของซอฟต์แวร์การประชุมเช่น Teams, Zoom และ Tencent Meeting เท่านั้นที่จะถูกอ่านเพื่อหยุดชั่วคราวหรือดำเนินการรวบรวมไมโครโฟนต่อโดยอัตโนมัติ หน้าจอจะไม่ถูกจับภาพ เนื้อหาการประชุมจะไม่ถูกอ่าน และเนื้อหาการประชุมจะไม่ถูกอัปโหลด นโยบายนี้จะได้รับการอัปเดตก่อนเปิดใช้งาน\n\nการอนุญาตข้างต้นสามารถเพิกถอนได้ตลอดเวลาใน \"การตั้งค่าระบบ → ความเป็นส่วนตัวและความปลอดภัย\" หลังจากการเพิกถอน ฟังก์ชันที่เกี่ยวข้องจะไม่สามารถใช้งานได้ และฟังก์ชันอื่นๆ จะไม่ได้รับผลกระทบ"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Micrô: Ghi âm giọng nói của bạn. Chỉ bật khi bạn bắt đầu ghi và nhả khi bạn dừng ghi.\n• Ghi màn hình: Xuất âm thanh, ảnh chụp màn hình hoặc bản ghi màn hình thông qua hệ thống chụp ScreenCaptureKit. Bạn có thể chọn không ghi âm thanh hệ thống trong \"Cài đặt → Ghi âm → Nguồn\".\n• Nhận dạng giọng nói: Gọi khung nhận dạng giọng nói của hệ thống macOS để chuyển đổi bản ghi âm thành văn bản cục bộ.\n• Lời nhắc: Sau khi bạn nhấp vào \"Viết lời nhắc\" hoặc chủ động yêu cầu quyền trong \"Cài đặt → Việc cần làm\", hãy đọc danh sách có thể ghi và ghi những việc cần làm đã được AI tháo rời vào danh sách bạn chọn.\n• Khả năng truy cập (không được bật trong phiên bản hiện tại): Công tắc \"Tự động theo dõi phần mềm hội nghị tắt tiếng\" được giữ lại trong cài đặt, nhưng phiên bản hiện tại không bật tính năng phát hiện khả năng truy cập. Nếu được bật trong tương lai, chỉ trạng thái giao diện của nút tắt tiếng của phần mềm hội nghị như Teams, Zoom và Tencent Meet mới được đọc để tự động tạm dừng hoặc tiếp tục thu thập micrô; màn hình sẽ không được chụp, nội dung cuộc họp sẽ không được đọc và nội dung cuộc họp sẽ không được tải lên. Chính sách này sẽ được cập nhật trước khi kích hoạt.\n\nCác quyền trên có thể bị thu hồi bất kỳ lúc nào trong \"Cài đặt hệ thống → Quyền riêng tư và bảo mật\". Sau khi thu hồi, các chức năng tương ứng sẽ không khả dụng và các chức năng khác sẽ không bị ảnh hưởng."
+            "value" : "• माइक्रोफ़ोन: अपनी आवाज़ रिकॉर्ड करें। केवल तभी सक्षम किया जाता है जब आप रिकॉर्डिंग शुरू करते हैं और जब आप रिकॉर्डिंग बंद करते हैं तो रिलीज़ किया जाता है।\n• सिस्टम ऑडियो रिकॉर्डिंग: दूसरे ऐप्स की आवाज़ रिकॉर्ड करती है। केवल माइक्रोफ़ोन से रिकॉर्ड करते समय यह अनुमति नहीं माँगी जाती।\n• स्क्रीन रिकॉर्डिंग: स्क्रीनशॉट लेते या स्क्रीन का वीडियो रिकॉर्ड करते समय स्क्रीन का उपयोग करती है।\n• वाक् पहचान: रिकॉर्डिंग को स्थानीय रूप से टेक्स्ट में बदलने के लिए macOS सिस्टम वाक् पहचान ढांचे को कॉल करें।\n• अनुस्मारक: \"रिमाइंडर लिखें\" पर क्लिक करने या सक्रिय रूप से \"सेटिंग्स → टू-डू\" में अनुमति का अनुरोध करने के बाद, लिखने योग्य सूची पढ़ें और एआई-डिसेम्बल किए गए कार्यों को अपनी पसंद की सूची में लिखें।\n• एक्सेसिबिलिटी (वर्तमान संस्करण में सक्षम नहीं): सेटिंग्स में \"ऑटो-फॉलो कॉन्फ़्रेंस सॉफ़्टवेयर म्यूट\" स्विच बरकरार रखा गया है, लेकिन वर्तमान संस्करण एक्सेसिबिलिटी डिटेक्शन को सक्षम नहीं करता है। यदि भविष्य में सक्षम किया जाता है, तो माइक्रोफ़ोन संग्रह को स्वचालित रूप से रोकने या फिर से शुरू करने के लिए केवल टीम्स, ज़ूम और टेनसेंट मीटिंग जैसे कॉन्फ्रेंसिंग सॉफ़्टवेयर के म्यूट बटन की इंटरफ़ेस स्थिति पढ़ी जाएगी; स्क्रीन कैप्चर नहीं की जाएगी, मीटिंग सामग्री नहीं पढ़ी जाएगी, और मीटिंग सामग्री अपलोड नहीं की जाएगी। यह नीति सक्रियण से पहले अद्यतन की जाएगी.\n\nउपरोक्त अनुमतियाँ \"सिस्टम सेटिंग्स → गोपनीयता और सुरक्षा\" में किसी भी समय रद्द की जा सकती हैं। निरस्तीकरण के बाद, संबंधित कार्य अनुपलब्ध होंगे, और अन्य कार्य प्रभावित नहीं होंगे।"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• Mikrofon: Rekam suara Anda. Hanya diaktifkan saat Anda mulai merekam dan dilepaskan saat Anda berhenti merekam.\n• Perekaman layar: Keluaran audio, tangkapan layar, atau rekaman layar melalui sistem penangkapan ScreenCaptureKit. Anda dapat memilih untuk tidak merekam audio sistem di \"Pengaturan → Perekaman → Sumber\".\n• Pengenalan ucapan: Memanggil kerangka pengenalan ucapan sistem MacOS untuk mengubah rekaman menjadi teks secara lokal.\n• Pengingat: Setelah Anda mengklik \"Tulis Pengingat\" atau secara aktif meminta izin di \"Pengaturan → Agenda\", baca daftar yang dapat ditulis dan tulis daftar tugas yang telah dibongkar oleh AI ke dalam daftar pilihan Anda.\n• Aksesibilitas (tidak diaktifkan pada versi saat ini): Tombol \"Bungkam perangkat lunak konferensi ikuti otomatis\" dipertahankan dalam pengaturan, namun versi saat ini tidak mengaktifkan deteksi aksesibilitas. Jika diaktifkan di masa mendatang, hanya status antarmuka tombol mute perangkat lunak konferensi seperti Teams, Zoom, dan Tencent Meeting yang akan dibaca untuk menjeda atau melanjutkan pengumpulan mikrofon secara otomatis; layar tidak akan ditangkap, konten rapat tidak akan dibaca, dan konten rapat tidak akan diunggah. Kebijakan ini akan diperbarui sebelum aktivasi.\n\nIzin di atas dapat dicabut kapan saja di \"Pengaturan Sistem → Privasi dan Keamanan\". Setelah pencabutan, fungsi terkait tidak akan tersedia, dan fungsi lainnya tidak akan terpengaruh."
+            "value" : "• Mikrofon: Rekam suara Anda. Hanya diaktifkan saat Anda mulai merekam dan dilepaskan saat Anda berhenti merekam.\n• Perekaman audio sistem: Merekam suara dari aplikasi lain. Izin ini dilewati saat hanya merekam mikrofon.\n• Perekaman layar: Mengakses layar saat Anda mengambil tangkapan layar atau merekam video layar.\n• Pengenalan ucapan: Memanggil kerangka pengenalan ucapan sistem MacOS untuk mengubah rekaman menjadi teks secara lokal.\n• Pengingat: Setelah Anda mengklik \"Tulis Pengingat\" atau secara aktif meminta izin di \"Pengaturan → Agenda\", baca daftar yang dapat ditulis dan tulis daftar tugas yang telah dibongkar oleh AI ke dalam daftar pilihan Anda.\n• Aksesibilitas (tidak diaktifkan pada versi saat ini): Tombol \"Bungkam perangkat lunak konferensi ikuti otomatis\" dipertahankan dalam pengaturan, namun versi saat ini tidak mengaktifkan deteksi aksesibilitas. Jika diaktifkan di masa mendatang, hanya status antarmuka tombol mute perangkat lunak konferensi seperti Teams, Zoom, dan Tencent Meeting yang akan dibaca untuk menjeda atau melanjutkan pengumpulan mikrofon secara otomatis; layar tidak akan ditangkap, konten rapat tidak akan dibaca, dan konten rapat tidak akan diunggah. Kebijakan ini akan diperbarui sebelum aktivasi.\n\nIzin di atas dapat dicabut kapan saja di \"Pengaturan Sistem → Privasi dan Keamanan\". Setelah pencabutan, fungsi terkait tidak akan tersedia, dan fungsi lainnya tidak akan terpengaruh."
           }
         },
-        "tr" : {
+        "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• Mikrofon: Sesinizi kaydedin. Yalnızca kaydetmeye başladığınızda etkinleştirilir ve kaydı durdurduğunuzda serbest bırakılır.\n• Ekran kaydı: ScreenCaptureKit yakalama sistemi aracılığıyla ses, ekran görüntüleri veya ekran kayıtlarının çıktısını alın. \"Ayarlar → Kayıt → Kaynak\" bölümünde sistem sesini kaydetmemeyi seçebilirsiniz.\n• Konuşma tanıma: Kayıtları yerel olarak metne dönüştürmek için macOS sisteminin konuşma tanıma çerçevesini çağırın.\n• Hatırlatıcılar: \"Hatırlatıcı Yaz\" seçeneğini tıkladıktan veya \"Ayarlar → Yapılacaklar\" bölümünde aktif olarak izin talep ettikten sonra, yazılabilir listeyi okuyun ve AI ile ayrıştırılmış yapılacak işlerinizi istediğiniz listeye yazın.\n• Erişilebilirlik (mevcut sürümde etkinleştirilmemiştir): \"Konferans yazılımını otomatik takip et\" anahtarı ayarlarda korunur, ancak mevcut sürüm erişilebilirlik algılamayı etkinleştirmez. Gelecekte etkinleştirilirse, mikrofon toplamayı otomatik olarak duraklatmak veya devam ettirmek için yalnızca Teams, Zoom ve Tencent Meeting gibi konferans yazılımının sessize alma düğmesinin arayüz durumu okunacaktır; ekran yakalanmayacak, toplantı içeriği okunmayacak ve toplantı içeriği yüklenmeyecektir. Bu politika etkinleştirmeden önce güncellenecektir.\n\nYukarıdaki izinler herhangi bir zamanda \"Sistem Ayarları → Gizlilik ve Güvenlik\" bölümünden iptal edilebilir. İptalin ardından ilgili işlevler kullanılamayacak ve diğer işlevler etkilenmeyecektir."
+            "value" : "• Microfono: registra la tua voce. Abilitato solo quando inizi a registrare e rilasciato quando interrompi la registrazione.\n• Registrazione audio di sistema: registra l’audio delle altre app. La registrazione con il solo microfono non richiede questo permesso.\n• Registrazione schermo: accede allo schermo per acquisire un’istantanea o registrare un video dello schermo.\n• Riconoscimento vocale: richiama il framework di riconoscimento vocale del sistema macOS per convertire localmente le registrazioni in testo.\n• Promemoria: dopo aver fatto clic su \"Scrivi promemoria\" o aver richiesto attivamente l'autorizzazione in \"Impostazioni → Cose da fare\", leggi l'elenco scrivibile e scrivi le cose da fare smontate dall'IA nell'elenco di tua scelta.\n• Accessibilità (non abilitato nella versione corrente): l'interruttore \"Disattivazione audio del software per conferenze con follow automatico\" viene mantenuto nelle impostazioni, ma la versione corrente non abilita il rilevamento dell'accessibilità. Se abilitato in futuro, verrà letto solo lo stato dell'interfaccia del pulsante di disattivazione dell'audio del software per conferenze come Teams, Zoom e Tencent Meeting per mettere in pausa o riprendere automaticamente la raccolta del microfono; lo schermo non verrà catturato, il contenuto della riunione non verrà letto e il contenuto della riunione non verrà caricato. Questa politica verrà aggiornata prima dell'attivazione.\n\nI permessi di cui sopra possono essere revocati in qualsiasi momento in \"Impostazioni di sistema → Privacy e Sicurezza\". Dopo la revoca, le funzioni corrispondenti non saranno più disponibili e le altre funzioni non saranno interessate."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• マイク: あなたの声を録音します。記録を開始するときにのみ有効になり、記録を停止すると解放されます。\n• システムオーディオ録音：ほかのアプリが再生する音を録音します。マイクのみの録音ではこの許可は不要です。\n• 画面収録：スクリーンショットの撮影時と画面収録時に画面にアクセスします。\n• 音声認識: macOS システムの音声認識フレームワークを呼び出して、録音をローカルでテキストに変換します。\n• リマインダー：「リマインダーを書き込む」をクリックするか、「設定 → To-Do」で許可を積極的に要求した後、書き込み可能なリストを読み取り、AI によって分解された To-Do を選択したリストに書き込みます。\n• アクセシビリティ (現在のバージョンでは有効になっていません): 「自動フォロー会議ソフトウェアのミュート」スイッチは設定に残りますが、現在のバージョンではアクセシビリティの検出が有効になっていません。将来的に有効にすると、Teams、Zoom、Tencent Meeting などの会議ソフトウェアのミュート ボタンのインターフェイス ステータスのみが読み取られ、マイク収集が自動的に一時停止または再開されます。画面はキャプチャされず、会議コンテンツは読み取られず、会議コンテンツはアップロードされません。このポリシーはアクティブ化の前に更新されます。\n\n上記の権限は、「システム設定 → プライバシーとセキュリティ」でいつでも取り消すことができます。失効後は、対応する機能が利用できなくなりますが、他の機能には影響ありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 마이크: 음성을 녹음합니다. 녹음을 시작할 때만 활성화되고 녹음을 중지하면 해제됩니다.\n• 시스템 오디오 녹음: 다른 앱에서 재생하는 소리를 녹음합니다. 마이크만 녹음할 때는 이 권한을 요청하지 않습니다.\n• 화면 녹화: 스크린샷을 찍거나 화면을 녹화할 때 화면에 접근합니다.\n• 음성 인식: macOS 시스템 음성 인식 프레임워크를 호출하여 녹음 내용을 로컬에서 텍스트로 변환합니다.\n• 알림 : '알림 쓰기'를 클릭하거나 '설정 → 할 일'에서 적극적으로 권한을 요청한 후, 쓰기 가능한 목록을 읽고 AI가 분해한 할 일을 원하는 목록에 적어보세요.\n• 접근성(현재 버전에서는 활성화되지 않음): \"자동 팔로우 회의 소프트웨어 음소거\" 스위치는 설정에 유지되지만 현재 버전에서는 접근성 감지를 활성화하지 않습니다. 향후 활성화되면 Teams, Zoom, Tencent Meeting 등 회의 소프트웨어의 음소거 버튼 인터페이스 상태만 읽어 자동으로 마이크 수집을 일시 중지하거나 재개합니다. 화면이 캡처되지 않고, 회의 내용을 읽을 수 없으며, 회의 내용이 업로드되지 않습니다. 이 정책은 활성화되기 전에 업데이트됩니다.\n\n위 권한은 \"시스템 설정 → 개인정보 및 보안\"에서 언제든지 철회 가능합니다. 해지 후에는 해당 기능을 사용할 수 없으며, 다른 기능에는 영향을 미치지 않습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• Microfoon: Neem uw stem op. Alleen ingeschakeld wanneer u begint met opnemen en vrijgegeven wanneer u stopt met opnemen.\n• Schermopname: voer audio, schermafbeeldingen of schermopnamen uit via het ScreenCaptureKit-opnamesysteem. U kunt ervoor kiezen om geen systeemaudio op te nemen in \"Instellingen → Opname → Bron\".\n• Spraakherkenning: Roep het spraakherkenningsframework van het macOS-systeem aan om opnames lokaal naar tekst om te zetten.\n• Herinneringen: nadat u op \"Herinneringen schrijven\" hebt geklikt of actief toestemming hebt gevraagd in \"Instellingen → Taken\", leest u de beschrijfbare lijst en schrijft u de door AI gedemonteerde taken in de lijst van uw keuze.\n• Toegankelijkheid (niet ingeschakeld in de huidige versie): de schakelaar \"Auto-follow conference software mute\" blijft behouden in de instellingen, maar de huidige versie schakelt de toegankelijkheidsdetectie niet in. Indien dit in de toekomst wordt ingeschakeld, wordt alleen de interfacestatus van de mute-knop van conferentiesoftware zoals Teams, Zoom en Tencent Meeting gelezen om het opnemen van de microfoon automatisch te pauzeren of te hervatten; het scherm wordt niet vastgelegd, de inhoud van de vergadering wordt niet gelezen en de inhoud van de vergadering wordt niet geüpload. Dit beleid wordt vóór activering bijgewerkt.\n\nDe bovenstaande machtigingen kunnen op elk moment worden ingetrokken in \"Systeeminstellingen → Privacy en beveiliging\". Na intrekking zijn de betreffende functies niet meer beschikbaar en worden andere functies niet beïnvloed."
+            "value" : "• Microfoon: Neem uw stem op. Alleen ingeschakeld wanneer u begint met opnemen en vrijgegeven wanneer u stopt met opnemen.\n• Systeemaudio-opname: neemt geluid van andere apps op. Bij opname met alleen de microfoon wordt deze toestemming overgeslagen.\n• Schermopname: gebruikt het scherm wanneer je een schermafbeelding maakt of een schermvideo opneemt.\n• Spraakherkenning: Roep het spraakherkenningsframework van het macOS-systeem aan om opnames lokaal naar tekst om te zetten.\n• Herinneringen: nadat u op \"Herinneringen schrijven\" hebt geklikt of actief toestemming hebt gevraagd in \"Instellingen → Taken\", leest u de beschrijfbare lijst en schrijft u de door AI gedemonteerde taken in de lijst van uw keuze.\n• Toegankelijkheid (niet ingeschakeld in de huidige versie): de schakelaar \"Auto-follow conference software mute\" blijft behouden in de instellingen, maar de huidige versie schakelt de toegankelijkheidsdetectie niet in. Indien dit in de toekomst wordt ingeschakeld, wordt alleen de interfacestatus van de mute-knop van conferentiesoftware zoals Teams, Zoom en Tencent Meeting gelezen om het opnemen van de microfoon automatisch te pauzeren of te hervatten; het scherm wordt niet vastgelegd, de inhoud van de vergadering wordt niet gelezen en de inhoud van de vergadering wordt niet geüpload. Dit beleid wordt vóór activering bijgewerkt.\n\nDe bovenstaande machtigingen kunnen op elk moment worden ingetrokken in \"Systeeminstellingen → Privacy en beveiliging\". Na intrekking zijn de betreffende functies niet meer beschikbaar en worden andere functies niet beïnvloed."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• Mikrofon: nagraj swój głos. Włączane tylko po rozpoczęciu nagrywania i zwalniane po zakończeniu nagrywania.\n• Nagrywanie ekranu: przesyłaj dźwięk, zrzuty ekranu lub nagrania ekranu za pomocą systemu przechwytywania ScreenCaptureKit. Możesz zrezygnować z nagrywania dźwięku systemowego w „Ustawienia → Nagrywanie → Źródło”.\n• Rozpoznawanie mowy: wywołaj platformę rozpoznawania mowy systemu macOS, aby lokalnie przekonwertować nagrania na tekst.\n• Przypomnienia: Po kliknięciu „Zapisz przypomnienia” lub aktywnym poproszeniu o pozwolenie w „Ustawienia → Zadania” przeczytaj zapisywalną listę i zapisz na wybranej liście zadania zdemontowane przez sztuczną inteligencję.\n• Dostępność (niewłączona w aktualnej wersji): Przełącznik „Automatyczne wyciszenie oprogramowania konferencyjnego” został zachowany w ustawieniach, ale bieżąca wersja nie umożliwia wykrywania dostępności. Jeśli zostanie to włączone w przyszłości, odczytywany będzie tylko stan interfejsu przycisku wyciszenia oprogramowania konferencyjnego, takiego jak Teams, Zoom i Tencent Meeting, aby automatycznie wstrzymać lub wznowić zbieranie mikrofonu; ekran nie zostanie przechwycony, treść spotkania nie zostanie odczytana, a treść spotkania nie zostanie przesłana. Niniejsza polityka zostanie zaktualizowana przed aktywacją.\n\nPowyższe uprawnienia można w każdej chwili odwołać w zakładce „Ustawienia systemu → Prywatność i bezpieczeństwo”. Po odwołaniu odpowiednie funkcje będą niedostępne i nie będzie to miało wpływu na inne funkcje."
+            "value" : "• Mikrofon: nagraj swój głos. Włączane tylko po rozpoczęciu nagrywania i zwalniane po zakończeniu nagrywania.\n• Nagrywanie dźwięku systemowego: rejestruje dźwięk odtwarzany przez inne aplikacje. Nagrywanie tylko z mikrofonu pomija to uprawnienie.\n• Nagrywanie ekranu: korzysta z ekranu podczas wykonywania zrzutu ekranu lub nagrywania obrazu z ekranu.\n• Rozpoznawanie mowy: wywołaj platformę rozpoznawania mowy systemu macOS, aby lokalnie przekonwertować nagrania na tekst.\n• Przypomnienia: Po kliknięciu „Zapisz przypomnienia” lub aktywnym poproszeniu o pozwolenie w „Ustawienia → Zadania” przeczytaj zapisywalną listę i zapisz na wybranej liście zadania zdemontowane przez sztuczną inteligencję.\n• Dostępność (niewłączona w aktualnej wersji): Przełącznik „Automatyczne wyciszenie oprogramowania konferencyjnego” został zachowany w ustawieniach, ale bieżąca wersja nie umożliwia wykrywania dostępności. Jeśli zostanie to włączone w przyszłości, odczytywany będzie tylko stan interfejsu przycisku wyciszenia oprogramowania konferencyjnego, takiego jak Teams, Zoom i Tencent Meeting, aby automatycznie wstrzymać lub wznowić zbieranie mikrofonu; ekran nie zostanie przechwycony, treść spotkania nie zostanie odczytana, a treść spotkania nie zostanie przesłana. Niniejsza polityka zostanie zaktualizowana przed aktywacją.\n\nPowyższe uprawnienia można w każdej chwili odwołać w zakładce „Ustawienia systemu → Prywatność i bezpieczeństwo”. Po odwołaniu odpowiednie funkcje będą niedostępne i nie będzie to miało wpływu na inne funkcje."
           }
         },
-        "uk" : {
+        "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• Мікрофон: запишіть свій голос. Увімкнено, лише коли ви починаєте запис, і відпускається, коли ви зупиняєте запис.\n• Запис екрана: виводьте аудіо, знімки екрана або записи екрана через систему захоплення ScreenCaptureKit. Ви можете не записувати системне аудіо в «Налаштування → Запис → Джерело».\n• Розпізнавання мовлення: виклик системи розпізнавання мовлення macOS для локального перетворення записів у текст.\n• Нагадування: після того, як ви натиснули «Написати нагадування» або активно запитали дозвіл у «Налаштуваннях → Завдання», прочитайте список, доступний для запису, і запишіть розібрані ШІ завдання у список за вашим вибором.\n• Спеціальні можливості (не ввімкнено в поточній версії): перемикач «Auto-follow software conference mute» зберігається в налаштуваннях, але поточна версія не вмикає виявлення доступності. Якщо ввімкнути в майбутньому, лише статус інтерфейсу кнопки вимкнення звуку програмного забезпечення для конференц-зв’язку, такого як Teams, Zoom і Tencent Meeting, читатиметься для автоматичного призупинення або відновлення збору мікрофонів; екран не буде знято, вміст наради не буде прочитано, а вміст наради не буде завантажено. Ця політика буде оновлена ​​перед активацією.\n\nЗазначені вище дозволи можна будь-коли відкликати в «Параметри системи → Конфіденційність і безпека». Після відкликання відповідні функції будуть недоступні, а інші функції не вплинуть."
+            "value" : "• Microfone: Grave sua voz. Habilitado somente quando você inicia a gravação e liberado quando você interrompe a gravação.\n• Gravação de áudio do sistema: grava o som de outros apps. A gravação apenas pelo microfone dispensa essa permissão.\n• Gravação da tela: acessa a tela quando você faz uma captura ou grava um vídeo da tela.\n• Reconhecimento de fala: chame a estrutura de reconhecimento de fala do sistema macOS para converter gravações em texto localmente.\n• Lembretes: depois de clicar em \"Escrever lembretes\" ou solicitar permissão ativamente em \"Configurações → Tarefas\", leia a lista gravável e escreva as tarefas desmontadas pela IA na lista de sua escolha.\n• Acessibilidade (não habilitada na versão atual): A opção \"Acompanhamento automático do software de conferência sem som\" é mantida nas configurações, mas a versão atual não habilita a detecção de acessibilidade. Se habilitado no futuro, apenas o status da interface do botão mudo de softwares de conferência como Teams, Zoom e Tencent Meeting será lido para pausar ou retomar automaticamente a coleta do microfone; a tela não será capturada, o conteúdo da reunião não será lido e o conteúdo da reunião não será carregado. Esta política será atualizada antes da ativação.\n\nAs permissões acima podem ser revogadas a qualquer momento em “Configurações do Sistema → Privacidade e Segurança”. Após a revogação, as funções correspondentes ficarão indisponíveis e outras funções não serão afetadas."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Микрофон: запишите свой голос. Включается только при начале записи и отпускается, когда запись прекращается.\n• Запись системного звука: записывает звук других приложений. Для записи только с микрофона это разрешение не требуется.\n• Запись экрана: приложение получает доступ к экрану при создании снимка или записи видео с экрана.\n• Распознавание речи: вызовите систему распознавания речи системы macOS для локального преобразования записей в текст.\n• Напоминания: после того, как вы нажмете «Написать напоминания» или активно запросите разрешение в «Настройки → Дела», прочитайте список доступных для записи и запишите задачи, разобранные с помощью ИИ, в список по вашему выбору.\n• Специальные возможности (не включено в текущей версии): переключатель «Автоматическое отключение звука в программе конференции» сохранен в настройках, но текущая версия не включает обнаружение специальных возможностей. Если эта опция будет включена в будущем, будет считываться только состояние интерфейса кнопки отключения звука программного обеспечения для конференц-связи, такого как Teams, Zoom и Tencent Meeting, чтобы автоматически приостановить или возобновить сбор микрофона; экран не будет захвачен, содержимое собрания не будет прочитано и содержимое собрания не будет загружено. Эта политика будет обновлена ​​перед активацией.\n\nВышеуказанные разрешения можно отозвать в любое время в «Настройки системы → Конфиденциальность и безопасность». После отзыва соответствующие функции будут недоступны, а другие функции не будут затронуты."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• Mikrofon: Spela in din röst. Endast aktiverad när du börjar spela in och släpps när du slutar spela in.\n• Skärminspelning: Mata ut ljud, skärmdumpar eller skärminspelningar via ScreenCaptureKit-infångningssystemet. Du kan välja att inte spela in systemljud i \"Inställningar → Inspelning → Källa\".\n• Taligenkänning: Anropa macOS-systemets taligenkänningsramverk för att konvertera inspelningar till text lokalt.\n• Påminnelser: När du har klickat på \"Skriv påminnelser\" eller aktivt begärt tillstånd i \"Inställningar → Att göra\", läs den skrivbara listan och skriv de AI-demonterade att göra i listan du väljer.\n• Tillgänglighet (inte aktiverat i den aktuella versionen): Omkopplaren \"Följ konferensprogramvara avstängd automatiskt\" bibehålls i inställningarna, men den aktuella versionen möjliggör inte tillgänglighetsdetektering. Om det är aktiverat i framtiden kommer endast gränssnittsstatusen för mute-knappen för konferensprogramvara som Teams, Zoom och Tencent Meeting att läsas för att automatiskt pausa eller återuppta mikrofoninsamlingen; skärmen kommer inte att fångas, mötesinnehåll läses inte och mötesinnehåll laddas inte upp. Denna policy kommer att uppdateras innan aktivering.\n\nOvanstående behörigheter kan återkallas när som helst i \"Systeminställningar → Sekretess och säkerhet\". Efter återkallelse kommer motsvarande funktioner att vara otillgängliga och andra funktioner kommer inte att påverkas."
+            "value" : "• Mikrofon: Spela in din röst. Endast aktiverad när du börjar spela in och släpps när du slutar spela in.\n• Systemljudinspelning: Spelar in ljud från andra appar. Vid inspelning med bara mikrofonen behövs inte det här tillståndet.\n• Skärminspelning: Använder skärmen när du tar en skärmavbild eller spelar in skärmvideo.\n• Taligenkänning: Anropa macOS-systemets taligenkänningsramverk för att konvertera inspelningar till text lokalt.\n• Påminnelser: När du har klickat på \"Skriv påminnelser\" eller aktivt begärt tillstånd i \"Inställningar → Att göra\", läs den skrivbara listan och skriv de AI-demonterade att göra i listan du väljer.\n• Tillgänglighet (inte aktiverat i den aktuella versionen): Omkopplaren \"Följ konferensprogramvara avstängd automatiskt\" bibehålls i inställningarna, men den aktuella versionen möjliggör inte tillgänglighetsdetektering. Om det är aktiverat i framtiden kommer endast gränssnittsstatusen för mute-knappen för konferensprogramvara som Teams, Zoom och Tencent Meeting att läsas för att automatiskt pausa eller återuppta mikrofoninsamlingen; skärmen kommer inte att fångas, mötesinnehåll läses inte och mötesinnehåll laddas inte upp. Denna policy kommer att uppdateras innan aktivering.\n\nOvanstående behörigheter kan återkallas när som helst i \"Systeminställningar → Sekretess och säkerhet\". Efter återkallelse kommer motsvarande funktioner att vara otillgängliga och andra funktioner kommer inte att påverkas."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• ไมโครโฟน: บันทึกเสียงของคุณ เปิดใช้งานเฉพาะเมื่อคุณเริ่มการบันทึกและปล่อยเมื่อคุณหยุดการบันทึก\n• การบันทึกเสียงระบบ: บันทึกเสียงที่แอปอื่นเล่น เมื่อบันทึกเฉพาะไมโครโฟนจะไม่ขอสิทธิ์นี้\n• การบันทึกหน้าจอ: เข้าถึงหน้าจอเมื่อคุณถ่ายภาพหน้าจอหรือบันทึกวิดีโอหน้าจอ\n• การรู้จำเสียง: เรียกใช้เฟรมเวิร์กการรู้จำเสียงของระบบ macOS เพื่อแปลงการบันทึกเป็นข้อความในเครื่อง\n• การแจ้งเตือน: หลังจากที่คุณคลิก \"เขียนการแจ้งเตือน\" หรือขออนุญาตใน \"การตั้งค่า → สิ่งที่ต้องทำ\" ให้อ่านรายการที่เขียนได้และเขียนสิ่งที่ต้องทำที่แยกส่วนโดย AI ลงในรายการที่คุณเลือก\n• การเข้าถึง (ไม่ได้เปิดใช้งานในเวอร์ชันปัจจุบัน): สวิตช์ \"ปิดเสียงซอฟต์แวร์การประชุมตามอัตโนมัติ\" จะยังคงอยู่ในการตั้งค่า แต่เวอร์ชันปัจจุบันไม่ได้เปิดใช้งานการตรวจจับการเข้าถึง หากเปิดใช้งานในอนาคต เฉพาะสถานะอินเทอร์เฟซของปุ่มปิดเสียงของซอฟต์แวร์การประชุมเช่น Teams, Zoom และ Tencent Meeting เท่านั้นที่จะถูกอ่านเพื่อหยุดชั่วคราวหรือดำเนินการรวบรวมไมโครโฟนต่อโดยอัตโนมัติ หน้าจอจะไม่ถูกจับภาพ เนื้อหาการประชุมจะไม่ถูกอ่าน และเนื้อหาการประชุมจะไม่ถูกอัปโหลด นโยบายนี้จะได้รับการอัปเดตก่อนเปิดใช้งาน\n\nการอนุญาตข้างต้นสามารถเพิกถอนได้ตลอดเวลาใน \"การตั้งค่าระบบ → ความเป็นส่วนตัวและความปลอดภัย\" หลังจากการเพิกถอน ฟังก์ชันที่เกี่ยวข้องจะไม่สามารถใช้งานได้ และฟังก์ชันอื่นๆ จะไม่ได้รับผลกระทบ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Mikrofon: Sesinizi kaydedin. Yalnızca kaydetmeye başladığınızda etkinleştirilir ve kaydı durdurduğunuzda serbest bırakılır.\n• Sistem sesi kaydı: Diğer uygulamalardan gelen sesi kaydeder. Yalnızca mikrofon kaydında bu izin istenmez.\n• Ekran kaydı: Ekran görüntüsü aldığınızda veya ekran videosu kaydettiğinizde ekrana erişir.\n• Konuşma tanıma: Kayıtları yerel olarak metne dönüştürmek için macOS sisteminin konuşma tanıma çerçevesini çağırın.\n• Hatırlatıcılar: \"Hatırlatıcı Yaz\" seçeneğini tıkladıktan veya \"Ayarlar → Yapılacaklar\" bölümünde aktif olarak izin talep ettikten sonra, yazılabilir listeyi okuyun ve AI ile ayrıştırılmış yapılacak işlerinizi istediğiniz listeye yazın.\n• Erişilebilirlik (mevcut sürümde etkinleştirilmemiştir): \"Konferans yazılımını otomatik takip et\" anahtarı ayarlarda korunur, ancak mevcut sürüm erişilebilirlik algılamayı etkinleştirmez. Gelecekte etkinleştirilirse, mikrofon toplamayı otomatik olarak duraklatmak veya devam ettirmek için yalnızca Teams, Zoom ve Tencent Meeting gibi konferans yazılımının sessize alma düğmesinin arayüz durumu okunacaktır; ekran yakalanmayacak, toplantı içeriği okunmayacak ve toplantı içeriği yüklenmeyecektir. Bu politika etkinleştirmeden önce güncellenecektir.\n\nYukarıdaki izinler herhangi bir zamanda \"Sistem Ayarları → Gizlilik ve Güvenlik\" bölümünden iptal edilebilir. İptalin ardından ilgili işlevler kullanılamayacak ve diğer işlevler etkilenmeyecektir."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Мікрофон: запишіть свій голос. Увімкнено, лише коли ви починаєте запис, і відпускається, коли ви зупиняєте запис.\n• Запис системного звуку: записує звук з інших програм. Для запису лише з мікрофона цей дозвіл не потрібен.\n• Запис екрана: отримує доступ до екрана, коли ви робите знімок екрана чи записуєте відео з екрана.\n• Розпізнавання мовлення: виклик системи розпізнавання мовлення macOS для локального перетворення записів у текст.\n• Нагадування: після того, як ви натиснули «Написати нагадування» або активно запитали дозвіл у «Налаштуваннях → Завдання», прочитайте список, доступний для запису, і запишіть розібрані ШІ завдання у список за вашим вибором.\n• Спеціальні можливості (не ввімкнено в поточній версії): перемикач «Auto-follow software conference mute» зберігається в налаштуваннях, але поточна версія не вмикає виявлення доступності. Якщо ввімкнути в майбутньому, лише статус інтерфейсу кнопки вимкнення звуку програмного забезпечення для конференц-зв’язку, такого як Teams, Zoom і Tencent Meeting, читатиметься для автоматичного призупинення або відновлення збору мікрофонів; екран не буде знято, вміст наради не буде прочитано, а вміст наради не буде завантажено. Ця політика буде оновлена ​​перед активацією.\n\nЗазначені вище дозволи можна будь-коли відкликати в «Параметри системи → Конфіденційність і безпека». Після відкликання відповідні функції будуть недоступні, а інші функції не вплинуть."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• Micrô: Ghi âm giọng nói của bạn. Chỉ bật khi bạn bắt đầu ghi và nhả khi bạn dừng ghi.\n• Ghi âm thanh hệ thống: Ghi âm thanh do các ứng dụng khác phát. Ghi riêng micrô sẽ bỏ qua quyền này.\n• Ghi màn hình: Truy cập màn hình khi bạn chụp ảnh hoặc quay video màn hình.\n• Nhận dạng giọng nói: Gọi khung nhận dạng giọng nói của hệ thống macOS để chuyển đổi bản ghi âm thành văn bản cục bộ.\n• Lời nhắc: Sau khi bạn nhấp vào \"Viết lời nhắc\" hoặc chủ động yêu cầu quyền trong \"Cài đặt → Việc cần làm\", hãy đọc danh sách có thể ghi và ghi những việc cần làm đã được AI tháo rời vào danh sách bạn chọn.\n• Khả năng truy cập (không được bật trong phiên bản hiện tại): Công tắc \"Tự động theo dõi phần mềm hội nghị tắt tiếng\" được giữ lại trong cài đặt, nhưng phiên bản hiện tại không bật tính năng phát hiện khả năng truy cập. Nếu được bật trong tương lai, chỉ trạng thái giao diện của nút tắt tiếng của phần mềm hội nghị như Teams, Zoom và Tencent Meet mới được đọc để tự động tạm dừng hoặc tiếp tục thu thập micrô; màn hình sẽ không được chụp, nội dung cuộc họp sẽ không được đọc và nội dung cuộc họp sẽ không được tải lên. Chính sách này sẽ được cập nhật trước khi kích hoạt.\n\nCác quyền trên có thể bị thu hồi bất kỳ lúc nào trong \"Cài đặt hệ thống → Quyền riêng tư và bảo mật\". Sau khi thu hồi, các chức năng tương ứng sẽ không khả dụng và các chức năng khác sẽ không bị ảnh hưởng."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 麦克风：录制你的语音。仅在你开始录音时启用，停止录音后释放。\n• 系统录音：录制其他应用播放的声音。选择仅用麦克风时跳过这项权限。\n• 屏幕录制：在你截图或录屏时访问画面。\n• 语音识别：调用 macOS 系统语音识别框架，在本地把录音转成文字。\n• 提醒事项：在你点击「写入提醒事项」，或在「设置 → 待办」主动请求权限后，读取可写列表并把 AI 拆解的待办写入你选择的列表。\n• 辅助功能（当前版本未启用）：设置中保留了「自动跟随会议软件静音」开关，但当前版本不会启动辅助功能检测。若将来启用，只会读取 Teams、Zoom、腾讯会议等会议软件静音按钮的界面状态，用于自动暂停或恢复麦克风采集；不截取屏幕、不读取会议内容、不上传，启用前会更新本政策。\n\n以上权限均可随时在「系统设置 → 隐私与安全性」中撤销。撤销后对应功能不可用，其余功能不受影响。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "• 麥克風：錄製你的語音。僅在你開始錄音時啟用，停止錄音後釋放。\n• 系統錄音：錄製其他 App 播放的聲音。僅使用麥克風時會略過此權限。\n• 螢幕錄製：在你截圖或錄製螢幕時存取畫面。\n• 語音辨識：呼叫 macOS 系統語音辨識框架，在本地把錄音轉成文字。\n• 提醒事項：在你點擊「寫入提醒事項」，或在「設定 → 待辦事項」主動請求權限後，讀取可寫清單並把 AI 拆解的待辦事項寫入你選擇的清單。\n• 輔助使用（目前版本未啟用）：設定中保留了「自動跟隨會議軟體靜音」開關，但目前版本不會啟動輔助功能偵測。若將來啟用，只會讀取 Teams、Zoom、騰訊會議等會議軟體靜音按鈕的介面狀態，用於自動暫停或恢復麥克風採集；不截取螢幕、不讀取會議內容、不上傳，啟用前會更新本政策。\n\n以上權限均可隨時在「系統設定 → 隱私權與安全性」中撤銷。撤銷後對應功能不可用，其餘功能不受影響。"
           }
         }
       }

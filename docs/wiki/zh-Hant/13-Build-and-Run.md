@@ -39,7 +39,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project Mem
 
 ## 3. 模型與首次執行
 
-- 首啟隱私同意後展示按體驗模式組織的功能引導；引導不再包含模型下載頁。模型在實際使用時按需準備，專業模式也可在設定中管理。麥克風、語音識別、螢幕錄製、輔助功能、提醒事項按功能請求。
+- 首啟隱私同意後展示按體驗模式組織的功能引導；引導不再包含模型下載頁。模型在實際使用時按需準備，專業模式也可在設定中管理。麥克風、系統錄音、語音識別、螢幕錄製、輔助功能、提醒事項按功能請求。
 - 系統語音識別透過 `SystemTranscription` / `SystemTranscriptionService` 在 macOS 26+ 使用 SpeechAnalyzer；語言資產由系統按需管理，不依賴 Whisper 模型目錄。`STTMode.defaultMode` 與體驗模式解析器按系統能力決定預設引擎，舊系統保留 WhisperKit 路徑。
 - 本地 Whisper 透過設定選擇模型資料夾，預設目錄由 `WhisperModelFolder.defaultPath` 提供；模型與 tokenizer 檔案須完整，載入邏輯會解析子目錄。
 - 設定頁「下載模型」可按檔位下載（`WhisperModelOption.catalog`），源可選 HuggingFace 官方或 HF-Mirror 映象（預設映象，見 `WhisperModelSource`）；下載走 `WhisperKit.download` 並顯式傳 endpoint，完成後從 `<模型文件夹>/models/<repo>/<档位>` 重新命名到 `<模型文件夹>/<档位>`，隨即載入該模型。下載任務經全域性處理佇列（`TaskCenter.whisperDownloadJob`），是**唯一支援真正暫停 / 續傳**的任務：取消（含暫停觸發的取消）保留已落盤分片與 `.cache` 後設資料，繼續時重新排程該步即從斷點續傳。
@@ -95,7 +95,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project Mem
 | worker 除錯 | 應用可執行檔案 `--background-worker` 會真實消費持久佇列，僅對隔離測試資料使用；協議見架構 §3 |
 | 提醒事項 URL | `reminders_url_diagnostic` 偏好控制 RemindersURLDiagnostic；診斷檔案不作為常駐上下文 |
 | 長錄音儲存失敗 | 檢查控制代碼數、磁碟和 PersistenceReporting 日誌；啟動 fd 限制提升見 ProcessLimits |
-| 系統音訊無聲 | 檢查螢幕錄製許可權、重啟提示和首包 PTS 對齊 |
+| 系統音訊無聲 | 檢查系統錄音權限、聲音輸出裝置與首包 host time |
 | 熱鍵/語言不生效 | 檢查使用者熱鍵配置、系統衝突；語言設定寫 AppleLanguages 後重啟 |
 | TCC 除錯 | 僅明確的開發排障使用 DEBUG 清理路徑，不在釋出版自動重置授權 |
 

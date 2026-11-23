@@ -18,7 +18,7 @@ import Observation
 /// 设计目标：会议中共享屏幕时，用户可隐藏主窗口只留菜单栏图标控制录音，
 /// 这样在「共享单个窗口」或「共享整个屏幕（菜单栏默认不共享）」时都不会暴露本软件。
 @MainActor
-final class MenuBarController: NSObject {
+final class MenuBarController: NSObject, NSMenuDelegate {
 
     /// 共享实例
     static let shared = MenuBarController()
@@ -57,6 +57,10 @@ final class MenuBarController: NSObject {
 
     /// 菜单项引用（动态更新标题）
     private var toggleRecordingItem: NSMenuItem!
+    private let permissionSettingsItem = NSMenuItem(title: String(localized: "打开系统设置"),
+        action: #selector(openRecordingPermissionSettings), keyEquivalent: "")
+    private let recordMicrophoneItem = NSMenuItem(title: String(localized: "本次仅录麦克风"),
+        action: #selector(recordWithMicrophone), keyEquivalent: "")
     private var statusInfoItem: NSMenuItem!
     private var toggleWindowItem: NSMenuItem!
     private var languageMenuItem: NSMenuItem!
@@ -108,6 +112,7 @@ final class MenuBarController: NSObject {
 
         // 构建菜单
         let menu = NSMenu()
+        menu.delegate = self
         menu.autoenablesItems = false
 
         // 状态信息项（显示录音时长/静音状态，不可点击）
@@ -132,6 +137,12 @@ final class MenuBarController: NSObject {
         )
         toggleRecordingItem.target = self
         menu.addItem(toggleRecordingItem)
+
+        for item in [permissionSettingsItem, recordMicrophoneItem] {
+            item.target = self
+            item.isHidden = true
+            menu.addItem(item)
+        }
 
         menu.addItem(.separator())
 
@@ -379,6 +390,12 @@ final class MenuBarController: NSObject {
     /// 上次刷新对应的界面签名（用于跳过"状态没变"的整轮 AppKit 赋值）
     private var lastRefreshSignature: String?
 
+    nonisolated func menuWillOpen(_ menu: NSMenu) {
+        MainActor.assumeOnMainThread {
+            refreshState()
+        }
+    }
+
     /// 设置页切换模式后立即刷新，无需等待下一次定时器 tick。
     func refreshForExperienceChange() {
         lastRefreshSignature = nil
@@ -388,6 +405,7 @@ final class MenuBarController: NSObject {
     private func refreshState() {
         let isRecording = recorder.isRecording
         let isStarting = recorder.isStarting
+        let permissionNotice = recorder.recordingPermissionNotice
         let isScreenRecording = recorder.isScreenRecording
         let isMuted = recorder.isMicMuted
         let muteSource = recorder.muteSource
@@ -404,7 +422,7 @@ final class MenuBarController: NSObject {
         // 旧写法每秒无条件重建 3 个 NSImage、重写全部菜单项标题、遍历语言子菜单，
         // 空闲时一整天都在做无变化的赋值。签名相同即整轮跳过；
         // 任何一项变化（录音/录屏起停、静音切换、主窗口显隐、语言切换、录屏偏好切换）都会在下一次 tick 立即刷新。
-        let signature = "\(isRecording)|\(isStarting)|\(isScreenRecording)|\(isMuted)|\(muteSource)|\(isMainWindowVisible)|\(selectedLanguage)|\(screenSourceRaw)|\(screenQualityRaw)|\(microphoneSignature)|\(experience.rawValue)"
+        let signature = "\(isRecording)|\(isStarting)|\(permissionNotice?.rawValue ?? "")|\(isScreenRecording)|\(isMuted)|\(muteSource)|\(isMainWindowVisible)|\(selectedLanguage)|\(screenSourceRaw)|\(screenQualityRaw)|\(microphoneSignature)|\(experience.rawValue)"
         guard signature != lastRefreshSignature else { return }
         lastRefreshSignature = signature
 
@@ -418,9 +436,12 @@ final class MenuBarController: NSObject {
 
         // 2) 菜单项：录屏时停止项表达为「停止录制」，与录音（纯音频）区分
         let stopTitle = isScreenRecording ? String(localized: "停止录制") : String(localized: "停止录音")
-        toggleRecordingItem.title = isStarting ? String(localized: "正在启动录音…")
+        let startingTitle = permissionNotice == .waiting ? String(localized: "正在准备系统录音…") : String(localized: "正在启动录音…")
+        toggleRecordingItem.title = isStarting ? startingTitle
             : (isRecording ? stopTitle : String(localized: "开始会议录音"))
         toggleRecordingItem.isEnabled = !isStarting
+        permissionSettingsItem.isHidden = permissionNotice?.offersRecovery != true
+        recordMicrophoneItem.isHidden = permissionNotice?.offersRecovery != true
         toggleRecordingItem.image = NSImage(
             systemSymbolName: isRecording ? "stop.circle.fill" : "record.circle",
             accessibilityDescription: nil
@@ -434,7 +455,9 @@ final class MenuBarController: NSObject {
         // 3) 状态信息（不显示时长，只显示简单状态）；录屏时状态前缀为「录屏中」。
         //    静音来源文案与录音徽章共用 MicMuteCommand，避免同一状态两处说法不同
         if isStarting {
-            statusInfoItem.title = String(localized: "正在启动录音…")
+            statusInfoItem.title = startingTitle
+        } else if permissionNotice?.offersRecovery == true {
+            statusInfoItem.title = String(localized: "录音尚未开始")
         } else if isRecording {
             if isMuted {
                 let src = MicMuteCommand.sourceLabel(muteSource)
@@ -480,6 +503,17 @@ final class MenuBarController: NSObject {
     }
 
     // MARK: - 菜单动作
+
+    @objc nonisolated private func openRecordingPermissionSettings() {
+        MainActor.assumeOnMainThread { RecordingPermissionNotice.openSystemSettings() }
+    }
+
+    @objc nonisolated private func recordWithMicrophone() {
+        MainActor.assumeOnMainThread {
+            guard recorder.recordingPermissionNotice?.offersRecovery == true else { return }
+            NotificationCenter.default.post(name: .menuBarStartRecording, object: RecordingSource.microphone)
+        }
+    }
 
     /// 开始/停止会议录音
     ///
@@ -1135,7 +1169,7 @@ final class HideOnCloseWindowDelegate: NSObject, NSWindowDelegate {
 // MARK: - 通知名（跨平台：RootView 在 iOS/macOS 均订阅这些通知）
 
 extension Notification.Name {
-    /// 菜单栏请求开始录音
+    /// 菜单栏请求开始录音。object 为 RecordingSource.microphone 时，仅本次改用麦克风。
     static let menuBarStartRecording = Notification.Name("menuBarStartRecording")
     /// 菜单栏请求停止录音
     static let menuBarStopRecording = Notification.Name("menuBarStopRecording")

@@ -1444,11 +1444,11 @@ struct SettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 case .systemAudio:
-                    Text("仅录制系统输出音频。适合在线会议中他人发言内容（需 macOS 14.4+）。")
+                    Text("录制其他应用播放的声音，例如线上会议中对方的发言。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 case .mixed:
-                    Text("同时录制麦克风与系统音频（MVP 阶段优先麦克风，系统音频作为补充）。")
+                    Text(StandardRecordingMode.onlineMeeting.description)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

@@ -36,8 +36,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "9.8.5"
-    CURRENT_PROJECT_VERSION: "165"
+    MARKETING_VERSION: "9.8.6"
+    CURRENT_PROJECT_VERSION: "166"
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     DEAD_CODE_STRIPPING: YES
     ENABLE_USER_SCRIPT_SANDBOXING: YES
@@ -73,7 +73,7 @@ targets:
         SUEnableSystemProfiling: false
         MemoziaUnnotarizedBuild: "$(MEMOZIA_UNNOTARIZED_BUILD)"
         MemoziaContactEmail: "$(MEMOZIA_CONTACT_EMAIL)"
-        NSScreenCaptureUsageDescription: "闻墨集 需要录制屏幕以捕获系统音频、截图和录屏"
+        NSScreenCaptureUsageDescription: "Memozia 需要访问屏幕以截图或录制屏幕视频。"
         NSAudioCaptureUsageDescription: "闻墨集 需要捕获系统音频以录制会议声音"
     settings:
       base:

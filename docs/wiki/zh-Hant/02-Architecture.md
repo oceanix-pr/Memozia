@@ -26,7 +26,7 @@
 │  服務層  Services/（狀態型服務多為 @MainActor @Observable）   │
 │  ① 錄音採集：MeetingRecorderService（總控）                        │
 │     ├ MicCaptureService（AVAudioEngine）                          │
-│     ├ SystemAudioCaptureService（ScreenCaptureKit）               │
+│     ├ SystemAudioCaptureService（Core Audio tap）               │
 │     ├ AppMuteDetector（AX 輪詢）/ MicMuteMonitor（CoreAudio）      │
 │     └ AudioConverter（時長/轉換）                                  │
 │  ② 轉寫管線：WhisperLocalService / WhisperAPIService              │

@@ -25,7 +25,9 @@ enum ScreenCaptureAuthorization {
         String(localized: "更新后若权限已开启仍报错，请完全退出 Memozia，从系统设置的屏幕录制列表移除 Memozia，再添加当前应用并开启权限，最后重新打开。")
     }
 
-    static func content(onScreenWindowsOnly: Bool = false) async throws -> SCShareableContent {
+    static func content(
+        onScreenWindowsOnly: Bool = false
+    ) async throws -> SCShareableContent {
         await UpdatePermissionRepair.shared.prepareIfNeeded()
         try Task.checkCancellation()
         // CG 预检保留为无弹窗诊断。false 也可能是未决定或更新后的旧授权，
@@ -55,12 +57,16 @@ enum ScreenCaptureAuthorization {
         guard finished, let outcome = result.value else { throw Failure.timedOut }
         do { return try outcome.get() }
         catch {
-            let nsError = error as NSError
-            if nsError.domain == SCStreamErrorDomain, nsError.code == SCStreamError.Code.userDeclined.rawValue {
+            if isUserDeclined(error) {
                 throw Failure.denied
             }
             throw error
         }
+    }
+
+    static func isUserDeclined(_ error: any Error) -> Bool {
+        let nsError = error as NSError
+        return nsError.domain == SCStreamErrorDomain && nsError.code == SCStreamError.Code.userDeclined.rawValue
     }
 }
 #endif

@@ -2,21 +2,11 @@ import Foundation
 import AVFoundation
 import os.log
 #if os(macOS)
-import ScreenCaptureKit
 import CoreMedia
-import CoreGraphics
-#endif
 
-/// 系统音频采集服务（基于 ScreenCaptureKit）
-///
-/// 使用 ScreenCaptureKit 采集系统输出音频。
-/// 注意：即使只录音频，ScreenCaptureKit 也需要用户授予"屏幕录制"权限。
-/// 首次调用 SCShareableContent 时会触发系统授权对话框。
-///
-/// 仅支持 macOS（iOS 无此框架的系统音频捕获能力）。
-#if os(macOS)
-final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegate, @unchecked Sendable {
-
+/// Owns the active Core Audio tap and rolling PCM writer. Mutable session state is locked,
+/// and the writer receives owned samples on one serial queue.
+final class SystemAudioCaptureService: @unchecked Sendable {
     enum EventKind: Sendable {
         case interrupted(Error)
         case writerFailed
@@ -49,6 +39,54 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
             finishBlock = finish
         }
 
+        // AVAssetWriter requires one input format throughout a WAV, including after a route
+        // change or wake. Convert on writeQueue, keeping the resampler across input packets.
+        private let target = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 48_000,
+                                           channels: 2, interleaved: true)
+        private var converter: AVAudioConverter?
+
+        func sample(from input: AVAudioPCMBuffer, at pts: CMTime) throws -> CMSampleBuffer? {
+            guard let target else { throw SystemAudioError.invalidFormat }
+            let pcm: AVAudioPCMBuffer
+            if input.format == target {
+                converter = nil
+                pcm = input
+            } else {
+                if converter?.inputFormat != input.format {
+                    converter = AVAudioConverter(from: input.format, to: target)
+                    converter?.primeMethod = .none
+                }
+                let capacity = ceil(Double(input.frameLength) * target.sampleRate / input.format.sampleRate) + 32
+                guard let converter, capacity < Double(UInt32.max),
+                      let output = AVAudioPCMBuffer(pcmFormat: target, frameCapacity: UInt32(capacity)) else {
+                    throw SystemAudioError.invalidFormat
+                }
+                var supplied = false
+                var error: NSError?
+                let status = converter.convert(to: output, error: &error) { _, inputStatus in
+                    if supplied { inputStatus.pointee = .noDataNow; return nil }
+                    supplied = true
+                    inputStatus.pointee = .haveData
+                    return input
+                }
+                if let error { throw error }
+                guard status != .error else { throw SystemAudioError.invalidFormat }
+                pcm = output
+            }
+            guard pcm.frameLength > 0 else { return nil }
+            var sample: CMSampleBuffer?
+            try SystemAudioTap.check(CMAudioSampleBufferCreateWithPacketDescriptions(allocator: kCFAllocatorDefault,
+                dataBuffer: nil, dataReady: false, makeDataReadyCallback: nil, refcon: nil,
+                formatDescription: target.formatDescription, sampleCount: Int(pcm.frameLength),
+                presentationTimeStamp: pts, packetDescriptions: nil, sampleBufferOut: &sample))
+            guard let sample else { throw SystemAudioError.invalidFormat }
+            try SystemAudioTap.check(CMSampleBufferSetDataBufferFromAudioBufferList(sample,
+                blockBufferAllocator: kCFAllocatorDefault, blockBufferMemoryAllocator: kCFAllocatorDefault,
+                flags: 0, bufferList: pcm.audioBufferList))
+            try SystemAudioTap.check(CMSampleBufferSetDataReady(sample))
+            return sample
+        }
+
         func append(_ sampleBuffer: CMSampleBuffer) throws -> Bool {
             try appendBlock(sampleBuffer)
         }
@@ -59,13 +97,10 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
     }
 
     private let logger = Logger(subsystem: "app.memozia", category: "SystemAudioCapture")
-    private let loadContent: @Sendable () async throws -> SCShareableContent
+    private let startTap: @Sendable (SystemAudioTap) async throws -> Void
 
-    init(loadContent: @escaping @Sendable () async throws -> SCShareableContent = {
-        try await ScreenCaptureAuthorization.content()
-    }) {
-        self.loadContent = loadContent
-        super.init()
+    init(startTap: @escaping @Sendable (SystemAudioTap) async throws -> Void = { try await $0.start() }) {
+        self.startTap = startTap
     }
 
     /// 静态方法（createWriter/finalizeWriter）使用的日志器
@@ -74,37 +109,19 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
     /// 状态锁：保护所有跨线程访问的可变状态
     /// 本类是 @unchecked Sendable，内部通过 NSLock 提供实际线程安全
     private let stateLock = NSLock()
-    private var _stream: SCStream?
+    private var _tap: SystemAudioTap?
     private var _writer: AVAssetWriter?
     private var _writerEndpoint: WriterEndpoint?
 
-    /// 采集状态机：是否要清理由「资源在不在」决定，而不是单个布尔标志。
-    ///
-    /// 旧实现只有 `_isCapturing` 一个布尔值，且 stop() 以它作为唯一清理门槛，两种路径会漏清理：
-    /// - `start()` 先安装 stream/writer 再 `startCapture()`：抛错时 writer 已安装，标志仍是 false；
-    /// - SCStream 异常停止回调把标志置 false，却把 writer/stream 留在状态里。
-    /// 两者都让 stop() 判定「无需清理」直接返回，遗留未 finalize 的音频分片、文件句柄与旧 stream
-    /// （录音停录后系统音轨分片不完整，只能靠磁盘扫描修补）。
     private enum CaptureState {
-        /// 无资源，可启动
-        case idle
-        /// 资源已安装，正在等待 startCapture() 返回
-        case starting
-        /// 正常采集中
-        case running
-        /// 唤醒后替换旧流；旧流已摘除，writer 仍归当前录音持有。
-        case reconnecting
-        /// stop() 已取走资源，正在收尾（stopCapture + finalize）
-        case stopping
-        /// 启动失败或流异常停止：资源仍在，等待 stop() 收尾
-        case failed
+        case idle, starting, running, reconnecting, stopping, failed
     }
 
     private var _state: CaptureState = .idle
 
     var hasResourcesPreventingUpdate: Bool {
         stateLock.lock(); defer { stateLock.unlock() }
-        if case .idle = _state { return _stream != nil || _writer != nil }
+        if case .idle = _state { return _tap != nil || _writer != nil }
         return true
     }
     /// 写入会话是否已开始（首包到达时以其 PTS 为起点，保证时间戳从 0 开始）
@@ -112,15 +129,9 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
     private var _sessionStartTime: TimeInterval?
     private var _sessionStarted = false
     private let writeQueue = DispatchQueue(label: "app.memozia.systemaudio.write")
-    /// 占位屏幕输出的派发队列：只录音频时 SCStream 仍会产生视频帧，
-    /// 注册占位 .screen 输出（回调直接丢弃非音频样本）消除框架
-    /// “stream output NOT found. Dropping frame” 报错；独立队列避免与音频写入争用
-    private let screenDiscardQueue = DispatchQueue(label: "app.memozia.systemaudio.screenDiscard")
-
     private var _onEvent: (@Sendable (Event) -> Void)?
     private var _captureID = UUID()
     private var _awaitingRecoverySample = false
-    private var _userStopped = false
     private var _wakeOriginID: UUID?
     /// 上一次因 append 失败写日志的时间（采样级失败不去抖会刷屏）
     private var _lastAppendErrorLoggedAt: Date?
@@ -153,7 +164,7 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
 
     func isCurrentEvent(_ event: Event) -> Bool {
         stateLock.lock(); defer { stateLock.unlock() }
-        guard event.captureID == _captureID, _stream != nil, let writer = _writer else { return false }
+        guard event.captureID == _captureID, _tap != nil, let writer = _writer else { return false }
         switch event.kind {
         case .interrupted: return _state == .failed
         case .recovered: return _state == .running && writer.status == .writing
@@ -170,198 +181,116 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
     func cancelWakeRecovery(originID: UUID) {
         stateLock.lock()
         guard _wakeOriginID == originID else { stateLock.unlock(); return }
-        let stream = _stream
-        _stream = nil
+        let tap = _tap
+        _tap = nil
         _captureID = UUID()
         _wakeOriginID = nil
         _state = .failed
         stateLock.unlock()
-        if let stream { Task { await Self.stopStream(stream) } }
+        tap?.invalidate()
     }
 
     /// failed 仍持有待收尾资源；不能用 capturing 判断是否需要恢复。
     var canResumeAfterWake: Bool {
         stateLock.lock(); defer { stateLock.unlock() }
-        return !_userStopped && _writer != nil && (_state == .failed || _state == .running)
+        return _writer != nil && (_state == .failed || _state == .running)
     }
 
-    // MARK: - 权限检查
-
-    /// 检查屏幕录制权限状态（不触发弹窗）
-    /// - Returns: true=已授权，false=未授权或未决定
-    static func preflightPermission() -> Bool {
-        CGPreflightScreenCaptureAccess()
+    private func makeTap() -> SystemAudioTap {
+        SystemAudioTap(output: .init(queue: writeQueue,
+            receive: { [weak self] tap, pcm, pts in self?.receive(pcm, at: pts, from: tap) },
+            dropped: { [weak self] tap in self?.noteDroppedSample(from: tap) },
+            interrupted: { [weak self] tap, error in self?.interrupted(tap, error: error) }))
     }
 
-    /// 开始采集系统音频
-    /// - Parameter url: 目标文件 URL（m4a）
-    func start(to url: URL, timeline: RecordingSegmentTimelineStore? = nil,
-               authorizedContent: SCShareableContent? = nil) async throws {
-        // 在第一个 await 前原子占用 idle→starting，避免两个并发 start 都通过检查。
-        guard let startID = reserveStart() else {
-            logger.warning("系统音频采集已在启动、运行或收尾，拒绝重复启动")
-            throw SystemAudioError.alreadyCapturing
-        }
-        var resourcesInstalled = false
-        defer {
-            if !resourcesInstalled { releaseStartReservation(matching: startID) }
-        }
-
-        let content: SCShareableContent
+    /// Start the actual audio-only input before creating the entry or starting the microphone.
+    /// No samples go to a file until the meeting takes ownership of this tap.
+    func prepareTap() async throws -> SystemAudioTap {
+        let tap = makeTap()
         do {
-            if let authorizedContent { content = authorizedContent }
-            else { content = try await loadContent() }
-        } catch ScreenCaptureAuthorization.Failure.denied {
-            throw SystemAudioError.permissionNotGranted
-        }
-        try Task.checkCancellation()
-        guard isCurrentStart(startID) else { throw SystemAudioError.startInterrupted }
-        guard let display = content.displays.first else {
-            throw SystemAudioError.noDisplayFound
-        }
-
-        // 3. 配置过滤器与采集参数（只录音频）
-        let filter = SCContentFilter(display: display, excludingWindows: [])
-        let config = SCStreamConfiguration()
-        config.capturesAudio = true
-        config.excludesCurrentProcessAudio = true  // 排除自身输出，避免回授
-        config.channelCount = 2
-        config.sampleRate = 48000
-        // 只录音频但 SCStream 仍会产视频帧：把帧率压到最低，减少占位屏幕输出的无谓开销
-        config.minimumFrameInterval = CMTime(value: 1, timescale: 1)
-
-        // 4. 创建 SCStream
-        let newStream = SCStream(filter: filter, configuration: config, delegate: self)
-        try newStream.addStreamOutput(self, type: .audio, sampleHandlerQueue: writeQueue)
-        // 注册占位屏幕输出：未注册 .screen 时框架视频回调找不到输出，
-        // 持续报 “stream output NOT found. Dropping frame”；屏幕样本在回调中直接丢弃
-        try newStream.addStreamOutput(self, type: .screen, sampleHandlerQueue: screenDiscardQueue)
-
-        // 5. 配置 AVAssetWriter（直接接收 CMSampleBuffer，无需转换）
-        let (newWriter, newEndpoint) = try Self.createWriter(at: url)
-        // 不在此处 startSession：SCStream 的采样时间戳不从 0 开始，
-        // 改为首包到达时以其 PTS 作为会话起点（见 stream 回调），避免音轨开头出现大段空白/与麦克风轨错位
-
-        // 6. 赋值到共享状态（同步辅助方法内持锁，NSLock 不能在 async 上下文直接使用）
-        // 状态进入 starting：资源已存在但尚未开始采集
-        guard installCaptureState(stream: newStream, writer: newWriter, endpoint: newEndpoint,
-                                  timeline: timeline, startID: startID) else {
-            await Self.finalizeWriter(writer: newWriter, endpoint: newEndpoint, on: writeQueue)
-            throw SystemAudioError.startInterrupted
-        }
-        resourcesInstalled = true
-
-        // 7. 启动采集；失败必须回滚已安装的资源，否则 writer 永不 finalize、
-        // 分片容器不完整且文件句柄泄漏（旧实现把残留资源留在状态里，stop() 又因
-        // 标志为 false 判定无需清理）
-        do {
-            try await newStream.startCapture()
+            try await startTap(tap)
+            try Task.checkCancellation()
+            return tap
         } catch {
-            await rollbackFailedStart(stream: newStream)
+            tap.invalidate()
             throw error
         }
+    }
 
-        guard markRunningIfCurrent(newStream) else {
+    func start(to url: URL, timeline: RecordingSegmentTimelineStore? = nil,
+               preparedTap: SystemAudioTap? = nil) async throws {
+        let tap = preparedTap ?? makeTap()
+        guard let startID = reserveStart(tap) else { throw SystemAudioError.alreadyCapturing }
+        var installed = false
+        defer {
+            if !installed {
+                tap.invalidate()
+                releaseStartReservation(matching: startID)
+            }
+        }
+        if preparedTap == nil { try await startTap(tap) }
+        try Task.checkCancellation()
+        guard isCurrentStart(startID) else { throw SystemAudioError.startInterrupted }
+        let (writer, endpoint) = try Self.createWriter(at: url)
+        guard installCaptureState(tap: tap, writer: writer, endpoint: endpoint,
+                                  timeline: timeline, startID: startID) else {
+            await Self.finalizeWriter(writer: writer, endpoint: endpoint, on: writeQueue)
             throw SystemAudioError.startInterrupted
         }
-        logger.info("系统音频采集已启动: \(url.lastPathComponent)")
+        installed = true
+        logger.info("系统音频采集已启动")
     }
 
-    /// 启动失败回滚：停掉刚建的 stream 并 finalize/清空已安装的 writer，交还 idle
-    private func rollbackFailedStart(stream: SCStream) async {
-        let detached = detachCaptureState(matching: stream)
-        await Self.stopStream(stream)
-        await Self.finalizeWriter(writer: detached.writer, endpoint: detached.writerEndpoint, on: writeQueue)
-        markIdleIfStopping()
-        logger.error("系统音频启动失败，已回滚 stream 与 writer")
-    }
-
-    /// 唤醒重连：系统睡眠会终止 SCStream（错误回调把状态标为 failed），
-    /// 但 writer 仍然有效；重建 SCStream 后继续向当前分片写入。
-    /// 不重置会话起点：新采样以 PTS 间隙追加，睡眠时段表现为静音，时间轴保持连续。
-    /// - Returns: 是否重连成功
+    /// Keep the current WAV and its host-clock origin when replacing the input after sleep.
     func resumeAfterWake(expectedCaptureID: UUID) async -> Bool {
-        // 同步辅助方法内持锁（NSLock 不能在 async 上下文直接使用）
-        let snapshot = beginWakeRecovery(expectedCaptureID: expectedCaptureID)
-        // 无 writer（从未采集或已停止）时不重连
-        guard let expectedWriter = snapshot.writer else { return false }
-
-        // 旧流可能还存活（部分唤醒路径不报错），先尝试停掉再建新流
-        if let oldStream = snapshot.stream {
-            await Self.stopStream(oldStream)
+        let snapshot = writeQueue.sync { beginWakeRecovery(expectedCaptureID: expectedCaptureID) }
+        guard let writer = snapshot.writer else { return false }
+        if let old = snapshot.tap { await old.stop() }
+        let tap = makeTap()
+        guard installReconnectingTap(tap, expectedWriter: writer, originID: expectedCaptureID) else {
+            markWakeRecoveryFailed(expectedWriter: writer, originID: expectedCaptureID)
+            return false
         }
-
         do {
-            let content = try await SCShareableContent.excludingDesktopWindows(
-                false, onScreenWindowsOnly: false
-            )
-            guard let display = content.displays.first else {
-                throw SystemAudioError.noDisplayFound
-            }
-            let filter = SCContentFilter(display: display, excludingWindows: [])
-            let config = SCStreamConfiguration()
-            config.capturesAudio = true
-            config.excludesCurrentProcessAudio = true
-            config.channelCount = 2
-            config.sampleRate = 48000
-            config.minimumFrameInterval = CMTime(value: 1, timescale: 1)
-
-            let newStream = SCStream(filter: filter, configuration: config, delegate: self)
-            try newStream.addStreamOutput(self, type: .audio, sampleHandlerQueue: writeQueue)
-            try newStream.addStreamOutput(self, type: .screen, sampleHandlerQueue: screenDiscardQueue)
-            guard installReconnectingStream(newStream, expectedWriter: expectedWriter, originID: expectedCaptureID) else {
-                markWakeRecoveryFailed(expectedWriter: expectedWriter, originID: expectedCaptureID)
-                return false
-            }
-            do {
-                try await newStream.startCapture()
-            } catch {
+            try await startTap(tap)
+            guard finishWakeRecovery(tap, expectedWriter: writer, originID: expectedCaptureID) else {
                 cancelWakeRecovery(originID: expectedCaptureID)
-                throw error
-            }
-
-            // 上述 await 期间用户可能已停止录音（或停止后重开）：仅在仍是同一会话
-            // （writer 未被替换、状态仍为 failed/running）时才装回。旧实现无条件
-            // 写回 _state = .running，会让已停止会话"复活"成无人回收的幽灵采集
-            // （持续采集系统音频 + 泄漏文件句柄）。
-            guard lockedInstallStreamIfCurrent(newStream, expectedWriter: expectedWriter, originID: expectedCaptureID) else {
-                markWakeRecoveryFailed(expectedWriter: expectedWriter, originID: expectedCaptureID)
-                await Self.stopStream(newStream)
-                logger.info("唤醒重连在途期间会话已结束，已丢弃新建的采集流")
+                tap.invalidate()
                 return false
             }
-            logger.info("唤醒后系统音频采集已重连")
             return true
         } catch {
-            markWakeRecoveryFailed(expectedWriter: expectedWriter, originID: expectedCaptureID)
-            logger.error("唤醒后系统音频重连失败: \(error.localizedDescription)")
+            cancelWakeRecovery(originID: expectedCaptureID)
+            tap.invalidate()
+            let failure = error as NSError
+            logger.error("唤醒后系统音频重连失败 domain=\(failure.domain, privacy: .public) code=\(failure.code)")
             return false
         }
     }
 
     /// 唤醒重连前的状态快照：旧流引用 + writer 引用（后者用于重连后校验会话未变）
-    private func beginWakeRecovery(expectedCaptureID: UUID) -> (stream: SCStream?, writer: AVAssetWriter?) {
+    private func beginWakeRecovery(expectedCaptureID: UUID) -> (tap: SystemAudioTap?, writer: AVAssetWriter?) {
         stateLock.lock(); defer { stateLock.unlock() }
         guard _captureID == expectedCaptureID, !Task.isCancelled,
-              !_userStopped, let writer = _writer,
+              let writer = _writer,
               _state == .failed || _state == .running else { return (nil, nil) }
-        let oldStream = _stream
-        _stream = nil
+        let oldTap = _tap
+        _tap = nil
         _wakeOriginID = expectedCaptureID
         _captureID = UUID() // 旧流及其已排进 MainActor 的事件立即失效。
         _state = .reconnecting
         _awaitingRecoverySample = true
-        return (oldStream, writer)
+        return (oldTap, writer)
     }
 
-    private func installReconnectingStream(
-        _ stream: SCStream, expectedWriter: AVAssetWriter, originID: UUID
+    private func installReconnectingTap(
+        _ tap: SystemAudioTap, expectedWriter: AVAssetWriter, originID: UUID
     ) -> Bool {
         stateLock.lock(); defer { stateLock.unlock() }
         guard !Task.isCancelled, _wakeOriginID == originID,
               _state == .reconnecting, _writer === expectedWriter,
               expectedWriter.status == .writing else { return false }
-        _stream = stream
+        _tap = tap
         return true
     }
 
@@ -373,16 +302,16 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
     /// 重连成功后安装新流并恢复采集状态。
     /// 必须确认 writer、新流和 reconnecting 状态仍归本次恢复持有；
     /// 否则返回 false，调用方需停掉新流。
-    private func lockedInstallStreamIfCurrent(
-        _ stream: SCStream, expectedWriter: AVAssetWriter, originID: UUID
+    private func finishWakeRecovery(
+        _ tap: SystemAudioTap, expectedWriter: AVAssetWriter, originID: UUID
     ) -> Bool {
         stateLock.lock(); defer { stateLock.unlock() }
         guard !Task.isCancelled, _wakeOriginID == originID,
-              _writer === expectedWriter, _stream === stream,
+              _writer === expectedWriter, _tap === tap,
               _state == .reconnecting, expectedWriter.status == .writing else {
             return false
         }
-        _stream = stream
+        _tap = tap
         _state = .running
         return true
     }
@@ -393,7 +322,7 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
     /// - Parameter url: 新分片的目标 URL
     /// - Returns: 是否轮转成功
     func rotateWriter(to url: URL) async -> Bool {
-        guard lockedState() == .running else { return false }
+        guard let generation = stateLock.withLock({ _state == .running ? _captureID : nil }) else { return false }
         // 1. 创建新 writer（失败则继续用旧 writer）
         let newPair: (writer: AVAssetWriter, endpoint: WriterEndpoint)
         do {
@@ -405,8 +334,13 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
 
         // 2. 持锁原子替换；重置会话起点，新 writer 的首包会重新 startSession
         // （同步辅助方法内持锁，NSLock 不能在 async 上下文直接使用）
-        let old = swapWriterState(writer: newPair.writer, endpoint: newPair.endpoint)
-        guard old.swapped else { return false }
+        let old = writeQueue.sync {
+            swapWriterState(writer: newPair.writer, endpoint: newPair.endpoint, generation: generation)
+        }
+        guard old.swapped else {
+            await Self.finalizeWriter(writer: newPair.writer, endpoint: newPair.endpoint, on: writeQueue)
+            return false
+        }
 
         // 3. finalize 旧 writer（markAsFinished + finishWriting 后 WAV 容器完整，分片可播放）
         await Self.finalizeWriter(writer: old.writer, endpoint: old.endpoint, on: writeQueue)
@@ -415,10 +349,10 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
     }
 
     /// 持锁原子替换 writer/endpoint；未在采集时不替换（返回 swapped=false）
-    private func swapWriterState(writer: AVAssetWriter, endpoint: WriterEndpoint)
+    private func swapWriterState(writer: AVAssetWriter, endpoint: WriterEndpoint, generation: UUID)
         -> (swapped: Bool, writer: AVAssetWriter?, endpoint: WriterEndpoint?) {
         stateLock.lock(); defer { stateLock.unlock() }
-        guard _state == .running else { return (false, nil, nil) }
+        guard _state == .running, _captureID == generation else { return (false, nil, nil) }
         let old = (_writer, _writerEndpoint)
         _writer = writer
         _writerEndpoint = endpoint
@@ -445,10 +379,6 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
             AVLinearPCMIsBigEndianKey: false,
             AVLinearPCMIsNonInterleaved: false
         ]
-        // AVAssetWriter 要求目标文件不能已存在（清理可能的残留文件）
-        if FileManager.default.fileExists(atPath: url.path) {
-            try? FileManager.default.removeItem(at: url)
-        }
         let writer = try AVAssetWriter(outputURL: url, fileType: .wav)
         let input = AVAssetWriterInput(mediaType: .audio, outputSettings: settings)
         guard writer.canAdd(input) else {
@@ -460,7 +390,7 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
             try writer.start()
             let endpoint = WriterEndpoint(
                 append: { sampleBuffer in
-                    // CMSampleBuffer 由 SCStream 回调独占交给 writer；新 API 用
+                    // CMSampleBuffer 已复制到独立存储，由写队列独占交给 writer；新 API 用
                     // `sending` 表达所有权转移，显式切断编译器无法推导的回调隔离关系。
                     nonisolated(unsafe) let transferableBuffer = sampleBuffer
                     return try receiver.appendImmediately(
@@ -535,13 +465,14 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
     @discardableResult
     func stop() async -> StopResult {
         // 同步辅助方法内持锁取出并清空状态（NSLock 不能在 async 上下文直接使用）
-        let detached = detachCaptureState()
-        if let stream = detached.stream {
-            await Self.stopStream(stream)
+        // Process copies already handed off by HAL before closing the current segment.
+        let detached = writeQueue.sync { detachCaptureState() }
+        if let tap = detached.tap {
+            if detached.writer == nil { tap.invalidate() } else { await tap.stop() }
         }
         await Self.finalizeWriter(writer: detached.writer, endpoint: detached.writerEndpoint, on: writeQueue)
         // 只在仍处于 stopping 时归位：并发 stop() 交错时不会踩掉随后启动的新会话
-        markIdleIfStopping()
+        if detached.tap != nil || detached.writer != nil { markIdleIfStopping() }
         logger.info("系统音频采集已停止")
         return StopResult(
             wasInterrupted: detached.wasInterrupted,
@@ -550,38 +481,14 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
         )
     }
 
-    private static func stopStream(_ stream: SCStream) async {
-        do {
-            try await stream.stopCapture()
-        } catch {
-            let nsError = error as NSError
-            if nsError.domain == SCStreamErrorDomain,
-               nsError.code == SCStreamError.Code.attemptToStopStreamState.rawValue {
-                staticLogger.debug("采集流已经停止，无需重复停止")
-            } else {
-                staticLogger.error("停止系统音频失败 domain=\(nsError.domain, privacy: .public) code=\(nsError.code)")
-            }
+    private func reserveStart(_ tap: SystemAudioTap) -> UUID? {
+        stateLock.withLock {
+            guard _state == .idle, _tap == nil, _writer == nil else { return nil }
+            _captureID = UUID()
+            _tap = tap
+            _state = .starting
+            return _captureID
         }
-    }
-
-    // MARK: - 同步持锁辅助方法（NSLock 在 async 上下文中被禁用，统一包装为同步方法）
-
-    private func lockedState() -> CaptureState {
-        stateLock.lock(); defer { stateLock.unlock() }
-        return _state
-    }
-
-    private func lockedSetState(_ state: CaptureState) {
-        stateLock.lock(); defer { stateLock.unlock() }
-        _state = state
-    }
-
-    private func reserveStart() -> UUID? {
-        stateLock.lock(); defer { stateLock.unlock() }
-        guard _state == .idle, _stream == nil, _writer == nil else { return nil }
-        _captureID = UUID()
-        _state = .starting
-        return _captureID
     }
 
     private func isCurrentStart(_ id: UUID) -> Bool {
@@ -590,14 +497,10 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
 
     private func releaseStartReservation(matching id: UUID) {
         stateLock.lock(); defer { stateLock.unlock() }
-        if _captureID == id, _state == .starting, _stream == nil, _writer == nil { _state = .idle }
-    }
-
-    private func markRunningIfCurrent(_ stream: SCStream) -> Bool {
-        stateLock.lock(); defer { stateLock.unlock() }
-        guard _state == .starting, _stream === stream else { return false }
-        _state = .running
-        return true
+        if _captureID == id, _state == .starting, _writer == nil {
+            _tap = nil
+            _state = .idle
+        }
     }
 
     /// 仅当仍处于 stopping 时归位 idle
@@ -607,22 +510,20 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
     }
 
     private func installCaptureState(
-        stream: SCStream, writer: AVAssetWriter, endpoint: WriterEndpoint, timeline: RecordingSegmentTimelineStore?,
+        tap: SystemAudioTap, writer: AVAssetWriter, endpoint: WriterEndpoint, timeline: RecordingSegmentTimelineStore?,
         startID: UUID
     ) -> Bool {
         stateLock.lock(); defer { stateLock.unlock() }
-        guard _captureID == startID, _state == .starting, _stream == nil, _writer == nil else { return false }
-        _stream = stream
+        guard _captureID == startID, _state == .starting, _tap === tap, _writer == nil else { return false }
         _timeline = timeline
         _captureID = UUID()
         _awaitingRecoverySample = false
-        _userStopped = false
         _wakeOriginID = nil
         _writer = writer
         _writerEndpoint = endpoint
         _sessionStarted = false
         _sessionStartTime = nil
-        _state = .starting
+        _state = .running
         // 新 writer：重新允许一次失败上报
         _appendFailureReported = false
         _droppedSampleCount = 0
@@ -633,18 +534,14 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
     /// 取出并清空采集状态（幂等：无资源时返回空元组）。
     /// 旧实现以 `_isCapturing` 为门槛，启动失败/异常断流后标志已为 false 而资源仍在，
     /// 于是 stop() 直接返回、writer 永不 finalize
-    private func detachCaptureState(
-        matching expectedStream: SCStream? = nil
-    ) -> (stream: SCStream?, writerEndpoint: WriterEndpoint?, writer: AVAssetWriter?, wasInterrupted: Bool, droppedSamples: Int) {
+    private func detachCaptureState()
+        -> (tap: SystemAudioTap?, writerEndpoint: WriterEndpoint?, writer: AVAssetWriter?, wasInterrupted: Bool, droppedSamples: Int) {
         stateLock.lock(); defer { stateLock.unlock() }
-        if let expectedStream, _stream !== expectedStream {
-            return (nil, nil, nil, false, 0)
-        }
-        let result = (_stream, _writerEndpoint, _writer,
+        let result = (_tap, _writerEndpoint, _writer,
                       _state == .failed || _state == .reconnecting,
                       _dropReported ? _droppedSampleCount : 0)
         let hadResources = (result.0 != nil || result.2 != nil)
-        _stream = nil
+        _tap = nil
         _captureID = UUID()
         _awaitingRecoverySample = false
         _wakeOriginID = nil
@@ -654,9 +551,13 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
         _sessionStartTime = nil
         _droppedSampleCount = 0
         _dropReported = false
-        // starting 期间即使还未安装资源，stop 也要取消这次启动预约。
-        if hadResources || _state == .starting || _state == .failed { _state = .stopping }
+        if hadResources { _state = .stopping }
         return result
+    }
+
+    private func noteDroppedSample(from tap: SystemAudioTap) {
+        let id = stateLock.withLock { _tap === tap && _state == .running ? _captureID : nil }
+        if let id { noteDroppedSample(captureID: id) }
     }
 
     private func noteDroppedSample(captureID: UUID) {
@@ -698,16 +599,14 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
         return WriterAppendError(reason: reason)
     }
 
-    // MARK: - SCStreamOutput
-
-    nonisolated func stream(
-        _ stream: SCStream,
-        didOutputSampleBuffer sampleBuffer: CMSampleBuffer,
-        of type: SCStreamOutputType
-    ) {
-        guard type == .audio else { return }
+    private func receive(_ pcm: AVAudioPCMBuffer, at pts: CMTime, from tap: SystemAudioTap) {
         stateLock.lock()
-        let isRunning = (_state == .running && _stream === stream)
+        if _tap === tap, _state == .failed, _writer != nil {
+            // A route interruption can clear before a wake notification. Confirm on a real write.
+            _state = .running
+            _awaitingRecoverySample = true
+        }
+        let isRunning = _state == .running && _tap === tap
         let captureID = _captureID
         let endpoint = _writerEndpoint
         let writer = _writer
@@ -716,32 +615,27 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
         let timeline = _timeline
         stateLock.unlock()
         guard isRunning else { return }
-        guard CMSampleBufferIsValid(sampleBuffer) else { return }
         guard let endpoint, let writer else { return }
         // writer 已失败时不再逐帧尝试（失败已上报，交由下次轮转建新 writer）
         guard writer.status == .writing else { return }
 
-        // 首包到达时以其 PTS 为会话起点，保证输出文件时间戳从 0 开始
-        // （writeQueue 为串行队列，startSession 与 append 顺序有保证）
-        if !sessionStarted {
-            let pts = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-            writer.startSession(atSourceTime: pts)
-            stateLock.lock()
-            if _writer === writer, _captureID == captureID {
-                _sessionStarted = true
-                _sessionStartTime = pts.seconds
-            }
-            stateLock.unlock()
-        }
-        // append 失败必须可见：丢弃返回值时，writer 进 .failed 后后续采样全部静默丢失，
-        // 用户只能在停录后才发现系统音轨为空
         do {
+            guard let sampleBuffer = try endpoint.sample(from: pcm, at: pts) else { return }
+            if !sessionStarted {
+                writer.startSession(atSourceTime: pts)
+                stateLock.withLock {
+                    if _writer === writer, _captureID == captureID {
+                        _sessionStarted = true
+                        _sessionStartTime = pts.seconds
+                    }
+                }
+            }
             guard try endpoint.append(sampleBuffer) else {
                 noteDroppedSample(captureID: captureID)
                 return
             }
             stateLock.lock()
-            let sessionStart = startTime ?? CMSampleBufferGetPresentationTimeStamp(sampleBuffer).seconds
+            let sessionStart = startTime ?? pts.seconds
             let recovered = _captureID == captureID && _state == .running && _awaitingRecoverySample
             if recovered { _awaitingRecoverySample = false }
             let callback = _onEvent
@@ -765,52 +659,35 @@ final class SystemAudioCaptureService: NSObject, SCStreamOutput, SCStreamDelegat
         }
     }
 
-    // MARK: - SCStreamDelegate
-
-    nonisolated func stream(_ stream: SCStream, didStopWithError error: Error) {
+    private func interrupted(_ tap: SystemAudioTap, error: any Error) {
         stateLock.lock()
-        // 已被替换的旧流（唤醒重连后）的迟到错误回调直接忽略，避免误抹新流的采集状态
-        guard _stream === stream else {
-            stateLock.unlock()
-            logger.debug("忽略已停止或替换旧流的回调")
-            return
-        }
-        // 只标状态为 failed，**保留** writer/stream 引用：
-        // writer 仍需在 stop() 里 finalize（否则当前分片容器不完整、句柄泄漏），
-        // 唤醒重连（resumeAfterWake）也依赖 writer 继续写当前分片
+        guard _tap === tap, _state == .running else { stateLock.unlock(); return }
         _state = .failed
-        let nsError = error as NSError
-        _userStopped = nsError.domain == SCStreamErrorDomain && nsError.code == SCStreamError.Code.userStopped.rawValue
         let callback = _onEvent
-        let captureID = _captureID
+        let id = _captureID
         stateLock.unlock()
-        logger.error("SCStream 停止 domain=\(nsError.domain, privacy: .public) code=\(nsError.code)")
-        callback?(Event(captureID: captureID, kind: .interrupted(error)))
+        let failure = error as NSError
+        logger.error("系统音频中断 domain=\(failure.domain, privacy: .public) code=\(failure.code)")
+        callback?(Event(captureID: id, kind: .interrupted(error)))
     }
 }
-#endif
-
-// MARK: - 错误类型
 
 enum SystemAudioError: LocalizedError {
-    case permissionNotGranted
-    case noDisplayFound
-    case writerSetupFailed
-    case notSupported
-    case alreadyCapturing
-    case startInterrupted
+    case permissionNotGranted, startTimedOut, deviceUnavailable, invalidFormat
+    case writerSetupFailed, alreadyCapturing, startInterrupted
 
     var errorDescription: String? {
         switch self {
         case .permissionNotGranted:
-            return String(localized: "系统音频采集需要「屏幕录制」权限。请到「系统设置 → 隐私与安全性 → 屏幕录制」中授权 Memozia，然后重新开始录音。授权后需重启应用生效。\n如不需要录制系统音频，可在「设置 → 录音」中切换为「仅麦克风」模式。")
-                + "\n\n" + ScreenCaptureAuthorization.recoveryAdvice
-        case .noDisplayFound:
-            return String(localized: "未找到可捕获的显示器")
+            return String(localized: "请在「系统设置 → 隐私与安全性 → 录屏与系统录音」中允许 Memozia 仅录制系统音频，然后重新开始录音。")
+        case .startTimedOut:
+            return String(localized: "未能及时收到系统音频。请检查系统录音权限和声音输出设备，然后重试。")
+        case .deviceUnavailable:
+            return String(localized: "系统音频设备不可用")
+        case .invalidFormat:
+            return String(localized: "无法读取系统音频格式")
         case .writerSetupFailed:
             return String(localized: "音频写入器初始化失败")
-        case .notSupported:
-            return String(localized: "当前平台不支持系统音频采集（仅 macOS）")
         case .alreadyCapturing:
             return String(localized: "系统音频采集已在运行或正在收尾")
         case .startInterrupted:
@@ -818,3 +695,4 @@ enum SystemAudioError: LocalizedError {
         }
     }
 }
+#endif

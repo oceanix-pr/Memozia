@@ -7,7 +7,7 @@
 ```
 MeetingRecorderService（總控，@MainActor @Observable 單例）
  ├── MicCaptureService         麥克風：AVAudioEngine + AVAudioFile（CAF/PCM 分片）
- ├── SystemAudioCaptureService 系統音訊：ScreenCaptureKit + AVAssetWriter（WAV/PCM 分片）
+ ├── SystemAudioCaptureService 系統音訊：Core Audio 程序 tap + AVAssetWriter（WAV/PCM 分片）
  ├── AppMuteDetector           會議 App 靜音按鈕檢測（AX 輪詢）
  ├── MicMuteMonitor            系統麥克風靜音監聽（CoreAudio）
  └── AudioConverter            時長探測 / 格式轉換（AVAssetReader/Writer）
@@ -34,7 +34,7 @@ MeetingRecorderService（總控，@MainActor @Observable 單例）
 
 | 方法 | 職責 |
 |------|------|
-| `startRecording(config:)` | 磁碟預檢（≥500MB）→ 建立 `~/Documents/Memozia/yyyy-MM/yyyyMMddHHmmss[-N]/` → 按 source 啟動 microphone/systemAudio/mixed 採集 → macOS 系統音訊許可權預檢；返回最終檔案 URL |
+| `startRecording(config:)` | 檢查磁碟餘量，需要電腦聲音時先準備系統錄音 tap，再建立項目目錄並依所選來源寫入 |
 | `stopRecording()` | 停止計時器/靜音監聽/全部採集 → `mergeSegments()` 合併 → 返回最終 m4a URL；儲存失敗與歷史採集提醒分別交給 UI；已恢復的中斷不再觸發錯誤彈窗 |
 | 分片輪轉 | 每 300s 觸發：mic 同步 `rotateSegment()`、sys 非同步 `rotateWriter()`；**輪轉失敗保留舊分片繼續寫入**，保障不丟資料 |
 | `mergeSegments()` | 過濾可播放分片（校驗時長/音軌，跳過損壞與靜音空段）→ **混合模式下先逐片做參考回聲消除**（見 §7）→ 優先 `AVMutableComposition` 雙軌混音 → `AVAssetExportSession` 匯出 m4a（macOS 15+ async `export(to:as:)`）→ 失敗回退單軌拼接 → 正常完整合並清理分片，降級或採集故障保留原片。收尾拆成「檢查分片 → 回聲消除 → 混音匯出 → 儲存」四階段（`mergePhase`），供介面顯示當前進度 |
@@ -89,27 +89,26 @@ MeetingRecorderService（總控，@MainActor @Observable 單例）
 
 原始碼：[SystemAudioCaptureService.swift](../../../Memozia/Services/SystemAudioCaptureService.swift)
 
-基於 **ScreenCaptureKit**（錄系統音訊也需要"螢幕錄製"許可權，系統要求時需重啟生效）。`ScreenCaptureAuthorization` 保留 Core Graphics 無彈窗預檢作診斷，但啟動以 ScreenCaptureKit 的實際授權結果為準，不能在預檢為 false 時發起申請後立即報錯。授權等待支援取消和 60 秒上限；遲到結果不啟動採集。混合錄音先完成此授權，再啟動麥克風；系統音訊服務的啟動預約按代次隔離，舊授權請求返回後不能釋放或接管新請求。
+[SystemAudioTap.swift](../../../Memozia/Services/SystemAudioTap.swift) 建立私有 Core Audio tap。僅系統音訊和混合錄音會請求系統錄音權限。啟動最多等待 60 秒，Core Audio 啟動成功後即可建立項目並啟動麥克風，即使當下沒有其他 App 播放聲音。
 
 | 方法 | 職責 |
 |------|------|
-| 啟動採集 | 許可權檢查 → 建立 `SCStream`：`capturesAudio=true`、2 聲道、48kHz、`excludesCurrentProcessAudio=true`（防回授）→ 註冊音訊 + 佔位螢幕輸出 |
-| `SCStreamOutput` 回撥 | 只處理 `.audio` 樣本；**首包 PTS 啟動 writer 會話**（SCStream 時間戳不從 0 開始，固定 `.zero` 會開頭空白/與麥克風軌錯位）→ `input.append(sampleBuffer)`（寫入前檢查 `isReadyForMoreMediaData`） |
+| 啟動採集 | 私有立體聲 tap 排除本程序播放。聚合裝置的唯一輸入是 tap，讀取實際 PCM 格式後啟動 I/O |
+| I/O 回呼 | 複製 HAL 借出的 PCM。寫入佇列將各輸出裝置的緩衝統一為 48 kHz 雙聲道，用首包 host time 啟動 writer，並在佇列滿時回報丟包 |
 | `rotateWriter()` | 分片輪轉：關閉當前 AVAssetWriter、開啟新分片檔案（非同步） |
 
 **寫入格式**：AVAssetWriter 輸出 WAV/PCM，48kHz、2 聲道、16-bit、`expectsMediaDataInRealTime = true`。
 
 **狀態機與清理（重要）**：採集狀態是顯式的 `idle / starting / running / reconnecting / stopping / failed`，**清理依據是「資源是否存在」而不是某個布林標誌**：
 
-- `start()` 先安裝 `SCStream`/writer，再 `await startCapture()`；`startCapture()` 拋錯時立即回滾（停流 + finalize writer + 歸還 idle），不把殘留 writer 留在狀態裡。
-- SCStream 異常停止回撥只把狀態標為 `failed`，**保留** writer/stream 引用：writer 仍需在 `stop()` 裡 finalize（否則當前分片容器不完整、檔案控制代碼洩漏），喚醒重連也依賴它繼續寫當前分片。
+- 啟動失敗、逾時或取消後，在控制佇列依序釋放 I/O 回呼、聚合裝置與 tap。
+- 中斷時保留 writer，停止時封存 WAV。喚醒後重建 tap，首次成功寫入樣本後確認恢復。
 - `stop()` 冪等：沒有資源就是空操作，並且只在仍處於 `stopping` 時歸位 `idle`，不會踩掉併發啟動的新會話。
-- 舊實現只有單個 `isCapturing` 標誌且 `stop()` 以它為準，上述兩條路徑都會判定「無需清理」直接返回，遺留未 finalize 的分片與舊 stream。
 
 **睡眠恢復與告警**：
 
 - 事件攜帶採集代次；停止、重連和 writer 輪轉會使舊代次失效。`MeetingRecorderService` 在 MainActor 接收事件時同時複查錄音會話及採集代次，舊回撥不得覆蓋恢復結果或汙染下一次錄音。主動停止/替換的舊流回撥只記 debug；有效斷流日誌記錄錯誤域與錯誤碼。
-- 睡眠恢復按本次聲源與仍存在的資源判斷，不依賴瞬時 `capturing`（斷流可能先於睡眠通知）。使用者主動停止系統共享後不因睡眠喚醒自動重開共享。恢復由 30 秒看門狗兜底，超時/取消撤銷對應恢復代次；遲到新流不得重新接管。
+- 睡眠恢復按本次聲源與仍存在的資源判斷，不依賴瞬時 `capturing`（斷流可能先於睡眠通知）。恢復由 30 秒看門狗兜底，超時/取消撤銷對應恢復代次；遲到新流不得重新接管。
 - 新流啟動且 writer 可寫後仍處於等待確認狀態，成功寫入首個音訊樣本才確認恢復；睡眠間隙的麥克風靜音補寫繫結原檔案，停錄或換片後不再向另一檔案繼續補寫。
 - [RecordingCaptureHealth.swift](../../../Memozia/Models/RecordingCaptureHealth.swift) 分開記錄當前狀態與歷史影響：系統音訊（睡眠、斷流、寫入失敗、丟樣本）與麥克風裝置（`unavailable / recovering / active`）各一組。恢復只更新橫幅與「當前狀態」，**不清除曾經缺口的記錄**；恢復成功後 `MeetingRecorderService` 結算獨立儲存的「麥克風恢復失敗」告警，保留磁碟/寫入等其他錯誤，避免同一次恢復故障在停錄時重複提示。停止時彙總最終影響，不重複顯示「錄音將繼續」的舊提示。`RecordingCaptureReport` 儲存觀察到的音軌中斷區間、恢復確認、麥克風最近成功寫入時間與區間內靜音證據；這些區間不等於精確的聲音丟失時長。正常切換並立即恢復不生成缺口記錄；全程靜音且已恢復的中斷按資訊展示，不宣稱丟失說話內容。同類實時告警去抖，不同故障互不遮蔽。
 
@@ -187,7 +186,7 @@ C 回撥橋接：`Unmanaged.passUnretained` 傳 self，回撥內 `Task { @MainAc
         ├─ 磁碟預檢（≥500MB，不足拋錯）
         ├─ 原子建目錄 ~/Documents/Memozia/yyyy-MM/yyyyMMddHHmmss[-N]/（分片直接在條目目錄）
         ├─ source == .microphone → MicCaptureService.start（engine+tap）
-        ├─ source == .systemAudio → SystemAudioCaptureService.start（SCStream）
+        ├─ source == .systemAudio → SystemAudioCaptureService.start（Core Audio tap）
         ├─ source == .mixed → 兩路並行
         ├─ 啟動 elapsed 計時器 + 磁碟複檢定時器（<1GB 警告、<200MB 請求停止儲存）
         ├─ 啟動 AppMuteDetector（AX 輪詢）+ MicMuteMonitor（CoreAudio）

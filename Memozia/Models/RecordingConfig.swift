@@ -1,4 +1,33 @@
 import Foundation
+#if os(macOS)
+import AppKit
+#endif
+
+enum RecordingPermissionNotice: String {
+    case waiting, needsAccess, timedOut
+
+    var offersRecovery: Bool { self != .waiting }
+
+    init?(systemAudioError error: any Error) {
+        switch error {
+        case SystemAudioError.permissionNotGranted: self = .needsAccess
+        case SystemAudioError.startTimedOut: self = .timedOut
+        default: return nil
+        }
+    }
+
+    #if os(macOS)
+    @MainActor
+    static func openSystemSettings() {
+        // macOS lists audio-only apps in the same privacy pane as screen capture apps.
+        if let pane = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"),
+           NSWorkspace.shared.open(pane) { return }
+        if let settings = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.systempreferences") {
+            NSWorkspace.shared.open(settings)
+        }
+    }
+    #endif
+}
 
 /// 录音来源
 enum RecordingSource: String, Codable, CaseIterable {

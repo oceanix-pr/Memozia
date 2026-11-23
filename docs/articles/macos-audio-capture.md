@@ -7,14 +7,14 @@ A meeting recorder needs to hear both the person at the Mac and the remote parti
 | Input | Capture path in Memozia | Intermediate storage |
 | --- | --- | --- |
 | Microphone | `AVAudioEngine` input tap | PCM in CAF segments |
-| System audio | ScreenCaptureKit audio sample callbacks | PCM in WAV segments |
+| System audio | Private Core Audio process tap | PCM in WAV segments |
 | Finished meeting | Validate, align, and merge usable segments | Playback audio for the entry |
 
-Apple's [audio tap documentation](https://developer.apple.com/documentation/avfaudio/avaudionode/installtap%28onbus%3Abuffersize%3Aformat%3Ablock%3A%29) describes receiving buffers from an audio node. [ScreenCaptureKit](https://developer.apple.com/documentation/ScreenCaptureKit) supplies screen and audio capture; its [`capturesAudio` setting](https://developer.apple.com/documentation/ScreenCaptureKit/SCStreamConfiguration/capturesAudio) must be enabled to receive audio. These are the platform building blocks. The separate-file lifecycle and later merge are Memozia's implementation choices.
+Apple's [audio tap documentation](https://developer.apple.com/documentation/avfaudio/avaudionode/installtap%28onbus%3Abuffersize%3Aformat%3Ablock%3A%29) describes receiving buffers from an audio node. For computer sound, Memozia starts a private tap that excludes its own playback. macOS requests system audio recording access. Screen access is requested when taking screenshots or recording video. [Apple’s Core Audio tap documentation](https://developer.apple.com/documentation/coreaudio/capturing-system-audio-with-core-audio-taps) describes the API. These are the platform building blocks. The separate-file lifecycle and later merge are Memozia's implementation choices.
 
 ## Keep the callback path small
 
-An audio callback should not wait for a language model, render SwiftUI, or merge an entire recording. Memozia's microphone path handles incoming buffers and recording state separately from the app's main-actor UI. System audio has its own sample handler and writer state. The meeting recorder coordinates start, stop, rolling segments, and the final merge.
+An audio callback should not wait for a language model, render SwiftUI, or merge an entire recording. Memozia's microphone path handles incoming buffers and recording state separately from the app's main-actor UI. The system audio callback copies the borrowed input buffer. A serial write queue converts each device’s PCM to a common 48 kHz stereo format, including after a device change. The meeting recorder coordinates start, stop, rolling segments, and the final merge.
 
 “Recording” is not sufficient evidence that samples are still arriving. Device changes, sleeping and waking, stream failures, and a writer that has stopped accepting input need distinct handling. Resource cleanup also needs to consider live engines, streams, taps, and writers even if a displayed state flag has already changed.
 
@@ -23,7 +23,7 @@ An audio callback should not wait for a language model, render SwiftUI, or merge
 Use your own short synthetic test, with headphones if possible, so the microphone does not simply hear the system test through the speakers.
 
 1. Select microphone-only recording in Memozia's recording settings. Say “microphone marker one,” wait a few seconds, then stop. Confirm the marker in playback.
-2. Select system-audio recording. Play a short clip containing “system marker two” from another local app. Grant the system-capture permission when macOS requests it. Confirm that playback contains the clip.
+2. Select system-audio recording. Play a short clip containing “system marker two” from another local app. Grant the system audio recording permission when macOS requests it. Confirm that playback contains the clip.
 3. Select mixed recording. Start the system clip, say “microphone marker three,” and stop. Listen for both sources and check their relative timing. Do not use the first two tests as proof that mixing is correct.
 4. For a device-change check, repeat the mixed test in a development session and switch the input device once. Note the time of the change. Check any capture warning, the saved duration, and playback around the transition. Record the macOS version and hardware with a synthetic reproduction report.
 

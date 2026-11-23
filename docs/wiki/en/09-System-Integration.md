@@ -81,7 +81,8 @@ Synchronous AppKit callbacks such as `applicationDidFinishLaunching` have no Tas
 |---|---|
 | Microphone | Meeting audio, TCC prompt |
 | Speech recognition | System transcription, requested for that feature |
-| Screen recording | SCStream and screenshots; system settings and app restart after approval |
+| System audio recording | Core Audio tap for system-only and mixed recordings |
+| Screen recording | Screenshots and screen video through ScreenCaptureKit |
 | Accessibility | AX meeting-app mute observation |
 | Reminders | EKReminder writes, TCC prompt |
 | Network client | Cloud API and model downloads |

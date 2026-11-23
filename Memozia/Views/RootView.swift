@@ -198,6 +198,17 @@ struct RootView: View {
                 recordingWarningOverlay
             }
         }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if let notice = viewModel.meetingRecorder.recordingPermissionNotice {
+                RecordingPermissionBanner(
+                    notice: notice,
+                    openSettings: RecordingPermissionNotice.openSystemSettings,
+                    recordMicrophone: { startMeetingRecording(microphoneOnly: true) },
+                    dismiss: { viewModel.meetingRecorder.recordingPermissionNotice = nil }
+                )
+                .id(notice)
+            }
+        }
         .animation(.easeInOut, value: syncBannerText)
         .animation(.easeInOut, value: viewModel.liveRecordingWarning)
         .animation(.easeInOut, value: viewModel.importProgressText)
@@ -273,8 +284,7 @@ struct RootView: View {
         .systemNoticeLayer($systemNotice)
     }
 
-    /// 视图层 1：主布局 + 文件导入 + 通知监听 + 首屏引导
-    private var observerLayers: some View {
+    private var recordingCommandLayers: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             sidebarView
         } detail: {
@@ -282,8 +292,8 @@ struct RootView: View {
         }
         .navigationSplitViewStyle(.balanced)
         #if os(macOS)
-        .onReceive(NotificationCenter.default.publisher(for: .menuBarStartRecording)) { _ in
-            handleMenuBarStartRecording()
+        .onReceive(NotificationCenter.default.publisher(for: .menuBarStartRecording)) { notification in
+            startMeetingRecording(microphoneOnly: notification.object as? RecordingSource == .microphone)
         }
         .onReceive(NotificationCenter.default.publisher(for: .menuBarStopRecording)) { _ in
             handleMenuBarStopRecording()
@@ -292,6 +302,13 @@ struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: .recordingHotkeyPressed)) { _ in
             toggleMeetingRecording()
         }
+        #endif
+    }
+
+    /// 主布局上的捕获命令、通知监听与首屏引导。
+    private var observerLayers: some View {
+        recordingCommandLayers
+        #if os(macOS)
         .onReceive(NotificationCenter.default.publisher(for: .menuBarStartScreenRecording)) { notification in
             guard experienceStore.policy.allows(.screenRecording) else { return }
             handleMenuBarStartScreenRecording(notification)
@@ -631,6 +648,7 @@ struct RootView: View {
             },
             isMeetingRecording: viewModel.isMeetingRecording,
             isMeetingRecordingStarting: viewModel.isMeetingRecordingStarting,
+            isWaitingForRecordingPermission: viewModel.meetingRecorder.recordingPermissionNotice == .waiting,
             contextMenuContent: { items in
                 AnyView(contextMenuContent(for: items).disabled(MediaCleanupService.shared.isRunning))
             },
@@ -796,25 +814,28 @@ struct RootView: View {
     /// 切换会议录音状态
     private func toggleMeetingRecording() {
         guard !viewModel.isMeetingRecordingStarting else { return }
-        guard !blockWriteIfPersistenceUnavailable(.createEntry) else { return }
         if viewModel.isMeetingRecording {
+            guard !blockWriteIfPersistenceUnavailable(.createEntry) else { return }
             Task {
                 // 录屏与录音共用停止链路；声源用本次实际选择，不取设置默认值
                 let source = viewModel.activeRecordingSource ?? settingsVM.recordingSource
                 await viewModel.stopMeetingRecording(context: modelContext, source: source)
             }
         } else {
-            let config = settingsVM.makeRecordingConfig(experience: experienceStore.current)
-            viewModel.startMeetingRecording(config: config, context: modelContext)
+            startMeetingRecording()
         }
     }
 
-    /// 菜单栏请求开始录音
-    private func handleMenuBarStartRecording() {
+    /// 工具栏、热键和菜单栏共用同一启动入口。备用声源只影响本次配置。
+    private func startMeetingRecording(microphoneOnly: Bool = false) {
         guard !viewModel.isMeetingRecordingStarting else { return }
         guard !blockWriteIfPersistenceUnavailable(.createEntry) else { return }
         guard !viewModel.isMeetingRecording else { return }
-        let config = settingsVM.makeRecordingConfig(experience: experienceStore.current)
+        var config = settingsVM.makeRecordingConfig(experience: experienceStore.current)
+        if microphoneOnly {
+            guard viewModel.meetingRecorder.recordingPermissionNotice?.offersRecovery == true else { return }
+            config.source = .microphone
+        }
         viewModel.startMeetingRecording(config: config, context: modelContext)
     }
 

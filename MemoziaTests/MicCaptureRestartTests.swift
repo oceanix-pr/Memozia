@@ -155,7 +155,7 @@ struct MicCaptureRestartTests {
     @MainActor
     @Test(.enabled(if: ProcessInfo.processInfo.environment["MEMOZIA_VERIFY_BLUETOOTH_RESTART"] == "1"
                    && AVAudioApplication.shared.recordPermission == .granted
-                   && SystemAudioCaptureService.preflightPermission() && bluetoothRouteAvailable))
+                   && bluetoothRouteAvailable))
     func bluetoothMixedCaptureRestartsAfterIdle() async throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("MicBluetooth-\(UUID())")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -557,5 +557,62 @@ struct MeetingRecorderStartupTests {
         try await waitUntil { viewModel.showError }
         #expect(!viewModel.isMeetingRecordingStarting)
         #expect(!recorder.hasResourcesPreventingUpdate)
+    }
+
+    @Test("授权未完成时只展示状态，拒绝和超时均提供非模态恢复入口", arguments: [false, true])
+    func systemAudioPermissionRecoveryDoesNotPresentErrorAlert(timesOut: Bool) async throws {
+        let pending = LockedBox<CheckedContinuation<Void, Never>?>(nil)
+        let requests = LockedBox(0)
+        let system = SystemAudioCaptureService(startTap: { _ in
+            requests.value += 1
+            await withCheckedContinuation { pending.value = $0 }
+            throw timesOut ? SystemAudioError.startTimedOut : .permissionNotGranted
+        })
+        let recorder = MeetingRecorderService(prepareForRecording: {}, systemCapture: system)
+        let schema = Schema([AudioRecording.self, TranscriptSegment.self, LLMConfig.self, QuickNote.self])
+        let container = try ModelContainer(for: schema,
+            configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)])
+        let context = ModelContext(container)
+        let viewModel = RecordingViewModel(meetingRecorder: recorder)
+        let config = RecordingConfig(source: timesOut ? .systemAudio : .mixed)
+        viewModel.startMeetingRecording(config: config, context: context)
+        try await waitUntil { pending.value != nil }
+        #expect(recorder.recordingPermissionNotice == .waiting)
+        #expect(!recorder.hasCaptureResources)
+        #expect(!viewModel.showError)
+        viewModel.startMeetingRecording(config: config, context: context)
+        #expect(requests.value == 1)
+        pending.value?.resume()
+        try await waitUntil { recorder.recordingPermissionNotice == (timesOut ? .timedOut : .needsAccess) }
+        #expect(!recorder.isStarting && !recorder.isRecording)
+        #expect(!viewModel.showError && viewModel.errorMessage == nil)
+        #expect(recorder.recordingPermissionNotice?.offersRecovery == true)
+        #expect(requests.value == 1 && !recorder.isRecording)
+    }
+
+    @Test("仅麦克风跳过系统录音授权，混合和仅系统声音才打开 tap")
+    func microphoneSkipsSystemAudio() async throws {
+        let calls = LockedBox(0)
+        let capture = SystemAudioCaptureService(startTap: { _ in
+            calls.value += 1
+            throw SystemAudioError.permissionNotGranted
+        })
+        let recorder = MeetingRecorderService(prepareForRecording: {}, systemCapture: capture)
+        #expect(try await recorder.prepareSystemAudio(for: .microphone) == nil)
+        #expect(calls.value == 0)
+        for source in [RecordingSource.mixed, .systemAudio] {
+            await #expect(throws: SystemAudioError.permissionNotGranted) {
+                _ = try await recorder.prepareSystemAudio(for: source)
+            }
+        }
+        #expect(calls.value == 2)
+        #expect(recorder.recordingPermissionNotice == nil)
+    }
+
+    @Test("设备错误和麦克风拒绝不会显示系统录音授权提示")
+    func unrelatedFailuresDoNotOfferSystemAudioRecovery() {
+        #expect(RecordingPermissionNotice(systemAudioError: SystemAudioError.deviceUnavailable) == nil)
+        #expect(RecordingPermissionNotice(systemAudioError: MicCaptureError.microphonePermissionNotGranted) == nil)
+        #expect(RecordingPermissionNotice(systemAudioError: NSError(domain: NSOSStatusErrorDomain, code: 42)) == nil)
     }
 }

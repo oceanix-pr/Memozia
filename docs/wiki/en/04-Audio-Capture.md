@@ -5,7 +5,7 @@
 ```text
 MeetingRecorderService (@MainActor @Observable shared coordinator)
   ├─ MicCaptureService: AVAudioEngine / AVAudioFile, CAF PCM segments
-  ├─ SystemAudioCaptureService: ScreenCaptureKit / AVAssetWriter, WAV PCM
+  ├─ SystemAudioCaptureService: Core Audio process tap / AVAssetWriter, WAV PCM
   ├─ AppMuteDetector: meeting-app Accessibility polling
   ├─ MicMuteMonitor: CoreAudio mute observation
   └─ AudioConverter: duration and conversion
@@ -27,7 +27,7 @@ Each source rotates independently every 300 seconds, limiting the damage from a 
 
 | Method | Contract |
 |---|---|
-| `startRecording(config:)` | Require at least 500 MB, atomically create the month/timestamp folder, start microphone/system/mixed capture, and preflight required permissions |
+| `startRecording(config:)` | Check free space, prepare the system audio tap when selected, create the entry folder, and start writing the selected sources |
 | `stopRecording()` | Stop timer, mute observers, and capture; merge; return the final URL. Separate save failures from historical capture notices; recovered interruptions do not become repeated error dialogs |
 | Rotation | Synchronous microphone rotateSegment and asynchronous system rotateWriter. If rotation fails, keep writing the old segment |
 | `mergeSegments()` | Validate playable tracks/durations, skip invalid/empty segments, run aligned mixed-track reference echo reduction, compose/export m4a, fall back to single-track concatenation. Expose checking → echo reduction → mix/export → save through mergePhase |
@@ -87,7 +87,7 @@ Degraded/skipped/faulted captures preserve originals and expose skipped filename
 
 Source: [SystemAudioCaptureService.swift](../../../Memozia/Services/SystemAudioCaptureService.swift).
 
-ScreenCaptureKit requires Screen Recording permission even for system audio. SCStream captures 48 kHz stereo and excludes the current process to avoid feedback, with audio and placeholder-screen outputs. Handle audio samples only. Start AVAssetWriter's session at the first sample PTS, never fixed zero; check readiness before append. rotateWriter finalizes a WAV PCM segment asynchronously and opens the next. Output is real-time 16-bit stereo PCM.
+A private Core Audio process tap excludes Memozia’s playback and supplies the only input to an aggregate device. Mixed and system-only recordings request system audio recording access. The I/O callback copies each valid PCM buffer before returning it to HAL. The write queue converts each device’s input to 48 kHz, 16-bit stereo PCM so a route change can continue in the same WAV. The writer starts at the first sample’s host-clock time. Device startup and consent have a 60-second deadline. A meeting can begin while other apps are quiet. Microphone-only recording skips the tap.
 
 ### State and cleanup
 
@@ -95,7 +95,7 @@ Use explicit idle/starting/running/reconnecting/stopping/failed state. Cleanup f
 
 ### Sleep, recovery, and reports
 
-Events carry capture generations; MainActor checks both recording and capture identity. Old stopped/replaced streams log debug only. Recover sleep using actual configured source/resources, not transient capturing state; never reopen sharing the user intentionally stopped. A 30-second watchdog invalidates timed-out/cancelled recovery, and late streams cannot take over. Confirm recovery only after the first successful audio sample write, not merely stream start. Sleep-gap microphone silence belongs to the original file and cannot spill into a replacement.
+Events carry capture generations; MainActor checks both recording and capture identity. Callbacks from a replaced tap are ignored. Wake recovery checks the configured source and the resources still held by the current session. A 30-second watchdog invalidates timed-out/cancelled recovery, and late streams cannot take over. Confirm recovery only after the first successful audio sample write, not merely stream start. Sleep-gap microphone silence belongs to the original file and cannot spill into a replacement.
 
 [RecordingCaptureHealth.swift](../../../Memozia/Models/RecordingCaptureHealth.swift) separates current state from historical impact for system audio and microphone devices. Recovery changes current UI but does not erase interruption evidence. Resolve only the matching recovery-failed warning, preserving unrelated disk errors. RecordingCaptureReport stores observed interruption ranges, confirmed recovery, last mic write, and mute evidence. Ranges are not precise measured sound-loss durations. Immediate normal route changes produce no gap; fully muted recovered intervals are informational, not claims of lost speech. Debounce equivalent warnings without hiding unrelated faults.
 
