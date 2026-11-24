@@ -3,27 +3,27 @@
     <channel>
         <title>Memozia</title>
         <item>
-            <title>9.8.7</title>
-            <pubDate>Tue, 24 Nov 2026 20:47:44 +0800</pubDate>
-            <sparkle:version>167</sparkle:version>
-            <sparkle:shortVersionString>9.8.7</sparkle:shortVersionString>
+            <title>9.8.8</title>
+            <pubDate>Tue, 24 Nov 2026 22:12:19 +0800</pubDate>
+            <sparkle:version>168</sparkle:version>
+            <sparkle:shortVersionString>9.8.8</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.7 (167)
+            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.8 (168)
 
-- Choose **Built-in Qwen3.5-2B** for text summaries, image understanding and to-do extraction on your Mac, without an API key. It is the default model when you have no saved API configurations. You can select it in Settings or the model picker.
-- The first use asks you to download approximately 1.8 GB of model files. Choose Hugging Face or HF Mirror, then continue your operation after the download. Simplified Chinese defaults to HF Mirror. Other languages default to Hugging Face.
-- Downloads verify the pinned model files before use. Once installed, the built-in model runs locally. Longer summaries are processed in smaller sections to fit its context window.
+- Model download progress now updates while large files are transferring. Cancelling a download preserves its resume information so you can continue later.
+- Built-in model files are stored under `~/Documents/Memozia/LLM`. Opening model settings or using the model migrates existing files and resume records from the previous location without downloading them again.
+- Settings now shows the model folder and a **Delete Built-in Model** button. Deletion requires confirmation, waits for current inference to finish, and clears model files and unfinished downloads. Files remain protected while another process is downloading or using the model. The next use asks you to download the model again.
 
-- 可选择「内置 Qwen3.5-2B」，在 Mac 上完成文字总结、图片理解和待办提取，无需 API Key。没有已保存 API 配置时，默认使用内置模型。也可在设置或模型选择器中选择。
-- 首次使用会询问是否下载约 1.8 GB 的模型文件，可选择 Hugging Face 或 HF Mirror。下载完成后自动继续当前操作。简体中文默认使用镜像源，其他语言默认使用官方源。
-- 模型文件经过固定版本和完整性校验后使用。下载完成后，内置模型在本机运行。较长内容会分段处理，以适应模型的上下文长度。
+- 修复大文件传输期间下载进度停在 0% 的问题。取消下载后保留续传信息，可在重试时继续下载。
+- 内置模型保存到 `~/Documents/Memozia/LLM`。打开模型设置或使用模型时，会迁移旧目录中的模型与续传文件，复用已下载内容。
+- 设置页显示模型文件夹，并新增「删除内置模型」按钮。删除前需要确认，执行时等待当前推理结束，清理模型及未完成下载；其他进程仍在下载或使用时会提示稍后重试。删除后再次使用会重新询问下载。
 
-This Apple Silicon preview requires macOS 15 or later. The app is ad-hoc signed with Hardened Runtime enabled and has not been notarized by Apple. Sparkle verifies the update ZIP using Ed25519. The model weights download separately from the app.
+This Apple Silicon preview requires macOS 15 or later. The app is ad-hoc signed with Hardened Runtime enabled and has not been notarized by Apple. Sparkle verifies the update ZIP using Ed25519. Model weights download separately from the app.
 
 Memozia 9.7.0 and later can check for updates in the app. For a first installation, extract the ZIP and copy `Memozia.app` to Applications. macOS may ask you to confirm access to the Memozia Keychain item when opening protected data after an upgrade.
 ]]></description>
-            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.7/Memozia-v9.8.7-167-arm64.zip" length="44855705" type="application/octet-stream" sparkle:edSignature="p0snJOGFAOQWDk7QdYMTxtOmqLkp7P9qxxwdJkKmvMVlQn+aJVP83Dxy1UGMIjslH+1l02vPpMj2XneEavozDw=="/>
+            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.8/Memozia-v9.8.8-168-arm64.zip" length="44890515" type="application/octet-stream" sparkle:edSignature="TkYbcP2kiA670wVTdvJKcMA0/vfh46zSeN5L9Y1Z0u+3iSefioWsMetkPZ4lmX/xUV2/43Xuq7YdNr7KAen0Dw=="/>
         </item>
     </channel>
 </rss>
