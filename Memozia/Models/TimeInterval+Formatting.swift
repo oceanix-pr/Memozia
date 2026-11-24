@@ -30,7 +30,7 @@ extension TimeInterval {
     /// - Returns: 格式化后的时间字符串
     func formattedAsDuration(forceHours: Bool = false, fractionDigits: Int = 0) -> String {
         let digits = max(0, fractionDigits)
-        let scale = pow(10.0, Double(digits))
+        let scale = Foundation.pow(10.0, Double(digits))
 
         // 录制刚启动时的时钟校正可能短暂给出负值；NaN/无穷大则会让
         // Double -> Int 直接 trap。显示层统一夹到可表示的非负整数，避免界面崩溃。

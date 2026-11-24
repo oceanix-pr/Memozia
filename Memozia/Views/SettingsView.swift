@@ -792,6 +792,7 @@ struct SettingsView: View {
 
     private var standardLLMSettingsView: some View {
         Form {
+            BuiltInModelSettingsSection(settingsVM: settingsVM, isActive: settingsVM.getActiveLLMConfig(from: llmConfigs)?.isBuiltIn == true)
             Section("智能服务") {
                 if let active = settingsVM.getActiveLLMConfig(from: llmConfigs) {
                     LabeledContent("已连接服务", value: active.name)
@@ -803,28 +804,33 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
 
                     // 添加了多个服务商时给出切换入口，否则用户会被钉在最后添加的那个上
-                    if llmConfigs.count > 1 {
+                    if !llmConfigs.isEmpty {
                         Picker("当前服务", selection: Binding(
                             get: { settingsVM.getActiveLLMConfig(from: llmConfigs)?.id },
                             set: { newValue in
-                                if let id = newValue, let picked = llmConfigs.first(where: { $0.id == id }) {
+                                if newValue == BuiltInQwenModel.id {
+                                    settingsVM.setActiveLLMConfig(.builtInQwen)
+                                } else if let id = newValue, let picked = llmConfigs.first(where: { $0.id == id }) {
                                     settingsVM.setActiveLLMConfig(picked)
                                 }
                             }
                         )) {
+                            Text("内置 Qwen3.5-2B").tag(Optional(BuiltInQwenModel.id))
                             ForEach(llmConfigs) { config in
                                 Text(config.name).tag(Optional(config.id))
                             }
                         }
                     }
 
-                    Button {
-                        editingTarget = .existing(active)
-                    } label: {
-                        Label(
-                            active.isLocal ? "选择模型" : "设置 API Key 与模型",
-                            systemImage: active.isLocal ? "slider.horizontal.3" : "key.fill"
-                        )
+                    if !active.isBuiltIn {
+                        Button {
+                            editingTarget = .existing(active)
+                        } label: {
+                            Label(
+                                active.isLocal ? "选择模型" : "设置 API Key 与模型",
+                                systemImage: active.isLocal ? "slider.horizontal.3" : "key.fill"
+                            )
+                        }
                     }
                 } else {
                     Label("尚未连接智能服务", systemImage: "exclamationmark.circle")
@@ -1504,6 +1510,7 @@ struct SettingsView: View {
     // MARK: - LLM 设置
     private var llmSettingsView: some View {
         List {
+            BuiltInModelSettingsSection(settingsVM: settingsVM, isActive: settingsVM.getActiveLLMConfig(from: llmConfigs)?.isBuiltIn == true)
             Section("已配置的模型") {
                 if llmConfigs.isEmpty {
                     Text("暂无配置，点击下方按钮添加")

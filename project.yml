@@ -36,8 +36,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "9.8.6"
-    CURRENT_PROJECT_VERSION: "166"
+    MARKETING_VERSION: "9.8.7"
+    CURRENT_PROJECT_VERSION: "167"
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     DEAD_CODE_STRIPPING: YES
     ENABLE_USER_SCRIPT_SANDBOXING: YES
@@ -158,6 +158,14 @@ targets:
       - package: Sparkle
       - package: WhisperKit
       - package: KeychainAccess
+      - package: MLXSwiftLM
+        product: MLXVLM
+      - package: MLXSwiftLM
+        product: MLXLMCommon
+      - package: MLXSwift
+        product: MLX
+      - package: Transformers
+        product: Tokenizers
       # 说话人分离（基于 pyannote segmentation 3.0 的 ONNX 导出，CPU 推理）。
       # 官方 SPM 支持近期才合入 master，故按提交固定依赖（见 packages 段）。
       # 用 shared 产品管理 Swift 模块、头文件与 ONNX Runtime；构建阶段替换 Sherpa dylib。
@@ -230,6 +238,16 @@ schemes:
         - MemoziaUITests
 
 packages:
+  # 原生 Apple Silicon 图文推理。模型权重经用户确认后单独下载。
+  MLXSwiftLM:
+    url: https://github.com/ml-explore/mlx-swift-lm
+    exactVersion: "3.33.0"
+  MLXSwift:
+    url: https://github.com/ml-explore/mlx-swift
+    exactVersion: "0.33.0"
+  Transformers:
+    url: https://github.com/huggingface/swift-transformers
+    exactVersion: "1.1.9"
   MCP:
     url: https://github.com/modelcontextprotocol/swift-sdk
     exactVersion: "0.12.1"

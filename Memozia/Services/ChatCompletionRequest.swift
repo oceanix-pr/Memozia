@@ -20,6 +20,16 @@ struct ChatCompletionRequest {
     func data(
         timeout: TimeInterval, session: URLSession = .shared, promptSuffix: () -> String = { "" }
     ) async throws -> Data {
+        if config.isBuiltIn {
+            try await BuiltInModelAccess.shared.ensureAvailable()
+            let input = try BuiltInQwenInference.Input(system: systemPrompt + promptSuffix(), content: userContent)
+            let output = try await BuiltInQwenInference.shared.generate(
+                input: input, maxTokens: outputTokens, temperature: temperature, onToken: { _ in }
+            )
+            return try JSONSerialization.data(withJSONObject: [
+                "choices": [["message": ["content": output.text], "finish_reason": output.finishReason]]
+            ])
+        }
         let (data, _) = try await send(timeout: timeout, promptSuffix: promptSuffix) { request in
             try await session.data(for: request, delegate: EndpointPolicy.RedirectGuard.shared)
         } readError: { data in
@@ -30,13 +40,55 @@ struct ChatCompletionRequest {
 
     func bytes(
         timeout: TimeInterval, session: URLSession = .shared, promptSuffix: () -> String = { "" }
-    ) async throws -> (URLSession.AsyncBytes, HTTPURLResponse) {
-        try await send(timeout: timeout, promptSuffix: promptSuffix) { request in
+    ) async throws -> (ChatCompletionBytes, HTTPURLResponse) {
+        if config.isBuiltIn {
+            try await BuiltInModelAccess.shared.ensureAvailable()
+            let input = try BuiltInQwenInference.Input(system: systemPrompt + promptSuffix(), content: userContent)
+            let budget = outputTokens
+            let temp = temperature
+            let stream = AsyncThrowingStream<UInt8, any Error> { continuation in
+                let task = Task {
+                    do {
+                        let output = try await BuiltInQwenInference.shared.generate(
+                            input: input, maxTokens: budget, temperature: temp
+                        ) { text in
+                            Self.yieldSSE(["choices": [["delta": ["content": text]]]], into: continuation)
+                        }
+                        Self.yieldSSE(["choices": [["delta": [:], "finish_reason": output.finishReason]]], into: continuation)
+                        for byte in "data: [DONE]\n\n".utf8 { continuation.yield(byte) }
+                        continuation.finish()
+                    } catch {
+                        continuation.finish(throwing: error)
+                    }
+                }
+                continuation.onTermination = { @Sendable _ in task.cancel() }
+            }
+            let response = HTTPURLResponse(
+                url: URL(string: BuiltInQwenModel.baseURL)!,
+                statusCode: 200, httpVersion: "HTTP/1.1",
+                headerFields: ["Content-Type": "text/event-stream"]
+            )!
+            return (ChatCompletionBytes(local: stream), response)
+        }
+        let (bytes, response) = try await send(timeout: timeout, promptSuffix: promptSuffix) { request in
             try await session.bytes(for: request, delegate: EndpointPolicy.RedirectGuard.shared)
         } readError: { bytes in
             var message = ""
             for try await line in bytes.lines { message += line }
             return message
+        }
+        return (ChatCompletionBytes(network: bytes), response)
+    }
+
+    private static func yieldSSE(
+        _ payload: [String: Any], into continuation: AsyncThrowingStream<UInt8, any Error>.Continuation
+    ) {
+        // These payloads contain only strings, numbers and dictionaries constructed above.
+        do {
+            let data = try JSONSerialization.data(withJSONObject: payload)
+            for byte in Data("data: ".utf8) + data + Data("\n\n".utf8) { continuation.yield(byte) }
+        } catch {
+            continuation.finish(throwing: error)
         }
     }
 

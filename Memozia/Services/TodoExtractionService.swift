@@ -38,7 +38,7 @@ enum TodoExtractionService {
         session: URLSession? = nil
     ) async throws -> TodoDocument {
         var items: [TodoItem] = []
-        for part in SummaryChunking.chunks(content) {
+        for part in SummaryChunking.chunks(content, limit: config.isBuiltIn ? 2_000 : SummaryChunking.inputBudget) {
             try Task.checkCancellation()
             do {
                 var document = try await extractPart(from: part, config: config, source: source,

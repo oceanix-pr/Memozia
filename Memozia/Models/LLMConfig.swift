@@ -37,7 +37,8 @@ final class LLMConfig {
 extension LLMConfig {
     /// 完整的 Chat Completions API 端点 URL（安全构造，不 force unwrap）
     var chatCompletionsURL: URL? {
-        Self.endpointURL(forBaseURL: baseURL, appending: "chat/completions")
+        if isBuiltIn { return URL(string: BuiltInQwenModel.baseURL + "/chat/completions") }
+        return Self.endpointURL(forBaseURL: baseURL, appending: "chat/completions")
     }
 
     // MARK: - 端点构造
@@ -83,7 +84,8 @@ extension LLMConfig {
     /// 只读便捷入口：读取失败（含系统不可用）与「没有 Key」对请求组包是一回事，
     /// 因此这里吞掉错误返回空串；需要区分失败原因时必须用 `LLMKeychainStore.readAPIKey(for:)`。
     var apiKey: String {
-        (try? LLMKeychainStore.readAPIKey(for: id)) ?? ""
+        if isBuiltIn { return "" }
+        return (try? LLMKeychainStore.readAPIKey(for: id)) ?? ""
     }
 
     /// 将 API Key 写入 Keychain（空串表示清除）。错误由调用方处理，不静默吞掉

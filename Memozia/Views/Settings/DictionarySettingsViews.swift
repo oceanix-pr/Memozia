@@ -34,10 +34,11 @@ struct DictionarySettingsView: View {
 
     /// 扫描处理未脱敏原文，仅接受本地标记且使用本机回环端点的配置。
     private var localLLMConfig: LLMConfig? {
-        llmConfigs.first { config in
+        let external = llmConfigs.first { config in
             guard config.isLocal, let url = URL(string: config.baseURL) else { return false }
             return EndpointPolicy.trust(for: url) == .loopback
         }
+        return external ?? .builtInQwen
     }
 
     var body: some View {

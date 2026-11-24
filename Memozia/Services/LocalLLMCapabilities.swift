@@ -9,6 +9,7 @@ struct LocalLLMCapabilities: Equatable, Sendable {
     private static let logger = Logger(subsystem: "app.memozia", category: "LocalLLMCapabilities")
 
     static func discover(config: LLMConfigSnapshot, session: URLSession) async throws -> Self {
+        if config.isBuiltIn { return Self(reasoningOffValue: "none") }
         guard config.isLocal, let url = modelsURL(chatCompletionsURL: config.chatCompletionsURL) else {
             return Self()
         }

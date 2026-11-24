@@ -40,11 +40,19 @@ enum PIIScanService {
             // 防御：扫描绝不允许走云端模型
             throw LLMError.invalidURL
         }
-        guard let url = URL(string: config.chatCompletionsURL), EndpointPolicy.trust(for: url) == .loopback else {
+        guard config.isBuiltIn || URL(string: config.chatCompletionsURL).map({ EndpointPolicy.trust(for: $0) == .loopback }) == true else {
             throw LLMError.invalidURL
         }
         try LLMService.validateSecureURL(for: config)
         try Task.checkCancellation()
+
+        if config.isBuiltIn && content.count > 2_000 {
+            var entries: [PIIExtractedEntry] = []
+            for part in SummaryChunking.chunks(content, limit: 2_000) {
+                entries.append(contentsOf: try await extract(from: part, config: config))
+            }
+            return entries
+        }
 
         let capped = content.count > maxInputCharacters
             ? String(content.prefix(maxInputCharacters))

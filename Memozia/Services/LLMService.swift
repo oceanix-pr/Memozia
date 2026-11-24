@@ -41,6 +41,7 @@ enum LLMService {
 
     /// 按配置校验独立的传输授权，不从模型类型推断端点可信度。
     static func validateSecureURL(for config: LLMConfigSnapshot) throws {
+        if config.isBuiltIn { return }
         try EndpointPolicy.validate(config.chatCompletionsURL, allowInsecureLAN: config.allowInsecureLAN)
     }
 
@@ -136,8 +137,9 @@ enum LLMService {
 
         try Task.checkCancellation()
         let combined = transcript + (visualContext.map { "\n\n[Visual context]\n" + $0 } ?? "")
-        if combined.count > maxTranscriptCharacters {
-            let reduced = try await SummaryChunking.reduce(combined) { part in
+        let inputLimit = config.isBuiltIn ? 2_000 : maxTranscriptCharacters
+        if combined.count > inputLimit {
+            let reduced = try await SummaryChunking.reduce(combined, limit: inputLimit) { part in
                 try await generateSummary(
                     transcript: part, config: config, forceOverview: forceOverview,
                     isMeetingHint: isMeetingHint, piiScrubbed: piiScrubbed,
@@ -281,7 +283,7 @@ enum LLMService {
 
         let systemContent = systemBase
             + "\n\n重要结论和行动项不得编造来源、负责人或日期。没有明确依据时标注待确认。需要注明录音时间时，使用普通时间戳。输入也可能是按顺序排列的分段摘要，应归并全部段落而非仅总结开头。"
-            + (condense ? "\n\n这是长内容的中间归并步骤。请压缩至最多1500个汉字左右，保留决议、未决事项、行动项、负责人、日期及必要的时间点；不得添加本段之外的信息。" : "")
+            + (condense ? "\n\n这是长内容的中间归并步骤。请压缩至最多\(config.isBuiltIn ? 600 : 1500)个汉字左右，保留决议、未决事项、行动项、负责人、日期及必要的时间点；不得添加本段之外的信息。" : "")
             + (piiScrubbed ? "\n\n" + Self.piiPlaceholderRule : "")
 
         let request = ChatCompletionRequest(
@@ -333,7 +335,7 @@ enum LLMService {
     /// 逐行解析 SSE 流：提取 choices[0].delta.content 作为正文、delta.reasoning_content /
     /// delta.reasoning 作为思考文本，按时间窗口分别合批回调；返回正文与结束原因。
     private static func consumeSSEStream(
-        bytes: URLSession.AsyncBytes,
+        bytes: ChatCompletionBytes,
         onToken: @escaping @Sendable (String) -> Void,
         onReasoning: @escaping @Sendable (String) -> Void = { _ in }
     ) async throws -> SSEStreamResult {
@@ -434,7 +436,7 @@ enum LLMService {
     /// 为什么必须区分：推理型模型把预算耗在思考上时正文为空，报「模型返回了空内容」
     /// 会让用户以为配置写错了，实际原因与修法（换模型 / 调大输出上限）完全不同。
     private static func consumeStream(
-        bytes: URLSession.AsyncBytes,
+        bytes: ChatCompletionBytes,
         request: String,
         config: LLMConfigSnapshot,
         onToken: @escaping @Sendable (String) -> Void,
@@ -586,8 +588,8 @@ enum LLMService {
         retryOnEmpty: Bool
     ) async throws -> String {
         try Task.checkCancellation()
-        let capped = content.count > maxTitleInputCharacters
-            ? String(content.prefix(maxTitleInputCharacters)) : content
+        let titleLimit = config.isBuiltIn ? 2_000 : maxTitleInputCharacters
+        let capped = content.count > titleLimit ? String(content.prefix(titleLimit)) : content
 
         let request = ChatCompletionRequest(
             config: config, systemPrompt: PromptTemplateStore.resolved(.title), userContent: capped,
@@ -738,7 +740,7 @@ enum LLMService {
         ) async -> Void = { _, _, _ in },
         session: URLSession = .shared
     ) async throws -> VisualNotesGenerationResult {
-        let chunks = visualChunks(from: frames, perRequest: maxFramesPerVisualRequest)
+        let chunks = visualChunks(from: frames, perRequest: config.isBuiltIn ? 1 : maxFramesPerVisualRequest)
         guard !chunks.isEmpty else { throw LLMError.noVisualFrames }
 
         try validateSecureURL(for: config)
@@ -1082,7 +1084,13 @@ struct LLMConfigSnapshot: Sendable {
     let allowInsecureLAN: Bool
     let scrubLoopbackText: Bool
 
+    var isBuiltIn: Bool {
+        chatCompletionsURL == BuiltInQwenModel.baseURL + "/chat/completions"
+            && modelName == BuiltInQwenModel.repository
+    }
+
     var shouldScrubText: Bool {
+        if isBuiltIn { return false }
         guard let url = URL(string: chatCompletionsURL) else { return true }
         return EndpointPolicy.trust(for: url) != .loopback || scrubLoopbackText
     }

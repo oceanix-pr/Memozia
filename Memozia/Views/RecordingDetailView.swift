@@ -682,26 +682,20 @@ struct LLMModelSelectorBar: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            if llmConfigs.isEmpty {
-                Text("未配置 LLM")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-                    .italic()
-            } else {
-                Picker(selection: $selectedLLMConfig) {
-                    ForEach(llmConfigs) { config in
-                        Text(config.name).tag(config as LLMConfig?)
-                    }
-                } label: {
-                    // ✅ 关键：label 留空，不写任何内容
-                    EmptyView()
+            Picker(selection: $selectedLLMConfig) {
+                Text("内置 Qwen3.5-2B").tag(LLMConfig.builtInQwen as LLMConfig?)
+                Divider()
+                ForEach(llmConfigs) { config in
+                    Text(config.name).tag(config as LLMConfig?)
                 }
-                .pickerStyle(.menu)
-                .menuIndicator(.hidden)
-                // 自定义外观直接加在 Picker 上
-                .frame(width: 180) // 可选：限制宽度避免空白占位
+            } label: {
+                // ✅ 关键：label 留空，不写任何内容
+                EmptyView()
             }
-
+            .pickerStyle(.menu)
+            .menuIndicator(.hidden)
+            // 自定义外观直接加在 Picker 上
+            .frame(width: 180) // 可选：限制宽度避免空白占位
             Spacer()
 
             if let config = selectedLLMConfig {

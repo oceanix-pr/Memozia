@@ -217,9 +217,10 @@ struct QuickNoteDetailView: View {
             Spacer()
 
             // LLM 配置选择
-            if isProMode && !llmConfigs.isEmpty {
+            if isProMode {
                 Picker("模型", selection: $selectedLLMConfig) {
-                    Text("选择模型").tag(nil as LLMConfig?)
+                    Text("内置 Qwen3.5-2B").tag(LLMConfig.builtInQwen as LLMConfig?)
+                    Divider()
                     ForEach(llmConfigs, id: \.id) { config in
                         Text(config.name).tag(config as LLMConfig?)
                     }

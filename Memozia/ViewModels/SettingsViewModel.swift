@@ -302,12 +302,13 @@ final class SettingsViewModel {
     // MARK: - LLM Config 管理
 
     func getActiveLLMConfig(from configs: [LLMConfig]) -> LLMConfig? {
+        if activeLLMConfigID == BuiltInQwenModel.id { return .builtInQwen }
         guard let id = activeLLMConfigID else {
-            return configs.first
+            return configs.first ?? .builtInQwen
         }
         // 配置被删除或恢复备份后，保存的 ID 可能已失效。
         // 普通模式没有模型选择器，因此必须稳定回退到现存的第一个配置。
-        return configs.first { $0.id == id } ?? configs.first
+        return configs.first { $0.id == id } ?? configs.first ?? .builtInQwen
     }
 
     func setActiveLLMConfig(_ config: LLMConfig) {

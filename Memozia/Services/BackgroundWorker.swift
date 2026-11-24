@@ -527,16 +527,18 @@ enum BackgroundWorker {
     /// 抛错表示数据库读取失败（可重试）；返回 nil 表示确实没有可用配置（可出队）。
     @MainActor
     private static func fetchLLMConfig(id: UUID?, context: ModelContext) throws -> LLMConfig? {
+        if id == BuiltInQwenModel.id { return .builtInQwen }
         if let id {
             let descriptor = FetchDescriptor<LLMConfig>(predicate: #Predicate { $0.id == id })
             if let config = try context.fetch(descriptor).first { return config }
         }
         if let idStr = UserDefaults.standard.string(forKey: "active_llm_config_id"),
            let uuid = UUID(uuidString: idStr) {
+            if uuid == BuiltInQwenModel.id { return .builtInQwen }
             let descriptor = FetchDescriptor<LLMConfig>(predicate: #Predicate { $0.id == uuid })
             if let config = try context.fetch(descriptor).first { return config }
         }
-        return try context.fetch(FetchDescriptor<LLMConfig>()).first
+        return try context.fetch(FetchDescriptor<LLMConfig>()).first ?? .builtInQwen
     }
 
     /// worker 专用 ModelContainer（与主应用 `StartupModelContainerFactory.makePersistent` 同款 schema/配置）

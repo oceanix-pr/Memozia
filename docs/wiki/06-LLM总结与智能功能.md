@@ -8,6 +8,14 @@
 
 ## 1. LLMService — LLM 调用核心
 
+### 内置 Qwen3.5-2B
+
+[BuiltInQwenModel](../../Memozia/Models/BuiltInQwenModel.swift) 定义独立于 API 配置的固定身份。设置页、录音及笔记详情页提供内置选项；没有外部配置时自动选中它。首次发起模型请求时，[BuiltInModelAccess](../../Memozia/Views/Settings/BuiltInModelDownloadView.swift) 询问是否下载约 1.8 GB 权重，确认后显示进度并继续原请求，取消则取消等待中的操作。后台 worker 只使用已经下载的权重。
+
+下载源按应用实际本地化语言选择，简体中文使用 HF-Mirror，其余语言使用 Hugging Face 官方源；确认窗口可更换源。下载器不改进程级 HF_ENDPOINT。两种源使用同一固定仓库提交和 SHA-256 清单；续传数据、跨进程锁与原子安装防止半成品被加载。
+
+[BuiltInQwenInference](../../Memozia/Services/BuiltInQwenInference.swift) 通过 MLX Metal 在本机直接运行文字与图片推理，不需要 API Key。模型加载、prefill 和解码由可取消串行门保护；取消时等待生成任务结束再交接。空闲后卸载模型。内置模型使用较短的文本分段，逐帧分析视频；超过上下文预算时报告错误。
+
 源码：[LLMService.swift](../../Memozia/Services/LLMService.swift)（静态方法 + `LLMConfigSnapshot` 值快照）
 
 支持 OpenAI 兼容接口（OpenAI / LM Studio / Ollama / 其他兼容网关）。`isLocal` 用于推理服务适配，不再赋予传输或脱敏豁免：`EndpointPolicy` 按实际地址区分回环、私有 IPv4 和远端；内网明文需独立授权，公网必须 HTTPS。LLM 请求拒绝自动重定向。

@@ -39,10 +39,13 @@ ONNX Runtime 自身采用 [MIT](LICENSES/ONNXRuntime-LICENSE.txt)，内嵌组件
 
 ## 运行时下载的模型
 
+内置图文推理使用 MIT 许可的 [mlx-swift-lm](https://github.com/ml-explore/mlx-swift-lm) 与 [mlx-swift](https://github.com/ml-explore/mlx-swift)，对应许可证收录在 [Swift Package 声明](LICENSES/Swift-Package-Notices.txt)。分词复用已锁定的 swift-transformers；模型权重在用户确认后下载。
+
 以下模型不存放在本仓库中，由用户在应用内下载或自行提供：
 
 | 模型 | 来源 | 许可证 |
 |---|---|---|
+| Qwen3.5-2B（MLX 4 位，含视觉编码器） | [Qwen 官方模型卡](https://huggingface.co/Qwen/Qwen3.5-2B)、[MLX 转换权重](https://huggingface.co/mlx-community/Qwen3.5-2B-4bit) | Apache-2.0，许可全文随应用分发 |
 | WhisperKit Core ML 模型 | [argmaxinc/whisperkit-coreml](https://huggingface.co/argmaxinc/whisperkit-coreml) | MIT |
 | pyannote segmentation 3.0 的 sherpa-onnx 导出 | [sherpa-onnx 发布资源](https://github.com/k2-fsa/sherpa-onnx/releases) | MIT（模型来源声明） |
 | 3D-Speaker ERes2Net 声纹模型 | [sherpa-onnx 发布资源](https://github.com/k2-fsa/sherpa-onnx/releases) | Apache-2.0（模型来源项目） |
