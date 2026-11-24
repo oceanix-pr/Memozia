@@ -39,6 +39,13 @@ enum BuiltInQwenModel {
             return URL(fileURLWithPath: path, isDirectory: true)
         }
         #endif
+        return AudioRecording.defaultStorageDirectory
+            .appendingPathComponent("LLM/Qwen3.5-2B/" + revision, isDirectory: true)
+    }
+
+    static var legacyFolder: URL? {
+        // Tests must never migrate or delete the user's installed model.
+        guard !AppRuntime.isRunningTests, !AppRuntime.isUITesting else { return nil }
         return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Memozia/BuiltInModels/Qwen3.5-2B/" + revision, isDirectory: true)
     }
@@ -97,7 +104,7 @@ enum BuiltInModelError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .notDownloaded: String(localized: "请先下载内置 Qwen3.5-2B 模型。")
-        case .busy: String(localized: "另一进程正在准备内置模型，请稍后重试。")
+        case .busy: String(localized: "内置模型正在下载或使用中，请稍后重试。")
         case .invalidDownload: String(localized: "内置模型校验失败，请重新下载。")
         case .insufficientSpace: String(localized: "磁盘可用空间不足，下载内置模型需要至少 4 GB。")
         case .contextTooLong: String(localized: "内容超过内置模型的处理长度，请缩短内容或选择更大的模型。")

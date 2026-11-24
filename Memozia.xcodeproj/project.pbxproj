@@ -13,6 +13,7 @@
 		03C50B47F0B28313296D9105 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F2338732C9BAF82CEE634CE1 /* Assets.xcassets */; };
 		061F57C30692364C804570FB /* AudioRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C7C8CDDB3BD3F064BFE7458 /* AudioRecording.swift */; };
 		06347745AFEE6A064952D00F /* ScreenshotSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2620EF4E2054B693FDA1EFA5 /* ScreenshotSettingsView.swift */; };
+		069ABF373A3614768751EEE6 /* BuiltInModelStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC41B4980BB269F677630A4 /* BuiltInModelStorage.swift */; };
 		08666D3D5F41CAD20F3151CB /* StorageSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751CE2AD97B1CAA467BB8E11 /* StorageSession.swift */; };
 		09256B51E4E16132A88DA390 /* SystemTranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BD6CFBAA69C6E211B6F4A7 /* SystemTranscriptionService.swift */; };
 		0A06A626208E68D61ABBA38D /* RacingWatchdog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF8A44F2501190B9F5E9A1F /* RacingWatchdog.swift */; };
@@ -102,6 +103,7 @@
 		55C5AD8ADE4014B161CB9624 /* TaskCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BDA9656E769684F62BC8F3 /* TaskCenterTests.swift */; };
 		58A25EC0E72990FEB51C7C93 /* WhisperModelDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4812EFC580936B7BE9A7299 /* WhisperModelDownloader.swift */; };
 		593A665362A5335C3FF68ADE /* RecordingCaptureReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09443FC097670B45C6E95798 /* RecordingCaptureReportTests.swift */; };
+		5A42C22E99BE7F9C8DB9EE4F /* BuiltInModelStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCE9307FD970A5359D70C760 /* BuiltInModelStorageTests.swift */; };
 		5B00251F447A468F3780AAF7 /* TextFindReplace.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC89F9835CBD4B466F792BFE /* TextFindReplace.swift */; };
 		5C020368E677BBE22D6690FB /* PersistenceCapability.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8B262A815D739FE936A6FCD /* PersistenceCapability.swift */; };
 		5C428E73AE925B901FB5C08A /* BuiltInModelDownloadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD4A137E4AF330DAF73E936 /* BuiltInModelDownloadView.swift */; };
@@ -407,6 +409,7 @@
 		8CB81C21C52492D672594343 /* MemoziaContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoziaContact.swift; sourceTree = "<group>"; };
 		8DAFC2BB57A91A940D9F7AA0 /* ScreenCaptureAuthorizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCaptureAuthorizationTests.swift; sourceTree = "<group>"; };
 		8DBCA91772199976A7B5DF29 /* RecordingProgressStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingProgressStatus.swift; sourceTree = "<group>"; };
+		8DC41B4980BB269F677630A4 /* BuiltInModelStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuiltInModelStorage.swift; sourceTree = "<group>"; };
 		8E1FB4D98AFECD9DFC81043B /* RecordingListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingListView.swift; sourceTree = "<group>"; };
 		91CA011EFF5AACD1FB9F848D /* KeyframeExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyframeExtractorTests.swift; sourceTree = "<group>"; };
 		9410F4082A11D338B8C70BAF /* TranscriptCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptCache.swift; sourceTree = "<group>"; };
@@ -496,6 +499,7 @@
 		F780455B753C7E4C3DAC7844 /* EntryMirrorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryMirrorStore.swift; sourceTree = "<group>"; };
 		F8B262A815D739FE936A6FCD /* PersistenceCapability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceCapability.swift; sourceTree = "<group>"; };
 		FB415E3FEAFAAF1B2F75CA4F /* MemoziaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MemoziaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FCE9307FD970A5359D70C760 /* BuiltInModelStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuiltInModelStorageTests.swift; sourceTree = "<group>"; };
 		FD0E9517CBD747DFD6C4AD50 /* QueuePanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueuePanelView.swift; sourceTree = "<group>"; };
 		FDAE74D7FCDE05454ED2D8E8 /* VisionOCRLanguageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionOCRLanguageTests.swift; sourceTree = "<group>"; };
 		FEDE4C450987D518C16533D6 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
@@ -619,6 +623,7 @@
 				154996EBF74FB92C1892EB49 /* BackgroundTaskQueue.swift */,
 				B984DE1019C9B77DAD5E5274 /* BackgroundWorker.swift */,
 				B1F6B96ECEDAF2BC194D3402 /* BuiltInModelDownloader.swift */,
+				8DC41B4980BB269F677630A4 /* BuiltInModelStorage.swift */,
 				F3BFBF9BB3C4D5BE758180C9 /* BuiltInQwenInference.swift */,
 				B7C39907CD7417E3F509685E /* ChatCompletionBytes.swift */,
 				29592D25B6B5563DE4E9F0C3 /* ChatCompletionRequest.swift */,
@@ -786,6 +791,7 @@
 				6F8C1229316A9219309D98F2 /* AppCommandCatalogTests.swift */,
 				77FDBC45BA229C6E55C4AF84 /* AppExperienceTests.swift */,
 				4281017E1169591AD0955588 /* BackgroundTaskQueueTests.swift */,
+				FCE9307FD970A5359D70C760 /* BuiltInModelStorageTests.swift */,
 				7BDFFE1CD48F717957749914 /* BuiltInQwenTests.swift */,
 				C951E4AE56458BB89A51CCFF /* ChatCompletionRequestTests.swift */,
 				487B48C035BEAE808C193ECF /* CurrentTimeServiceTests.swift */,
@@ -1188,6 +1194,7 @@
 				83AB6DAA71C59558A67FC34C /* BackgroundWorker.swift in Sources */,
 				5C428E73AE925B901FB5C08A /* BuiltInModelDownloadView.swift in Sources */,
 				8713E8BC6FB8BDBF6921A981 /* BuiltInModelDownloader.swift in Sources */,
+				069ABF373A3614768751EEE6 /* BuiltInModelStorage.swift in Sources */,
 				00F37F6C23FD1395F9D55812 /* BuiltInQwenInference.swift in Sources */,
 				343A3DF23599D7A4E04D9C0A /* BuiltInQwenModel.swift in Sources */,
 				A63BEBFA75337149B6479283 /* ChatCompletionBytes.swift in Sources */,
@@ -1350,6 +1357,7 @@
 				A689EBF696DF71074A70194A /* AppCommandCatalogTests.swift in Sources */,
 				BE972822944D7AFCA7270E5D /* AppExperienceTests.swift in Sources */,
 				AC5E368E7E37174E80163F94 /* BackgroundTaskQueueTests.swift in Sources */,
+				5A42C22E99BE7F9C8DB9EE4F /* BuiltInModelStorageTests.swift in Sources */,
 				9B407172A518E9844345CB25 /* BuiltInQwenTests.swift in Sources */,
 				4F5D9451E60164C5607F782A /* ChatCompletionRequestTests.swift in Sources */,
 				75096E0D20CFFCA04A9F08BB /* CurrentTimeServiceTests.swift in Sources */,
@@ -1524,7 +1532,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 167;
+				CURRENT_PROJECT_VERSION = 168;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1540,7 +1548,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.8.7;
+				MARKETING_VERSION = 9.8.8;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1663,7 +1671,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 167;
+				CURRENT_PROJECT_VERSION = 168;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1685,7 +1693,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOG = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 9.8.7;
+				MARKETING_VERSION = 9.8.8;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

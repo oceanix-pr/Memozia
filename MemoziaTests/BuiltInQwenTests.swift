@@ -2,6 +2,8 @@ import CryptoKit
 import Foundation
 import CoreGraphics
 import ImageIO
+import Network
+import os
 import Testing
 @testable import Memozia
 
@@ -63,6 +65,105 @@ struct BuiltInQwenTests {
         #expect(!BuiltInQwenModel.isReady(at: root))
         try Data(BuiltInQwenModel.revision.utf8).write(to: root.appendingPathComponent(".ready"))
         #expect(!BuiltInQwenModel.isReady(at: root))
+    }
+
+    @Test("模型文件下载期间持续报告字节进度并保留完整文件", .timeLimit(.minutes(1)))
+    func downloadReportsProgress() async throws {
+        let server = try await ModelDownloadTestServer()
+        defer { server.close() }
+        let root = try downloadTestDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let destination = root.appendingPathComponent("model.partial")
+        let progress = OSAllocatedUnfairLock(initialState: [Int64]())
+
+        let response = try await ModelFileDownload.download(
+            from: server.url, to: destination, configuration: downloadTestConfiguration()
+        ) { bytes in progress.withLock { $0.append(bytes) } }
+
+        #expect((response as? HTTPURLResponse)?.statusCode == 200)
+        #expect(try Data(contentsOf: destination) == server.payload)
+        let updates = progress.withLock { $0 }
+        #expect(updates.count > 1)
+        #expect(updates.contains { $0 > 0 && $0 < Int64(server.payload.count) })
+    }
+
+    @Test("取消生成续传信息，重试按 Range 续传并继续更新进度", .timeLimit(.minutes(1)))
+    func downloadResumesAfterCancellation() async throws {
+        let server = try await ModelDownloadTestServer()
+        defer { server.close() }
+        let root = try downloadTestDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let destination = root.appendingPathComponent("model.partial")
+        let progress = AsyncStream<Int64>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        let download = Task {
+            defer { progress.continuation.finish() }
+            return try await ModelFileDownload.download(
+                from: server.url, to: destination, configuration: downloadTestConfiguration()
+            ) { bytes in progress.continuation.yield(bytes) }
+        }
+        defer { download.cancel() }
+        var cancelledDuringDownload = false
+        for await bytes in progress.stream {
+            if bytes >= 128 * 1024 && bytes < Int64(server.payload.count) {
+                download.cancel()
+                cancelledDuringDownload = true
+                break
+            }
+        }
+        #expect(cancelledDuringDownload)
+        let error: any Error
+        switch await download.result {
+        case .success:
+            Issue.record("取消下载后不应返回成功")
+            return
+        case .failure(let failure): error = failure
+        }
+        #expect((error as? URLError)?.code == .cancelled)
+        let resumeData = try #require((error as NSError).userInfo[NSURLSessionDownloadTaskResumeData] as? Data)
+        #expect(!FileManager.default.fileExists(atPath: destination.path))
+
+        let resumedProgress = OSAllocatedUnfairLock(initialState: [Int64]())
+        let response = try await ModelFileDownload.download(
+            from: server.url, resumeData: resumeData, to: destination,
+            configuration: downloadTestConfiguration()
+        ) { bytes in resumedProgress.withLock { $0.append(bytes) } }
+
+        #expect((response as? HTTPURLResponse)?.statusCode == 206)
+        #expect(server.requestOffsets.contains { $0 > 0 })
+        #expect(try Data(contentsOf: destination) == server.payload)
+        let updates = resumedProgress.withLock { $0 }
+        #expect(updates.count > 1)
+        #expect(updates.contains { $0 > 0 && $0 < Int64(server.payload.count) })
+    }
+
+    @Test("已取消的下载直接返回，不创建文件", .timeLimit(.minutes(1)))
+    func downloadCancelledBeforeStarting() async throws {
+        let root = try downloadTestDirectory()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let destination = root.appendingPathComponent("model.partial")
+        let download = Task {
+            withUnsafeCurrentTask { $0?.cancel() }
+            return try await ModelFileDownload.download(
+                from: URL(string: "http://127.0.0.1:1/model")!, to: destination,
+                configuration: downloadTestConfiguration(), onProgress: { _ in }
+            )
+        }
+        await #expect(throws: CancellationError.self) { try await download.value }
+        #expect(!FileManager.default.fileExists(atPath: destination.path))
+    }
+
+    private func downloadTestDirectory() throws -> URL {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        return root
+    }
+
+    private func downloadTestConfiguration() -> URLSessionConfiguration {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.connectionProxyDictionary = [:]
+        configuration.timeoutIntervalForRequest = 5
+        configuration.timeoutIntervalForResource = 10
+        return configuration
     }
 
     @Test("本地流沿用系统解析并保留中文与结束标记")
@@ -128,5 +229,103 @@ struct BuiltInQwenTests {
         let choices = try #require(json["choices"] as? [[String: Any]])
         let message = try #require(choices.first?["message"] as? [String: Any])
         #expect((message["content"] as? String)?.contains("是") == true)
+    }
+}
+
+/// Real loopback HTTP exercises URLSession download delegate callbacks and resume
+/// files, which an in-memory URLProtocol fixture cannot faithfully reproduce.
+private final class ModelDownloadTestServer: Sendable {
+    private struct State {
+        var connections: [NWConnection] = []
+        var offsets: [Int] = []
+    }
+
+    let payload = Data(repeating: 0x3D, count: 2 * 1024 * 1024)
+    private let state = OSAllocatedUnfairLock(initialState: State())
+    private let queue = DispatchQueue(label: "app.memozia.tests.model-download")
+    private let listener: NWListener
+
+    var url: URL { URL(string: "http://127.0.0.1:\(listener.port!.rawValue)/model")! }
+    var requestOffsets: [Int] { state.withLock { $0.offsets } }
+
+    init() async throws {
+        let parameters = NWParameters.tcp
+        parameters.requiredLocalEndpoint = .hostPort(host: "127.0.0.1", port: .any)
+        listener = try NWListener(using: parameters)
+        listener.newConnectionHandler = { [weak self] connection in
+            guard let self else { connection.cancel(); return }
+            self.state.withLock { $0.connections.append(connection) }
+            connection.start(queue: self.queue)
+            self.receiveRequest(connection)
+        }
+        let ready = OneShotThrowingBox<Void>()
+        do {
+            try await withCheckedThrowingContinuation { continuation in
+                ready.attach(continuation)
+                listener.stateUpdateHandler = { status in
+                    switch status {
+                    case .ready: ready.succeed(())
+                    case .failed(let error): ready.fail(error)
+                    case .cancelled: ready.fail(CancellationError())
+                    default: break
+                    }
+                }
+                listener.start(queue: queue)
+            }
+        } catch {
+            listener.cancel()
+            throw error
+        }
+    }
+
+    func close() {
+        listener.cancel()
+        for connection in state.withLock({ $0.connections }) { connection.cancel() }
+    }
+
+    private func receiveRequest(_ connection: NWConnection, pending: Data = Data()) {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 16 * 1024) { [self] data, _, ended, error in
+            guard error == nil, let data, !data.isEmpty else { connection.cancel(); return }
+            var request = pending
+            request.append(data)
+            guard request.count < 64 * 1024 else { connection.cancel(); return }
+            let text = String(decoding: request, as: UTF8.self)
+            guard text.contains("\r\n\r\n") else {
+                if ended { connection.cancel() }
+                else { self.receiveRequest(connection, pending: request) }
+                return
+            }
+            let range = text.components(separatedBy: "\r\n").first { $0.lowercased().hasPrefix("range:") }
+            let offset = range.flatMap { $0.split(separator: "=").last?.split(separator: "-").first }
+                .flatMap { Int($0) } ?? 0
+            guard offset >= 0, offset < self.payload.count else { connection.cancel(); return }
+            self.state.withLock { $0.offsets.append(offset) }
+            var headers = [
+                range == nil ? "HTTP/1.1 200 OK" : "HTTP/1.1 206 Partial Content",
+                "Content-Length: \(self.payload.count - offset)",
+                "Content-Type: application/octet-stream", "Accept-Ranges: bytes",
+                "ETag: \"memozia-download-test\"", "Last-Modified: Mon, 01 Jan 2024 00:00:00 GMT",
+                "Connection: close"
+            ]
+            if range != nil {
+                headers.append("Content-Range: bytes \(offset)-\(self.payload.count - 1)/\(self.payload.count)")
+            }
+            let response = Data((headers.joined(separator: "\r\n") + "\r\n\r\n").utf8)
+            connection.send(content: response, completion: .contentProcessed { error in
+                guard error == nil else { connection.cancel(); return }
+                self.sendBody(connection, offset: offset)
+            })
+        }
+    }
+
+    private func sendBody(_ connection: NWConnection, offset: Int) {
+        guard offset < payload.count else { connection.cancel(); return }
+        let end = min(offset + 64 * 1024, payload.count)
+        connection.send(content: payload.subdata(in: offset..<end), completion: .contentProcessed { [self] error in
+            guard error == nil else { connection.cancel(); return }
+            self.queue.asyncAfter(deadline: .now() + .milliseconds(20)) {
+                self.sendBody(connection, offset: end)
+            }
+        })
     }
 }

@@ -11,16 +11,23 @@ final class BuiltInModelAccess: NSObject, NSWindowDelegate {
     var source = BuiltInQwenModel.defaultSource
     var progress = 0.0
     var isDownloading = false
+    var isPreparing = false
+    var isDeleting = false
     var errorMessage: String?
+    var storageError: String?
     var isInstalled = BuiltInQwenModel.isReady()
+    var hasLocalFiles = BuiltInModelStorage.hasFiles()
     @ObservationIgnored private var window: NSWindow?
     @ObservationIgnored private var downloadTask: Task<Void, Never>?
     @ObservationIgnored private var downloadID: UUID?
     @ObservationIgnored private var isCancelling = false
+    @ObservationIgnored private var preparationTask: Task<Void, any Error>?
     @ObservationIgnored private var waiters: [UUID: CheckedContinuation<Void, any Error>] = [:]
 
     func ensureAvailable() async throws {
         if isCancelling, let downloadTask { await downloadTask.value }
+        guard !isDeleting else { throw BuiltInModelError.busy }
+        if downloadTask == nil { try await prepareStorage() }
         try Task.checkCancellation()
         if BuiltInQwenModel.isReady() {
             isInstalled = true
@@ -48,6 +55,50 @@ final class BuiltInModelAccess: NSObject, NSWindowDelegate {
             }
         }
         try Task.checkCancellation()
+    }
+
+    func refreshStorage() async {
+        guard downloadTask == nil, !isDeleting else { refreshFileState(); return }
+        do { try await prepareStorage() }
+        catch is CancellationError {}
+        catch { storageError = error.localizedDescription }
+    }
+
+    private func prepareStorage() async throws {
+        if let preparationTask {
+            try await preparationTask.value
+            try Task.checkCancellation()
+            return
+        }
+        isPreparing = true
+        let task = Task { try await BuiltInModelStorage.prepare() }
+        preparationTask = task
+        defer {
+            preparationTask = nil
+            isPreparing = false
+            refreshFileState()
+        }
+        try await task.value
+        try Task.checkCancellation()
+    }
+
+    private func refreshFileState() {
+        isInstalled = BuiltInQwenModel.isReady()
+        hasLocalFiles = BuiltInModelStorage.hasFiles()
+    }
+
+    func deleteModel() {
+        guard downloadTask == nil, !isPreparing, !isDeleting else { return }
+        isDeleting = true
+        storageError = nil
+        Task {
+            defer {
+                isDeleting = false
+                refreshFileState()
+            }
+            do { try await BuiltInQwenInference.shared.removeModel() }
+            catch { storageError = error.localizedDescription }
+        }
     }
 
     func requestDownload() {
@@ -81,8 +132,9 @@ final class BuiltInModelAccess: NSObject, NSWindowDelegate {
     }
 
     func confirmDownload() {
-        guard downloadTask == nil else { return }
+        guard downloadTask == nil, !isPreparing, !isDeleting else { return }
         isDownloading = true
+        progress = 0
         errorMessage = nil
         let selectedSource = source
         let id = UUID()
@@ -123,6 +175,7 @@ final class BuiltInModelAccess: NSObject, NSWindowDelegate {
             downloadTask = nil
             downloadID = nil
             isCancelling = false
+            refreshFileState()
         }
         let pending = waiters.values
         waiters.removeAll()
@@ -187,6 +240,7 @@ struct BuiltInModelSettingsSection: View {
     let settingsVM: SettingsViewModel
     let isActive: Bool
     @State private var access = BuiltInModelAccess.shared
+    @State private var showDeleteConfirmation = false
 
     var body: some View {
         Section("内置模型") {
@@ -207,15 +261,49 @@ struct BuiltInModelSettingsSection: View {
                 }
             }
             .buttonStyle(.plain)
-            if access.isInstalled {
-                Label("模型已下载", systemImage: "checkmark.circle")
-                    .font(.caption).foregroundStyle(.secondary)
-            } else {
-                Button(access.isDownloading ? String(localized: "查看下载进度") : String(localized: "下载模型（约 1.8 GB）")) {
-                    settingsVM.setActiveLLMConfig(.builtInQwen)
-                    access.requestDownload()
+            HStack {
+                if access.isInstalled {
+                    Label("模型已下载", systemImage: "checkmark.circle")
+                        .font(.caption).foregroundStyle(.secondary)
+                } else {
+                    Button(access.isDownloading ? String(localized: "查看下载进度") : String(localized: "下载模型（约 1.8 GB）")) {
+                        settingsVM.setActiveLLMConfig(.builtInQwen)
+                        access.requestDownload()
+                    }
+                }
+                Spacer()
+                if access.hasLocalFiles {
+                    Button("删除内置模型", role: .destructive) { showDeleteConfirmation = true }
+                        .accessibilityIdentifier("deleteBuiltInModel")
+                        .disabled(access.isDownloading)
                 }
             }
+            if access.isPreparing { ProgressView("正在准备…") }
+            if access.isDeleting { ProgressView("正在删除内置模型…") }
+            LabeledContent("模型文件夹") {
+                Text(BuiltInQwenModel.folder.deletingLastPathComponent().path)
+                    .font(.caption).foregroundStyle(.secondary)
+                    .textSelection(.enabled)
+                    .accessibilityIdentifier("builtInModelFolder")
+            }
+        }
+        .disabled(access.isPreparing || access.isDeleting)
+        .task { await access.refreshStorage() }
+        .alert("删除内置模型？", isPresented: $showDeleteConfirmation) {
+            Button("删除", role: .destructive) { access.deleteModel() }
+                .accessibilityIdentifier("confirmDeleteBuiltInModel")
+            Button("取消", role: .cancel) {}
+                .accessibilityIdentifier("cancelDeleteBuiltInModel")
+        } message: {
+            Text("将删除内置模型文件及未完成的下载。下次使用时需要重新下载。")
+        }
+        .alert("错误", isPresented: Binding(
+            get: { access.storageError != nil },
+            set: { if !$0 { access.storageError = nil } }
+        )) {
+            Button("确定") { access.storageError = nil }
+        } message: {
+            Text(access.storageError ?? "")
         }
     }
 }

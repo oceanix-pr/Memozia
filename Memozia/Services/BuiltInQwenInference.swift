@@ -12,6 +12,7 @@ actor BuiltInQwenInference {
     private let gate = CancellableGate()
     private var container: MLXLMCommon.ModelContainer?
     private var loadedDirectory: URL?
+    private var modelLock: BuiltInModelFileLock?
     private var unloadTask: Task<Void, Never>?
 
     struct Input: Sendable {
@@ -68,12 +69,15 @@ actor BuiltInQwenInference {
             unloadTask = nil
             try Task.checkCancellation()
             if container == nil || loadedDirectory != directory {
+                unloadModel()
+                let lock = try BuiltInModelFileLock(root: directory.deletingLastPathComponent(), shared: true)
                 try BuiltInModelDownloader.verifyModel(at: directory)
                 Memory.cacheLimit = 64 * 1024 * 1024
                 container = try await VLMModelFactory.shared.loadContainer(
                     from: directory, using: BuiltInTokenizerLoader()
                 )
                 loadedDirectory = directory
+                modelLock = lock
             }
             guard let container else { throw BuiltInModelError.notDownloaded }
             let budget = min(maxTokens, BuiltInQwenModel.outputTokens)
@@ -141,6 +145,33 @@ actor BuiltInQwenInference {
         }
     }
 
+    /// Wait for generation to finish, then release mapped weights and keep the
+    /// inference gate until deletion completes. Other processes are excluded by
+    /// the same filesystem lock used for downloads and loaded model readers.
+    func removeModel(
+        directory: URL = BuiltInQwenModel.folder,
+        legacy: URL? = BuiltInQwenModel.legacyFolder
+    ) async throws {
+        try await gate.acquire()
+        unloadTask?.cancel()
+        unloadTask = nil
+        unloadModel()
+        do {
+            try await BuiltInModelStorage.remove(destination: directory, legacy: legacy)
+            await gate.release()
+        } catch {
+            await gate.release()
+            throw error
+        }
+    }
+
+    private func unloadModel() {
+        container = nil
+        loadedDirectory = nil
+        Memory.clearCache()
+        modelLock = nil
+    }
+
     private func scheduleUnload() {
         unloadTask = Task {
             do { try await Task.sleep(for: .seconds(30)) }
@@ -149,9 +180,7 @@ actor BuiltInQwenInference {
             do { try await gate.acquire() }
             catch { return }
             if !Task.isCancelled {
-                container = nil
-                loadedDirectory = nil
-                Memory.clearCache()
+                unloadModel()
             }
             await gate.release()
         }

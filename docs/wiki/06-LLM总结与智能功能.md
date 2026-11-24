@@ -12,7 +12,9 @@
 
 [BuiltInQwenModel](../../Memozia/Models/BuiltInQwenModel.swift) 定义独立于 API 配置的固定身份。设置页、录音及笔记详情页提供内置选项；没有外部配置时自动选中它。首次发起模型请求时，[BuiltInModelAccess](../../Memozia/Views/Settings/BuiltInModelDownloadView.swift) 询问是否下载约 1.8 GB 权重，确认后显示进度并继续原请求，取消则取消等待中的操作。后台 worker 只使用已经下载的权重。
 
-下载源按应用实际本地化语言选择，简体中文使用 HF-Mirror，其余语言使用 Hugging Face 官方源；确认窗口可更换源。下载器不改进程级 HF_ENDPOINT。两种源使用同一固定仓库提交和 SHA-256 清单；续传数据、跨进程锁与原子安装防止半成品被加载。
+下载源按应用实际本地化语言选择，简体中文使用 HF-Mirror，其余语言使用 Hugging Face 官方源；确认窗口可更换源。下载器不改进程级 HF_ENDPOINT。两种源使用同一固定仓库提交和 SHA-256 清单；续传数据、跨进程锁与原子安装防止半成品被加载。[BuiltInModelDownloader](../../Memozia/Services/BuiltInModelDownloader.swift) 使用下载代理按已接收字节持续更新进度，并对分块进度回调做 0.1 秒节流；取消时等待网络任务结束及续传数据生成，保存断点后再允许重试。
+
+模型保存在 `~/Documents/Memozia/LLM/Qwen3.5-2B/<revision>`，独立于可切换的条目数据目录。打开模型设置或首次使用时，[BuiltInModelStorage](../../Memozia/Services/BuiltInModelStorage.swift) 将旧 `Application Support/Memozia/BuiltInModels/Qwen3.5-2B` 中的模型和续传目录迁入新位置；先完成副本并原子发布，再移除原件，失败可重试，同名目标保留且不覆盖。设置页显示路径并提供「删除内置模型」，确认后清理新旧目录中的模型版本与未完成下载，保留共享锁文件及其他模型。删除会等待本进程推理结束并卸载缓存；其他进程仍在下载或持有模型读锁时明确报错。删除后再次使用会重新询问下载。
 
 [BuiltInQwenInference](../../Memozia/Services/BuiltInQwenInference.swift) 通过 MLX Metal 在本机直接运行文字与图片推理，不需要 API Key。模型加载、prefill 和解码由可取消串行门保护；取消时等待生成任务结束再交接。空闲后卸载模型。内置模型使用较短的文本分段，逐帧分析视频；超过上下文预算时报告错误。
 
