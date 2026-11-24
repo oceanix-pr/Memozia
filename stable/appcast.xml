@@ -3,25 +3,27 @@
     <channel>
         <title>Memozia</title>
         <item>
-            <title>9.8.6</title>
-            <pubDate>Mon, 23 Nov 2026 20:15:46 +0800</pubDate>
-            <sparkle:version>166</sparkle:version>
-            <sparkle:shortVersionString>9.8.6</sparkle:shortVersionString>
+            <title>9.8.7</title>
+            <pubDate>Tue, 24 Nov 2026 20:47:44 +0800</pubDate>
+            <sparkle:version>167</sparkle:version>
+            <sparkle:shortVersionString>9.8.7</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.6 (166)
+            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.7 (167)
 
-Meeting recordings can now capture audio from other apps with macOS’s system audio recording permission. Microphone-only recordings need only microphone access. Memozia asks for screen recording access when you take a screenshot or record video.
+- Choose **Built-in Qwen3.5-2B** for text summaries, image understanding and to-do extraction on your Mac, without an API key. It is the default model when you have no saved API configurations. You can select it in Settings or the model picker.
+- The first use asks you to download approximately 1.8 GB of model files. Choose Hugging Face or HF Mirror, then continue your operation after the download. Simplified Chinese defaults to HF Mirror. Other languages default to Hugging Face.
+- Downloads verify the pinned model files before use. Once installed, the built-in model runs locally. Longer summaries are processed in smaller sections to fit its context window.
 
-If system audio cannot start, the main window offers to open System Settings or use just the microphone for this recording. Choosing the microphone keeps your usual recording source for the next meeting.
+- 可选择「内置 Qwen3.5-2B」，在 Mac 上完成文字总结、图片理解和待办提取，无需 API Key。没有已保存 API 配置时，默认使用内置模型。也可在设置或模型选择器中选择。
+- 首次使用会询问是否下载约 1.8 GB 的模型文件，可选择 Hugging Face 或 HF Mirror。下载完成后自动继续当前操作。简体中文默认使用镜像源，其他语言默认使用官方源。
+- 模型文件经过固定版本和完整性校验后使用。下载完成后，内置模型在本机运行。较长内容会分段处理，以适应模型的上下文长度。
 
-会议录音现在可以只授权系统录音来录制其他应用的声音。仅录麦克风时，只需麦克风权限。截图或录制视频时，Memozia 才会请求屏幕录制权限。
+This Apple Silicon preview requires macOS 15 or later. The app is ad-hoc signed with Hardened Runtime enabled and has not been notarized by Apple. Sparkle verifies the update ZIP using Ed25519. The model weights download separately from the app.
 
-如果系统录音无法启动，可在主窗口打开系统设置，或选择「本次仅录麦克风」。下次会议仍会使用原先选择的录音来源。
-
-This preview runs on Apple Silicon with macOS 15 or later. It is ad-hoc signed with Hardened Runtime and has not been notarized by Apple. Sparkle verifies the update ZIP using Ed25519. To update from Memozia 9.7.0 or later, check for updates in the app. For a first installation, extract the ZIP and copy `Memozia.app` to Applications.
+Memozia 9.7.0 and later can check for updates in the app. For a first installation, extract the ZIP and copy `Memozia.app` to Applications. macOS may ask you to confirm access to the Memozia Keychain item when opening protected data after an upgrade.
 ]]></description>
-            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.6/Memozia-v9.8.6-166-arm64.zip" length="35990439" type="application/octet-stream" sparkle:edSignature="H2l/Gqb3FstldgfCrt9PYLtfyGX3xu2D3/t9AjrJjJYHpUmAj0DUY6362a5jmKRD1YSPAEx+udDaYFmM07GtAw=="/>
+            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.7/Memozia-v9.8.7-167-arm64.zip" length="44855705" type="application/octet-stream" sparkle:edSignature="p0snJOGFAOQWDk7QdYMTxtOmqLkp7P9qxxwdJkKmvMVlQn+aJVP83Dxy1UGMIjslH+1l02vPpMj2XneEavozDw=="/>
         </item>
     </channel>
 </rss>
