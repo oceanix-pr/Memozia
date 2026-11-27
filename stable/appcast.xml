@@ -3,27 +3,31 @@
     <channel>
         <title>Memozia</title>
         <item>
-            <title>9.8.8</title>
-            <pubDate>Tue, 24 Nov 2026 22:12:19 +0800</pubDate>
-            <sparkle:version>168</sparkle:version>
-            <sparkle:shortVersionString>9.8.8</sparkle:shortVersionString>
+            <title>9.8.9</title>
+            <pubDate>Fri, 27 Nov 2026 14:16:57 +0800</pubDate>
+            <sparkle:version>169</sparkle:version>
+            <sparkle:shortVersionString>9.8.9</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.8 (168)
+            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.9 (169)
 
-- Model download progress now updates while large files are transferring. Cancelling a download preserves its resume information so you can continue later.
-- Built-in model files are stored under `~/Documents/Memozia/LLM`. Opening model settings or using the model migrates existing files and resume records from the previous location without downloading them again.
-- Settings now shows the model folder and a **Delete Built-in Model** button. Deletion requires confirmation, waits for current inference to finish, and clears model files and unfinished downloads. Files remain protected while another process is downloading or using the model. The next use asks you to download the model again.
+- Switching recordings or notes during a Reminders export now keeps results with the original entry. Edits made while to-dos are being generated or exported are preserved.
+- Failed background transcription and summary jobs stay in the queue for retry. Cancelling a job affects only its active step. Quitting waits for queued transcript writes, including their preparation.
+- Long transcripts now restore in the background. In two local cold-start tests with 3,000 timestamped segments, the longest main-thread pause dropped from about 1.8 seconds to under 3 milliseconds.
+- Repeated searches reuse an in-memory index. Adding an entry updates its month in the sidebar, and image previews decode at display size and refresh after annotation.
+- Microphone samples now go through a bounded write queue. If the disk falls behind and audio is lost, Memozia reports it. Speaker diarization now frees native memory after processing silence.
 
-- 修复大文件传输期间下载进度停在 0% 的问题。取消下载后保留续传信息，可在重试时继续下载。
-- 内置模型保存到 `~/Documents/Memozia/LLM`。打开模型设置或使用模型时，会迁移旧目录中的模型与续传文件，复用已下载内容。
-- 设置页显示模型文件夹，并新增「删除内置模型」按钮。删除前需要确认，执行时等待当前推理结束，清理模型及未完成下载；其他进程仍在下载或使用时会提示稍后重试。删除后再次使用会重新询问下载。
+- 在提醒事项导出期间切换录音或笔记，写入结果会回到原条目。生成或导出待办期间做的人工编辑也会保留。
+- 后台转写和总结失败后保留任务以便重试。取消任务只影响它正在执行的步骤。退出时会等待已提交的转写完成编码和写盘。
+- 长转写改为后台恢复。在两次包含 3,000 个带时间戳片段的本机冷启动测试中，主线程最长停顿从约 1.8 秒降至 3 毫秒以内。
+- 连续搜索可复用内存索引。新增条目只刷新侧边栏对应月份，图片预览按显示尺寸解码，重新标注后会刷新。
+- 麦克风采样通过有界队列写盘。磁盘过慢导致采样丢失时会提示。修复了说话人分离处理静音片段时的内存泄漏。
 
-This Apple Silicon preview requires macOS 15 or later. The app is ad-hoc signed with Hardened Runtime enabled and has not been notarized by Apple. Sparkle verifies the update ZIP using Ed25519. Model weights download separately from the app.
+This Apple Silicon preview requires macOS 15 or later. It uses ad-hoc signing with Hardened Runtime and is distributed without Apple notarization. Sparkle verifies the update ZIP with Ed25519. In Memozia 9.7.0 or later, choose **Check for Updates**. For a first installation, extract the ZIP and copy `Memozia.app` to Applications.
 
-Memozia 9.7.0 and later can check for updates in the app. For a first installation, extract the ZIP and copy `Memozia.app` to Applications. macOS may ask you to confirm access to the Memozia Keychain item when opening protected data after an upgrade.
+本版为 Apple Silicon 未公证预览版，要求 macOS 15 或更高版本，使用临时签名并启用 Hardened Runtime。Sparkle 通过 Ed25519 验证更新包。9.7.0 及以上版本可在应用内检查更新。首次安装请解压 ZIP，将 `Memozia.app` 拷贝到「应用程序」。
 ]]></description>
-            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.8/Memozia-v9.8.8-168-arm64.zip" length="44890515" type="application/octet-stream" sparkle:edSignature="TkYbcP2kiA670wVTdvJKcMA0/vfh46zSeN5L9Y1Z0u+3iSefioWsMetkPZ4lmX/xUV2/43Xuq7YdNr7KAen0Dw=="/>
+            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.9/Memozia-v9.8.9-169-arm64.zip" length="44962847" type="application/octet-stream" sparkle:edSignature="olnKRqF6vvSuEIRVmhhqlQundYXyyg1sc+2ufNbYYC/0gBexIrjvrMqUW9Wy8fPelxm/JYWvhmDqy9PdoWZMAA=="/>
         </item>
     </channel>
 </rss>
