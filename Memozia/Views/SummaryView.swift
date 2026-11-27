@@ -85,6 +85,8 @@ struct SummaryView: View {
             viewModel.loadTodoDocument(for: recording)
         }
         .onChange(of: recording.id) { _, newID in
+            showTodoEdit = false
+            editingTodoItem = nil
             viewModel.loadTodoDocument(for: recording)
         }
         .sheet(isPresented: $showTodoEdit) {
@@ -341,7 +343,7 @@ struct SummaryView: View {
                     Text(viewModel.todoExtractionProgressText)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                } else if let doc = viewModel.currentTodoDocument {
+                } else if let doc = viewModel.currentTodoDocument(for: recording) {
                     let exportedCount = doc.items.filter { $0.status == .exported }.count
                     if exportedCount > 0 {
                         Text("已写入提醒事项 \(exportedCount)/\(doc.items.count)")
@@ -363,19 +365,19 @@ struct SummaryView: View {
                     .buttonStyle(.borderless)
                     .help("手动新增待办")
                     .accessibilityLabel(Text("手动新增待办"))
-                    .disabled(isReadOnly)
+                    .disabled(isReadOnly || !viewModel.todoEditor.ready)
                 }
 
                 // 写入提醒事项按钮
                 if !viewModel.isExtractingTodos,
-                   let doc = viewModel.currentTodoDocument,
+                   let doc = viewModel.currentTodoDocument(for: recording),
                    !doc.items.isEmpty {
                     let hasPending = doc.items.contains { $0.status != .exported }
                     if hasPending {
                         Button {
                             Task {
                                 await viewModel.writeTodosToReminders(
-                                    recording: recording,
+                                    for: recording,
                                     defaultListID: defaultReminderListID
                                 )
                             }
@@ -424,12 +426,12 @@ struct SummaryView: View {
             }
 
             // 待办列表
-            if let doc = viewModel.currentTodoDocument {
+            if let doc = viewModel.currentTodoDocument(for: recording) {
                 VStack(spacing: 6) {
                     ForEach(doc.items) { item in
                         TodoItemRow(
                             item: item,
-                            allowsEditing: isProMode && !isReadOnly,
+                            allowsEditing: isProMode && !isReadOnly && !viewModel.isWritingTodos,
                             onEdit: {
                                 editingTodoItem = item
                                 showTodoEdit = true

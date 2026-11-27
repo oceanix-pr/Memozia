@@ -521,6 +521,33 @@ extension AudioRecording {
         let rawText: String
     }
 
+    /// 临时片段尚未关联到上下文。让出主线程后由调用方复核版本，再一次替换全部关系。
+    @MainActor
+    static func stageTranscript(_ items: [TranscriptSnapshotItem]) async throws -> [TranscriptSegment] {
+        var segments: [TranscriptSegment] = []
+        segments.reserveCapacity(items.count)
+        let clock = ContinuousClock()
+        var slice = clock.now
+        for item in items {
+            segments.append(TranscriptSegment(startTime: item.startTime, endTime: item.endTime,
+                                              speaker: item.speaker, text: item.rawText))
+            if slice.duration(to: clock.now) >= .milliseconds(6) {
+                await Task.yield()
+                try Task.checkCancellation()
+                slice = clock.now
+            }
+        }
+        try Task.checkCancellation()
+        return segments
+    }
+
+    @MainActor
+    func replaceSegments(with replacement: [TranscriptSegment], in context: ModelContext) {
+        let previous = segments
+        segments = replacement
+        for segment in previous { context.delete(segment) }
+    }
+
     /// 主线程只做 SwiftData 快照（排序 + 取原始文本），不解密
     var transcriptSnapshot: [TranscriptSnapshotItem] {
         segments

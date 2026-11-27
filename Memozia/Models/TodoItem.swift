@@ -142,7 +142,7 @@ struct TodoItem: Codable, Identifiable, Equatable, Sendable {
 }
 
 /// 待办集合文档（序列化为 todos.json）
-struct TodoDocument: Codable, Sendable {
+struct TodoDocument: Codable, Equatable, Sendable {
     /// 来源类型：summary（总结）/ quicknote（快捷笔记）
     var source: String
     /// 使用的 LLM 模型名称
@@ -188,12 +188,15 @@ extension TodoDocument {
     static let fileName = "todos.json"
 
     /// 写入指定文件夹（G-1: 加密存储）
-    func save(to folderURL: URL) throws {
+    @discardableResult
+    func save(to folderURL: URL) throws -> Self {
         let url = folderURL.appendingPathComponent(Self.fileName)
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(self)
+        // ISO 8601 的磁盘精度为秒。返回实际保存的版本供后续编辑和导出比较。
+        let persisted = try Self.decodeDocument(data)
         // G-1: 加密后写入磁盘
         guard let jsonString = String(data: data, encoding: .utf8) else {
             throw EncodingError.invalidValue(data, .init(codingPath: [], debugDescription: "无法编码为 UTF-8 字符串"))
@@ -201,6 +204,7 @@ extension TodoDocument {
         try EncryptionService.encryptAndWrite(jsonString, to: url)
         // 通知列表刷新「已拆待办」状态索引（带出文件夹名，便于只重算该条目）
         TodoDocument.postDidChange(folder: folderURL)
+        return persisted
     }
 
     /// 条目文件夹里是否已存在待办文档（只做存在性判断，不读盘、不解密）。
@@ -209,27 +213,33 @@ extension TodoDocument {
         FileManager.default.fileExists(atPath: folderURL.appendingPathComponent(fileName).path)
     }
 
-    /// 从指定文件夹读取（G-1: 支持加密文件，向后兼容明文）
-    static func load(from folderURL: URL) -> TodoDocument? {
+    /// nil 只表示文件尚不存在。编辑路径必须保留读取、解密和格式错误。
+    static func read(from folderURL: URL) throws -> TodoDocument? {
         let url = folderURL.appendingPathComponent(fileName)
-        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
-
-        // G-1: 尝试解密，解密失败则视为明文（向后兼容）
-        guard let fileContent = EncryptionService.decryptFileOrPlaintext(at: url),
-              let data = fileContent.data(using: .utf8) else {
-            return nil
-        }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return try? decoder.decode(TodoDocument.self, from: data)
+        let stored: String
+        do { stored = try String(contentsOf: url, encoding: .utf8) }
+        catch let error as CocoaError where error.code == .fileReadNoSuchFile { return nil }
+        let plain = try EncryptionService.decryptStoredText(stored)
+        return try decodeDocument(Data(plain.utf8))
     }
 
-    /// 删除指定文件夹中的 todos.json
-    static func remove(from folderURL: URL) {
-        let url = folderURL.appendingPathComponent(fileName)
-        guard FileManager.default.fileExists(atPath: url.path) else { return }
-        try? FileManager.default.removeItem(at: url)
-        // 通知列表刷新「已拆待办」状态索引（带出文件夹名，便于只重算该条目）
-        TodoDocument.postDidChange(folder: folderURL)
+    private static func decodeDocument(_ data: Data) throws -> Self {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode(Self.self, from: data)
+    }
+
+    static func load(from folderURL: URL) -> TodoDocument? {
+        do { return try read(from: folderURL) }
+        catch {
+            FileSyncService.logWarning("待办文件读取失败：\(UserFacingError.summary(for: error))")
+            return nil
+        }
+    }
+
+    static func remove(from folderURL: URL) throws {
+        do { try FileManager.default.removeItem(at: folderURL.appendingPathComponent(fileName)) }
+        catch let error as CocoaError where error.code == .fileNoSuchFile { return }
+        postDidChange(folder: folderURL)
     }
 }

@@ -360,11 +360,17 @@ enum EncryptionService {
     static func decryptForExternalAccess(_ value: String?) throws -> String {
         guard let value, !value.isEmpty else { return "" }
         guard value.utf8.count <= 4 * 1024 * 1024 else { throw MCPQueryError.responseTooLarge }
+        do { return try decryptStoredText(value) }
+        catch { throw MCPQueryError.readFailed }
+    }
+
+    /// 保留旧版明文，发现损坏密文时向写入方传播错误，避免以空串覆盖旧文件。
+    static func decryptStoredText(_ value: String) throws -> String {
         guard let data = Data(base64Encoded: value), data.count >= 28 else { return value }
         do { return try decrypt(value) }
         catch {
             markDecryptionFailureIfNeeded(value)
-            throw MCPQueryError.readFailed
+            throw error
         }
     }
 

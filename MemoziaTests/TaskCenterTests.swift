@@ -154,25 +154,50 @@ struct TaskCenterTests {
 
     // MARK: - 取消隔离
 
+    @Test("取消等待推理槽位的任务不会停止当前执行或后续步骤")
+    func cancelWaitingTranscription() async throws {
+        let center = TaskCenter()
+        let gate = Gate()
+        let started = Flag()
+        let wrongCancel = Flag()
+        let a = center.enqueue(makeJob(folder: "a", steps: [step(.transcription, run: {
+            started.set()
+            await gate.wait()
+            return .succeeded
+        })]))
+        try await waitUntil { started.value }
+        let b = center.enqueue(makeJob(folder: "b", steps: [
+            step(.transcription, run: { Issue.record("排队项不应执行"); return .failed }, cancel: { wrongCancel.set() }),
+            step(.summary, run: { .succeeded }, cancel: { wrongCancel.set() })
+        ]))
+        try await Task.sleep(for: .milliseconds(10))
+        center.cancel(jobID: b)
+        gate.open()
+        try await waitUntil { self.state(of: center, id: a) == .done }
+        #expect(!wrongCancel.value)
+    }
+
     @Test("取消一个 Job 不触发另一个 Job 的取消，也不影响其完成")
     func cancellingOneJobDoesNotAffectAnother() async throws {
         let center = TaskCenter()
         let gateA = Gate()
         let gateB = Gate()
+        let aStarted = Flag()
+        let bStarted = Flag()
         let aCancelled = Flag()
         let bCancelled = Flag()
 
         let idA = center.enqueue(makeJob(
             folder: "fa",
-            steps: [step(.summary, run: { await gateA.wait(); return .succeeded }, cancel: { aCancelled.set() })]
+            steps: [step(.summary, run: { aStarted.set(); await gateA.wait(); return .succeeded }, cancel: { aCancelled.set() })]
         ))
         let idB = center.enqueue(makeJob(
             folder: "fb",
-            steps: [step(.summary, run: { await gateB.wait(); return .succeeded }, cancel: { bCancelled.set() })]
+            steps: [step(.summary, run: { bStarted.set(); await gateB.wait(); return .succeeded }, cancel: { bCancelled.set() })]
         ))
 
         try await waitUntil {
-            self.state(of: center, id: idA) == .running && self.state(of: center, id: idB) == .running
+            aStarted.value && bStarted.value
         }
 
         center.cancel(jobID: idA)
@@ -259,17 +284,18 @@ struct TaskCenterTests {
     func watchdogTimeoutFailsStep() async throws {
         // 注入极短超时，确定性地复现「执行体永不返回」
         let center = TaskCenter(stepTimeoutProvider: { _ in 0.05 })
-        let id = center.enqueue(makeJob(
-            folder: "hang",
-            steps: [step(.summary) {
-                try? await Task.sleep(for: .seconds(30))
-                return .succeeded
-            }]
-        ))
+        let timedOut = Flag()
+        let explicitlyCancelled = Flag()
+        let work = TaskCenter.Step(kind: .summary, run: { _ in
+            try? await Task.sleep(for: .seconds(30))
+            return .succeeded
+        }, cancel: { explicitlyCancelled.set() }, onTimeout: { timedOut.set() })
+        let id = center.enqueue(makeJob(folder: "hang", steps: [work]))
         try await waitUntil(timeout: 5) { self.state(of: center, id: id) == .failed }
         #expect(self.state(of: center, id: id) != .done)
         // 超时必须落成「超时」稳定码，界面据此提示并允许重试（而不是笼统的未知失败）
         #expect(center.failedJobs.first?.steps.first?.errorCode == .timedOut)
+        #expect(timedOut.value && !explicitlyCancelled.value)
     }
 
     // MARK: - 超时孤儿不释放槽位（generation/lease）

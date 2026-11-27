@@ -198,6 +198,7 @@ enum BackgroundWorker {
         let sem = DispatchSemaphore(value: 0)
         Task { @MainActor in
             let context = ModelContext(container)
+            RecordingViewModel().resetStaleProcessingStates(context: context)
             await drainQueue(context: context)
             // 等待最后一项任务的条目镜像落盘后再退出：数据库保存成功通常可下次补写，
             // 但**文件是权威源**，直接 exit(0) 可能丢掉尚未写完的 transcript/summary 镜像。
@@ -315,18 +316,21 @@ enum BackgroundWorker {
 
     // MARK: - 阶段 2：队列处理（worker 与主应用兜底续跑共用）
 
+    @MainActor private static var isDraining = false
+
     /// 串行消费后台任务队列直到清空或收到停止信号。
     /// worker 进程与主应用（RootView 启动兜底）共用此逻辑，各自传入自己的 ModelContext
     @MainActor
     static func drainQueue(context: ModelContext) async {
+        guard !isDraining else { return }
+        isDraining = true
+        defer { isDraining = false }
         let recordingVM = RecordingViewModel()
         let quickNoteVM = QuickNoteViewModel()
-        // 重置上次崩溃遗留的 .processing 状态（B-6 同款逻辑）
-        recordingVM.resetStaleProcessingStates(context: context)
 
         while !stopFlagExists() {
             let entry: BackgroundTaskEntry
-            switch BackgroundTaskQueue.peekFirstReadyResult() {
+            switch BackgroundTaskQueue.peekFirstReadyResult(excluding: ForegroundTaskRecord.activeIDs) {
             case .success(.some(let next)):
                 entry = next
             case .success(.none):
@@ -345,8 +349,7 @@ enum BackgroundWorker {
             )
             switch outcome {
             case .done, .targetMissing:
-                // 兜底出队（幂等）：ViewModel 埋点通常已在任务结束时出队，
-                // 此处覆盖目标确实不存在等未走埋点路径的条目
+                // 只有此处负责结算已认领的后台条目。
                 guard BackgroundTaskQueue.removeEntry(id: entry.id) else {
                     logger.fault("后台任务已执行但出队未落盘，立即停止以避免再次执行")
                     return
@@ -354,7 +357,6 @@ enum BackgroundWorker {
             case .retryable(let code), .blocked(let code):
                 // **保留条目** + 指数退避（超上限进失败区，不静默删除），
                 // 并继续处理其它已就绪条目（退避窗口内的这条会被 peekFirstReady 跳过）
-                _ = BackgroundTaskQueue.clearInProgress()
                 guard BackgroundTaskQueue.recordRetryableFailure(id: entry.id, code: code) else {
                     logger.fault("后台任务失败但退避记录未落盘，停止本轮以避免重复执行: \(entry.kind.rawValue) \(entry.folderName)")
                     return
@@ -394,12 +396,11 @@ enum BackgroundWorker {
                 return .targetMissing
             }
             // 远端模式读不到密钥时不得以空凭据发起请求（否则被 401 误报成「Key 无效」）
-            if let code = BackgroundTaskKeyGuard.blockReason(
-                mode: STTMode(rawValue: snapshot.mode) ?? .local,
-                keyReadResult: STTConfigSnapshot.readWhisperAPIKeyResult()
-            ) {
-                logger.fault("转写任务配置阻塞: \(entry.folderName) — \(code.rawValue, privacy: .public)")
-                return .blocked(code: code)
+            let stt: STTConfig
+            do { stt = try snapshot.restore(for: .worker) }
+            catch {
+                logger.fault("转写任务配置阻塞: \(entry.folderName) — \(error.rawValue, privacy: .public)")
+                return .blocked(code: error)
             }
             let recording: AudioRecording?
             do {
@@ -413,19 +414,9 @@ enum BackgroundWorker {
                 logger.warning("未找到录音记录，跳过: \(entry.folderName)")
                 return .targetMissing
             }
-            // 入队幂等：条目已在队列中，startTranscription 内部埋点不会重复入队；
-            // 结束时埋点出队，随后 drainQueue 的兜底出队为空操作
-            let task = recordingVM.startTranscription(
-                recording: recording,
-                sttConfig: snapshot.config,
-                context: context
-            )
-            await task.value
-            // 转写失败（模型缺失/网络/密钥等）可重试；其余（完成/取消）出队
-            if recording.transcriptionStatus == .failed {
-                return .retryable(code: .processingFailed)
-            }
-            return .done
+            let outcome = await recordingVM.startTranscription(recording: recording, sttConfig: stt,
+                                                                context: context, origin: .worker).value
+            return outcome == .failed ? .retryable(code: .processingFailed) : .done
 
         case .summary:
             let recording: AudioRecording?
@@ -455,7 +446,7 @@ enum BackgroundWorker {
                 llmConfig: llmConfig,
                 context: context,
                 asMeeting: entry.isMeeting,
-                experience: entry.experience
+                experience: entry.experience, origin: .worker
             )
             // 结论由 ViewModel 给出：只有「本次确实产出并持久化」才算完成，
             // 失败按可重试保留（旧实现无条件视为 completed，网络/模型失败被静默出队）
@@ -492,9 +483,8 @@ enum BackgroundWorker {
                 for: note,
                 llmConfig: llmConfig,
                 context: context,
-                experience: entry.experience
+                experience: entry.experience, origin: .worker
             )
-            // 步骤结论由 ViewModel 落库；此处只等待完成（成功/失败/取消都由 VM 内部处理与出队）
             switch await task.value {
             case .succeeded: return .done
             case .cancelled: return .done

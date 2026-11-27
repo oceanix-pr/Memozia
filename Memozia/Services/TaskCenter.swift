@@ -352,6 +352,7 @@ final class TaskCenter {
         /// 永远覆盖不了新代次（compare-and-swap 语义），不需要在闭包里手写代次判断。
         let run: @MainActor (StepFailure) async -> StepOutcome
         let cancel: @MainActor () -> Void
+        var onTimeout: (@MainActor () -> Void)? = nil
         /// 失败原因稳定码：仅在失败/超时时由调度器写入（执行体先写进 `failure`）
         var errorCode: TaskErrorCode? = nil
         /// 本步骤的结束时刻：供队列面板展示「失败时间」
@@ -456,7 +457,7 @@ final class TaskCenter {
             return existing.id
         }
         jobs.append(job)
-        logger.info("任务入队：\(job.title, privacy: .public) 步骤=\(kinds.map(\.rawValue).joined(separator: ","), privacy: .public)")
+        logger.info("任务入队：\(job.id, privacy: .public) 步骤=\(kinds.map(\.rawValue).joined(separator: ","), privacy: .public)")
         pump()
         return job.id
     }
@@ -477,10 +478,10 @@ final class TaskCenter {
 
     func cancel(jobID: UUID) {
         guard let idx = jobs.firstIndex(where: { $0.id == jobID }) else { return }
-        logger.info("任务取消：\(self.jobs[idx].title, privacy: .public)")
+        logger.info("任务取消：\(jobID, privacy: .public)")
+        let active = jobs[idx].steps.first { $0.state == .running }
         jobs[idx].state = .cancelled
-        // 取消所有步骤的底层任务（含未开始的；既有 cancel 入口幂等，重复调用安全）
-        for step in jobs[idx].steps { step.cancel() }
+        active?.cancel()
         jobTasks[jobID]?.cancel()
         jobTasks[jobID] = nil
         runningJobIDs.remove(jobID)
@@ -501,14 +502,16 @@ final class TaskCenter {
         guard let idx = jobs.firstIndex(where: { $0.id == jobID }) else { return }
         let stepIdx = jobs[idx].currentStep
         guard stepIdx < jobs[idx].steps.count, jobs[idx].steps[stepIdx].kind.canPause else { return }
-        jobs[idx].steps[stepIdx].cancel()
+        if jobs[idx].steps[stepIdx].state == .running {
+            jobs[idx].steps[stepIdx].cancel()
+        }
         jobs[idx].steps[stepIdx].state = .paused
         jobs[idx].state = .paused
         jobTasks[jobID]?.cancel()
         jobTasks[jobID] = nil
         runningJobIDs.remove(jobID)
         cancelGateWaiters(owner: jobID)
-        logger.info("任务暂停：\(self.jobs[idx].title, privacy: .public)")
+        logger.info("任务暂停：\(jobID, privacy: .public)")
         pump()
     }
 
@@ -539,7 +542,7 @@ final class TaskCenter {
         guard jobs[idx].steps[stepIdx].errorCode?.isRetryable ?? true else { return }
         resetStep(at: stepIdx, inJobAt: idx)
         jobs[idx].state = .queued
-        logger.info("重试失败步骤：\(self.jobs[idx].title, privacy: .public) 步骤=\(self.jobs[idx].steps[stepIdx].kind.rawValue, privacy: .public)")
+        logger.info("重试失败步骤：\(jobID, privacy: .public) 步骤=\(self.jobs[idx].steps[stepIdx].kind.rawValue, privacy: .public)")
         pump()
     }
 
@@ -551,7 +554,7 @@ final class TaskCenter {
         }
         jobs[idx].currentStep = 0
         jobs[idx].state = .queued
-        logger.info("重新执行任务：\(self.jobs[idx].title, privacy: .public)")
+        logger.info("重新执行任务：\(jobID, privacy: .public)")
         pump()
     }
 
@@ -622,9 +625,9 @@ final class TaskCenter {
 
     /// 顺序执行 Job 内的各步骤；每一步先取资源类槽位，再 await 执行体
     private func runJob(id: UUID) async {
-        defer { completeJob(id: id) }
+        defer { if !Task.isCancelled { completeJob(id: id) } }
 
-        while true {
+        while !Task.isCancelled {
             guard let idx = jobs.firstIndex(where: { $0.id == id }) else { return }
             if jobs[idx].state == .cancelled || jobs[idx].state == .paused { return }
             let stepIdx = jobs[idx].currentStep
@@ -636,7 +639,7 @@ final class TaskCenter {
             guard await gate.acquire(owner: id) else { return }
 
             // 等待槽位期间可能被取消 / 暂停 / 移出
-            guard let idx2 = jobs.firstIndex(where: { $0.id == id }),
+            guard !Task.isCancelled, let idx2 = jobs.firstIndex(where: { $0.id == id }),
                   jobs[idx2].state == .running else {
                 gate.release()
                 return
@@ -647,7 +650,7 @@ final class TaskCenter {
             // 槽位由执行体（worker）在自己的结束路径释放——正常完成或孤儿退出都算。
             // 这里**不**释放：超时/取消后孤儿仍在跑时提前放行，会让重试与旧执行在同资源类并发。
 
-            guard let idx3 = jobs.firstIndex(where: { $0.id == id }) else { return }
+            guard !Task.isCancelled, let idx3 = jobs.firstIndex(where: { $0.id == id }) else { return }
             if jobs[idx3].state == .cancelled || jobs[idx3].state == .paused { return }
 
             switch result.outcome {
@@ -725,7 +728,7 @@ final class TaskCenter {
                 self?.markResourceClassRunningAgain(resourceClass)
                 workerFinished.set()
             }
-            guard let self,
+            guard !Task.isCancelled, let self,
                   let i = self.jobs.firstIndex(where: { $0.id == jobID }),
                   stepIndex < self.jobs[i].steps.count else {
                 box.deliver(.failed)
@@ -741,6 +744,10 @@ final class TaskCenter {
             if box.deliver(.failed) {
                 // 打上「超时」稳定码；若期间已重试换了新盒，则写入旧盒、不影响新代次
                 failureBox?.code = .timedOut
+                if let step = self?.jobs.first(where: { $0.id == jobID })?.steps[stepIndex],
+                   step.state == .running, step.failure === failureBox {
+                    (step.onTimeout ?? step.cancel)()
+                }
                 self?.markResourceClassStopping(resourceClass)
                 self?.logger.error(
                     "任务步骤超时：「\(kind.rawValue, privacy: .public)」超过 \(Int(timeout), privacy: .public)s 未返回；槽位保留给未退出的执行体，避免重试与旧执行并发")

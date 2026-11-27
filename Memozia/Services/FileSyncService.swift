@@ -422,7 +422,7 @@ enum FileSyncService {
                 transcriptFileDate.map { databaseDate.timeIntervalSince($0) > 1 } ?? true
             } ?? false
             // 「库里有转写」改用标量 transcriptModifiedAt 判断：写入/恢复转写的两条路径
-            //（saveTranscriptToFolder / loadTranscriptIfNeeded）都会写该字段，与「有片段」等价。
+            //（转写或编辑保存 / loadTranscriptIfNeeded）都会写该字段，与「有片段」等价。
             // 旧写法用 `recording.segments.isEmpty` 作为分支条件，会对每条录音触发一次关系
             // fault（额外 SQL + 实例化全部片段），在对账循环里形成 N+1
             let databaseHasTranscript = recording.transcriptModifiedAt != nil
@@ -433,17 +433,8 @@ enum FileSyncService {
             if databaseHasTranscript,
                (transcriptRepairForced || !transcriptMirrorExists || databaseTranscriptIsNewer),
                !recording.segments.isEmpty {
-                let items = recording.segments.sorted { $0.startTime < $1.startTime }.map {
-                    TranscriptMirrorItem(
-                        startTime: $0.startTime,
-                        endTime: $0.endTime,
-                        speaker: ($0.speaker?.isEmpty == false) ? $0.speaker : nil,
-                        text: $0.decryptedText
-                    )
-                }
-                EntryMirrorStore.shared.submitTranscript(
-                    items, folderName: folderName, to: recording.transcriptFileURL
-                )
+                EntryMirrorStore.shared.submitStoredTranscript(recording.transcriptSnapshot,
+                    folderName: folderName, to: recording.transcriptFileURL)
                 repairedMirrors += 1
                 transcriptRepaired = true
             } else if transcriptMirrorExists, !databaseHasTranscript {
@@ -627,7 +618,8 @@ enum FileSyncService {
         let persistedAtStart = persistedFolderNames(among: candidateFolderNames, context: context)
 
         var occupiedFolderNames = allExistingFolders
-        for (scanIndex, result) in scanResults.enumerated() {
+        scan: for (scanIndex, result) in scanResults.enumerated() {
+            if Task.isCancelled { break }
             // 每条目含三次镜像加载尝试（可能触发懒加载 fault）：按批让出，
             // 避免首轮大库插入形成一段长阻塞
             if scanIndex > 0, scanIndex.isMultiple(of: 20) { await Task.yield() }
@@ -642,27 +634,28 @@ enum FileSyncService {
                     continue
                 }
                 occupiedFolderNames.insert(folderName)
-                let recording = AudioRecording(
-                    fileName: data.title
-                        ?? makeDisplayName(folderName: data.folderName, fileName: data.storedFileName),
-                    fileExtension: data.fileExtension,
-                    duration: data.duration,
-                    storedFileName: data.storedFileName,
-                    folderName: data.folderName,
-                    videoFileName: data.videoFileName
-                )
-                recording.createdAt = data.createdAt
-                if let entryID = data.entryID { recording.id = entryID }
-                recording.isHidden = data.isHidden
-                // 兜底：meta.json 尚未带 hasVideoSource 的旧文件夹，只要磁盘上仍有视频就补上，
-                // 之后即便用户清理原视频，条目类型也不会退回「录音」
-                recording.hasVideoSource = data.hasVideoSource || recording.hasVideoSource
-                recording.audioRemovedAt = data.audioRemovedAt
-                if data.entryID == nil, !recording.saveMetaToFolder() { metadataSaveFailed = true }
-                // 先插入再加载镜像：加载路径的提交前校验会按 id 确认条目仍存在，
-                // 未插入的新条目会被误判为“已删除”
-                context.insert(recording)
-                await loadTranscriptIfNeeded(for: recording, context: context)
+                let recording: AudioRecording
+                if data.hasTranscript {
+                    do {
+                        guard let imported = try await importNewTranscript(data, in: context.container) else { continue }
+                        let id = imported.id
+                        var query = FetchDescriptor<AudioRecording>(predicate: #Predicate { $0.id == id })
+                        query.fetchLimit = 1
+                        guard let saved = try context.fetch(query).first else { continue }
+                        recording = saved
+                        if !imported.metadataSaved { metadataSaveFailed = true }
+                    } catch is CancellationError { break scan }
+                    catch {
+                        metadataSaveFailed = true
+                        PersistenceReporting.reportSaveFailure(error)
+                        continue
+                    }
+                } else {
+                    recording = makeRecording(from: data)
+                    if data.entryID == nil, !recording.saveMetaToFolder() { metadataSaveFailed = true }
+                    context.insert(recording)
+                    await loadTranscriptIfNeeded(for: recording, context: context)
+                }
                 await loadSummaryIfNeeded(for: recording, context: context)
                 await loadVisualSummaryIfNeeded(for: recording, context: context)
                 newCount += 1
@@ -960,7 +953,8 @@ enum FileSyncService {
             hasVideoSource: hasVideoSource,
             audioRemovedAt: effectiveAudioFile == nil
                 ? retainedAudio?.audioRemovedAt.map(Date.init(timeIntervalSince1970:)) ?? Date() : nil,
-            entryID: readEntryIdentity(in: dir)
+            entryID: readEntryIdentity(in: dir),
+            hasTranscript: files.contains { $0.lastPathComponent == "transcript.json" }
         ))
         return outcome
     }
@@ -1693,6 +1687,82 @@ enum FileSyncService {
         return !matches.isEmpty
     }
 
+    private static func makeRecording(from data: FolderScanResult.RecordingData) -> AudioRecording {
+        let recording = AudioRecording(
+            fileName: data.title
+                ?? makeDisplayName(folderName: data.folderName, fileName: data.storedFileName),
+            fileExtension: data.fileExtension,
+            duration: data.duration,
+            storedFileName: data.storedFileName,
+            folderName: data.folderName,
+            videoFileName: data.videoFileName
+        )
+        recording.createdAt = data.createdAt
+        if let entryID = data.entryID { recording.id = entryID }
+        recording.isHidden = data.isHidden
+        // 兜底：meta.json 尚未带 hasVideoSource 的旧文件夹，只要磁盘上仍有视频就补上，
+        // 之后即便用户清理原视频，条目类型也不会退回「录音」
+        recording.hasVideoSource = data.hasVideoSource || recording.hasVideoSource
+        recording.audioRemovedAt = data.audioRemovedAt
+        return recording
+    }
+
+    /// 新条目在独立上下文中一次提交录音及所有片段，主上下文不会看到半份转写。
+    private static func importNewTranscript(_ data: FolderScanResult.RecordingData, in container: ModelContainer) async throws
+        -> (id: UUID, metadataSaved: Bool)? {
+        let work = Task.detached(priority: .userInitiated) { () throws -> (UUID, Bool)? in
+            let writer = ModelContext(container)
+            writer.autosaveEnabled = false
+            let record = makeRecording(from: data)
+            let url = record.transcriptFileURL
+            let stamp = modificationDate(of: url)
+            do {
+                let rows = try readTranscript(at: url)
+                record.segments = try rows.map {
+                    try Task.checkCancellation()
+                    return TranscriptSegment(startTime: $0.startTime, endTime: $0.endTime, speaker: $0.speaker, text: $0.rawText)
+                }
+                record.transcriptionStatus = .completed
+                record.transcriptModifiedAt = stamp ?? Date()
+            } catch is CancellationError { throw CancellationError() }
+            catch {
+                // 保留可独立恢复的录音及原始镜像，下次对账仍可重试。
+                logger.warning("恢复转写镜像失败：\(UserFacingError.summary(for: error))")
+            }
+            try Task.checkCancellation()
+            let folder = data.folderName
+            var query = FetchDescriptor<AudioRecording>(predicate: #Predicate { $0.folderName == folder })
+            query.fetchLimit = 1
+            guard try writer.fetchCount(query) == 0,
+                  FileManager.default.fileExists(atPath: record.folderURL.path),
+                  modificationDate(of: url) == stamp else { return nil }
+            let metadataSaved = data.entryID != nil || record.saveMetaToFolder()
+            writer.insert(record)
+            try writer.save()
+            return (record.id, metadataSaved)
+        }
+        return try await withTaskCancellationHandler { try await work.value } onCancel: { work.cancel() }
+    }
+
+    private static func readTranscript(at url: URL) throws -> [AudioRecording.TranscriptSnapshotItem] {
+        let stored = try String(contentsOf: url, encoding: .utf8)
+        let plain = try EncryptionService.decryptStoredText(stored)
+        guard let items = try JSONSerialization.jsonObject(with: Data(plain.utf8)) as? [[String: Any]] else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        return try items.map { item in
+            try Task.checkCancellation()
+            let text = item["text"] as? String ?? ""
+            var stored = text
+            if !text.isEmpty {
+                do { stored = try EncryptionService.encrypt(text) }
+                catch { EncryptionService.reportEncryptionFailure(error, context: "转写片段") }
+            }
+            return AudioRecording.TranscriptSnapshotItem(startTime: item["startTime"] as? Double ?? 0,
+                endTime: item["endTime"] as? Double ?? 0, speaker: item["speaker"] as? String, rawText: stored)
+        }
+    }
+
     /// 如果文件夹中有 transcript.json 但数据库中没有转写片段，则加载
     /// G-1: 支持加密文件格式，向后兼容明文文件。
     /// 解密/解析/逐段重加密移入后台任务（数千段时主线程 AES 运算会卡启动），
@@ -1713,61 +1783,25 @@ enum FileSyncService {
 
         // 读取前记录条目版本：下面的读盘/解密是 await，期间用户可能编辑、重新转写或删除条目
         let versionBefore = TranscriptEntryVersion(recording: recording)
+        let sourceDate = modificationDate(of: url)
 
-        let prepared: [PreparedTranscriptSegment]? = await Task.detached(priority: .userInitiated) { () -> [PreparedTranscriptSegment]? in
-            guard let fileContent = EncryptionService.decryptFileOrPlaintext(at: url),
-                  let data = fileContent.data(using: .utf8),
-                  let jsonArray = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]]
-            else { return nil }
-            var out: [PreparedTranscriptSegment] = []
-            out.reserveCapacity(jsonArray.count)
-            for item in jsonArray {
-                let text = item["text"] as? String ?? ""
-                var encrypted = text
-                if !text.isEmpty, let e = try? EncryptionService.encrypt(text) {
-                    encrypted = e
-                }
-                // 加密失败时保留明文（与主线程原逻辑一致的降级）
-                out.append(PreparedTranscriptSegment(
-                    startTime: item["startTime"] as? TimeInterval ?? 0,
-                    endTime: item["endTime"] as? TimeInterval ?? 0,
-                    speaker: item["speaker"] as? String,
-                    text: encrypted
-                ))
-            }
-            return out
-        }.value
+        let read = Task.detached(priority: .userInitiated) { try readTranscript(at: url) }
+        let prepared = await withTaskCancellationHandler { try? await read.value } onCancel: { read.cancel() }
 
         guard let prepared else {
             logger.warning("转写文件解析失败: \(url.lastPathComponent)")
             return false
         }
 
-        // 提交前重新校验：条目仍存在，且期间未发生编辑/重转写；否则丢弃本次结果，
-        // 绝不用等待期间已过期的快照覆盖用户编辑（MainActor 只保证串行，不保证数据未变）
-        guard entryStillExists(recording, context: context),
-              TranscriptEntryVersion(recording: recording) == versionBefore else {
-            logger.info("对账期间条目已变化，丢弃本次转写加载: \(url.lastPathComponent)")
-            return false
-        }
-
-        if replaceExisting {
-            for segment in recording.segments { context.delete(segment) }
-            recording.segments.removeAll()
-        }
-
-        for item in prepared {
-            let segment = TranscriptSegment(
-                startTime: item.startTime,
-                endTime: item.endTime,
-                speaker: item.speaker,
-                text: item.text
-            )
-            segment.recording = recording
-            context.insert(segment)
-        }
+        // 在同一事务中批量替换关系，逐个设置反向关系会反复复制不断增长的数组。
+        // 暂存对象尚未加入任何上下文，取消或用户编辑时可直接丢弃。
+        guard let replacement = try? await AudioRecording.stageTranscript(prepared),
+              !Task.isCancelled, entryStillExists(recording, context: context),
+              TranscriptEntryVersion(recording: recording) == versionBefore,
+              modificationDate(of: url) == sourceDate else { return false }
+        recording.replaceSegments(with: replacement, in: context)
         recording.transcriptionStatus = .completed
-        recording.transcriptModifiedAt = modificationDate(of: url) ?? Date()
+        recording.transcriptModifiedAt = sourceDate ?? Date()
         return true
     }
 
@@ -1919,15 +1953,6 @@ enum FileSyncService {
 
 // MARK: - 扫描结果（Sendable，用于并发阶段，不触碰 ModelContext）
 
-/// 转写文件的后台预处理产出（Sendable）：解密/重加密在后台完成后，
-/// 仅携带插入 SwiftData 模型所需的最小字段回主线程
-struct PreparedTranscriptSegment: Sendable {
-    let startTime: TimeInterval
-    let endTime: TimeInterval
-    let speaker: String?
-    let text: String
-}
-
 /// 磁盘对账期间的转写条目版本快照：异步读盘/解密前后比对。
 ///
 /// `MainActor` 只保证模型访问串行，不能阻止 `await` 前后用户已编辑、重新转写或删除条目；
@@ -1972,6 +1997,7 @@ enum FolderScanResult: Sendable {
         let hasVideoSource: Bool
         var audioRemovedAt: Date? = nil
         var entryID: UUID? = nil
+        var hasTranscript = false
     }
 
     struct QuickNoteData: Sendable {

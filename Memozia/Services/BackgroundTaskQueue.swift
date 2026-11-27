@@ -3,7 +3,7 @@ import KeychainAccess
 import os.log
 
 /// 后台任务失败的**稳定原因码**：落盘只存码，界面再本地化（不落中文/英文原文）。
-enum BackgroundTaskFailureCode: String, Codable, Sendable {
+enum BackgroundTaskFailureCode: String, Codable, Sendable, Error {
     case databaseReadFailed
     case processingFailed
     case missingLLMConfig
@@ -37,6 +37,43 @@ enum BackgroundTaskKind: String, Codable, Sendable {
     }
 }
 
+/// worker 由 drainQueue 统一结算。前台执行只持有本次登记的条目 ID。
+enum TaskExecutionOrigin {
+    case foreground, worker
+
+    @MainActor
+    func register(_ entry: BackgroundTaskEntry, onFailure: (String) -> Void) -> ForegroundTaskRecord? {
+        guard self == .foreground else { return nil }
+        guard BackgroundTaskQueue.enqueue(entry, replacingPrevious: true) else {
+            onFailure(String(localized: "任务已在前台开始，但未能写入后台续跑队列；请保持应用开启完成本次任务，退出后需重新发起。"))
+            return nil
+        }
+        return ForegroundTaskRecord(id: entry.id)
+    }
+}
+
+@MainActor
+final class ForegroundTaskRecord {
+    private(set) static var activeIDs: Set<UUID> = []
+    private var id: UUID?
+    init(id: UUID) {
+        self.id = id
+        Self.activeIDs.insert(id)
+    }
+
+    func finish(_ outcome: TaskCenter.StepOutcome) {
+        guard let id else { return }
+        Self.activeIDs.remove(id)
+        self.id = nil
+        let saved: Bool
+        switch outcome {
+        case .succeeded, .cancelled: saved = BackgroundTaskQueue.removeEntry(id: id)
+        case .failed: saved = BackgroundTaskQueue.recordRetryableFailure(id: id, code: .processingFailed)
+        }
+        if !saved { PersistenceReporting.reportSaveFailure(CocoaError(.fileWriteUnknown)) }
+    }
+}
+
 /// STT 配置快照（Codable，随队列条目落盘，防止用户后续改设置导致 worker 行为不一致）。
 /// apiKey 不落盘（明文 JSON 有泄露风险），执行时从 Keychain 实时读取。
 struct STTConfigSnapshot: Codable, Sendable {
@@ -61,11 +98,17 @@ struct STTConfigSnapshot: Codable, Sendable {
     }
 
     /// 还原为 STTConfig（apiKey 从 Keychain 补齐，与 SettingsViewModel 同源）
-    var config: STTConfig {
-        STTConfig(
-            mode: STTMode(rawValue: mode) ?? .local,
+    func restore(for origin: TaskExecutionOrigin) throws(BackgroundTaskFailureCode) -> STTConfig {
+        let mode = STTMode(rawValue: mode) ?? .local
+        let read = mode == .cloud ? Self.readWhisperAPIKeyResult() : .absent
+        if let failure = BackgroundTaskKeyGuard.blockReason(mode: mode, keyReadResult: read),
+           origin == .worker || failure == .keychainUnavailable { throw failure }
+        let key: String
+        if case .value(let value) = read { key = value } else { key = "" }
+        return STTConfig(
+            mode: mode,
             modelPath: modelPath,
-            apiKey: Self.readWhisperAPIKey(),
+            apiKey: key,
             baseURL: baseURL,
             language: language,
             enableSpeakerDiarization: enableSpeakerDiarization,
@@ -99,13 +142,6 @@ struct STTConfigSnapshot: Codable, Sendable {
             snapshotLogger.error("Keychain 读取 Whisper API Key 失败: \(error.localizedDescription)")
             return .readFailed(error.localizedDescription)
         }
-    }
-
-    /// 兼容旧调用：只取可用值，读失败等价于空串。
-    /// - Important: **不得**用它判定「能否以空凭据发起请求」；该判定走 `readWhisperAPIKeyResult()`。
-    private static func readWhisperAPIKey() -> String {
-        if case .value(let key) = readWhisperAPIKeyResult() { return key }
-        return ""
     }
 
     /// Keychain 存储键（与 SettingsViewModel.StorageKey.whisperAPIKey 一致）
@@ -378,7 +414,7 @@ enum BackgroundTaskQueue {
     ///
     /// - `body` 返回是否发生了改动；未改动则不写盘
     /// - 拿不到锁：不执行、不写盘，返回 false
-    /// - 队列文件损坏：隔离损坏文件并以备份/空队列继续（见 `recoverFromCorruption`）
+    /// - 队列文件损坏：有可用备份才隔离并恢复（见 `recoverFromCorruption`）
     /// - 写盘失败：返回 false
     /// - Returns: 本次改动是否已成功落盘
     @discardableResult
@@ -406,7 +442,7 @@ enum BackgroundTaskQueue {
     }
 
     /// 隔离损坏的队列文件并尽力保留任务：
-    /// 备份可用则用备份内容；否则按空队列重建。两种情况都会把损坏文件改名留存并上报用户
+    /// 有备份时隔离损坏文件并恢复。否则保留原件并拒绝本次修改。
     private static func recoverFromCorruption(_ error: any Error) -> BackgroundTaskQueueData? {
         guard case .loaded(let backup) = readQueueFile(backupFileURL) else {
             let reason = "后台任务队列损坏且无可用备份，已保留原文件，本次修改已拒绝：\(error.localizedDescription)"
@@ -442,7 +478,7 @@ enum BackgroundTaskQueue {
     /// 主应用埋点与 worker 复用 ViewModel 执行同一路径时不会产生重复条目）
     /// - Returns: 是否已成功落盘（false 表示队列未被修改）
     @discardableResult
-    static func enqueue(_ entry: BackgroundTaskEntry) -> Bool {
+    static func enqueue(_ entry: BackgroundTaskEntry, replacingPrevious: Bool = false) -> Bool {
         guard capability.allowsContentMutation else {
             logger.error("临时模式下不写入后台任务队列: \(entry.kind.rawValue) \(entry.folderName)")
             return false
@@ -450,9 +486,14 @@ enum BackgroundTaskQueue {
         var queueLength = 0
         let saved = mutate { data in
             queueLength = data.tasks.count
-            guard !data.tasks.contains(where: {
-                $0.kind == entry.kind && $0.folderName == entry.folderName
-            }) else { return false }
+            if let i = data.tasks.firstIndex(where: { $0.kind == entry.kind && $0.folderName == entry.folderName }) {
+                guard replacingPrevious else { return false }
+                let previous = data.tasks.remove(at: i)
+                if data.inProgressID == previous.id { data.inProgressID = nil }
+            }
+            if replacingPrevious {
+                data.failedEntries.removeAll { $0.kind == entry.kind && $0.folderName == entry.folderName }
+            }
             data.tasks.append(entry)
             data.tasks.sort { $0.enqueuedAt < $1.enqueuedAt }
             queueLength = data.tasks.count
@@ -575,11 +616,12 @@ enum BackgroundTaskQueue {
 
     /// 队首「已到可重试时间」的条目：跳过仍处于退避窗口内的条目，
     /// 避免一个毒任务把整条队列堵在队首反复重试。
-    static func peekFirstReadyResult(now: Date = Date()) -> Result<BackgroundTaskEntry?, QueueFileError> {
+    static func peekFirstReadyResult(now: Date = Date(), excluding active: Set<UUID> = []) -> Result<BackgroundTaskEntry?, QueueFileError> {
         switch readResult() {
         case .loaded(let data):
             let ready = data.tasks
                 .filter { entry in
+                    guard !active.contains(entry.id) else { return false }
                     guard let next = entry.nextRetryAt else { return true }
                     return next <= now
                 }
@@ -595,8 +637,10 @@ enum BackgroundTaskQueue {
     /// - Returns: 是否已成功落盘
     @discardableResult
     static func recordRetryableFailure(id: UUID, code: BackgroundTaskFailureCode, now: Date = Date()) -> Bool {
-        mutate { data in
+        var found = false
+        let saved = mutate { data in
             guard let index = data.tasks.firstIndex(where: { $0.id == id }) else { return false }
+            found = true
             var entry = data.tasks[index]
             let attempt = (entry.attempt ?? 0) + 1
             entry.attempt = attempt
@@ -612,6 +656,7 @@ enum BackgroundTaskQueue {
             if data.inProgressID == id { data.inProgressID = nil }
             return true
         }
+        return found && saved
     }
 
     /// 失败区条目（供面板展示与「重试 / 丢弃」入口）

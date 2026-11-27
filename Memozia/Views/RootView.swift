@@ -755,7 +755,7 @@ struct RootView: View {
                     llmConfigs: llmConfigs,
                     experience: experienceStore.current,
                     onTranscribe: { startTranscriptionFor(recording) },
-                    onCancelTranscription: { viewModel.cancelTranscription() },
+                    onCancelTranscription: { viewModel.cancelTranscription(recordingID: recording.id) },
                     onOneClick: { presentOneClickPreview(item) },
                     onCleanupAudio: { presentMediaCleanup(.audio, items: [item]) }
                 )
@@ -2073,196 +2073,41 @@ private extension RootView {
                 steps: [transcriptionStep(recording)])
     }
 
-    /// 转写步骤：本地模式先确保模型就绪（缺失即下载），再转写
+    var entrySteps: EntryProcessingSteps {
+        EntryProcessingSteps(context: modelContext, container: modelContext.container, recordings: viewModel,
+                             notes: quickNoteVM, persistence: viewModel.persistence)
+    }
+
     func transcriptionStep(_ recording: AudioRecording) -> TaskCenter.Step {
-        let sttConfig = settingsVM.makeSTTConfig(experience: experienceStore.current)
-        let context = modelContext
-        let whisper = WhisperLocalService.shared
-        let audioURL = recording.fileURL
-        return TaskCenter.Step(
-            kind: .transcription,
-            run: { failure in
-                if sttConfig.mode == .local, !whisper.isModelLoadedFor(path: sttConfig.modelPath) {
-                    do {
-                        try await whisper.loadModel(fromPath: sttConfig.modelPath)
-                    } catch {
-                        // 本地模型加载失败是最常见的可修复原因：给出稳定码让面板引导到设置
-                        failure.code = .missingLocalModel
-                        return .failed
-                    }
-                }
-                recording.transcriptionStatus = .processing
-                let task = viewModel.startTranscription(recording: recording, sttConfig: sttConfig, context: context)
-                await task.value
-                if recording.transcriptionStatus == .failed {
-                    failure.code = Self.transcriptionFailureCode(audioURL: audioURL, mode: sttConfig.mode)
-                    return .failed
-                }
-                if Task.isCancelled { return .cancelled }
-                return .succeeded
-            },
-            cancel: { viewModel.cancelTranscription() }
-        )
+        entrySteps.transcription(recording.id, config: STTConfigSnapshot(config: settingsVM.makeSTTConfig(experience: experienceStore.current)))
     }
 
-    /// 转写失败的稳定码：音频缺失 → 输入缺失；系统语音识别 → 权限；否则走通用兜底
-    static func transcriptionFailureCode(audioURL: URL, mode: STTMode) -> TaskErrorCode {
-        if !FileManager.default.fileExists(atPath: audioURL.path) { return .inputFileMissing }
-        if mode == .system { return .permissionDenied }
-        return TaskFailureClassifier.classify(
-            primaryInputExists: true,
-            availableDiskBytes: TaskFailureClassifier.availableDiskBytes(at: AudioRecording.storageDirectory)
-        )
-    }
-
-    /// 非转写步骤的兜底稳定码：输入仍在 →（磁盘不足 / 未知）
-    static func fallbackFailureCode(inputFileURL: URL?) -> TaskErrorCode {
-        TaskFailureClassifier.classify(
-            primaryInputExists: inputFileURL.map { FileManager.default.fileExists(atPath: $0.path) } ?? true,
-            availableDiskBytes: TaskFailureClassifier.availableDiskBytes(at: AudioRecording.storageDirectory)
-        )
-    }
-
-    /// 依据步骤强类型结论回写条目处理状态：
-    /// 成功→completed、失败→failed、取消→pending（交回未处理，供重新发起）。
-    /// 不再用「总结非空 / 待办非空 / 时间戳非空」之类的旁证反推成功。
-    private func applyOutcome(
-        _ outcome: TaskCenter.StepOutcome,
-        to setStatus: (ProcessingStatus) -> Void
-    ) {
-        switch outcome {
-        case .succeeded: setStatus(.completed)
-        case .cancelled: setStatus(.pending)
-        case .failed:    setStatus(.failed)
-        }
-    }
-
-    /// 总结步骤（录音/录屏）
     func summaryStep(_ recording: AudioRecording, config: LLMConfig, asMeeting: Bool?) -> TaskCenter.Step {
-        let context = modelContext
-        return TaskCenter.Step(
-            kind: .summary,
-            run: { failure in
-                recording.summaryStatus = .processing
-                let task = viewModel.generateSummary(
-                    recording: recording,
-                    llmConfig: config,
-                    context: context,
-                    asMeeting: asMeeting,
-                    experience: AppExperiencePreference.resolved()
-                )
-                // 结论由执行体给出：成功仅当本次确实产出并持久化
-                let outcome = await task.value
-                if outcome == .failed { failure.code = Self.fallbackFailureCode(inputFileURL: nil) }
-                applyOutcome(outcome) { recording.summaryStatus = $0 }
-                return outcome
-            },
-            cancel: { viewModel.cancelSummary(recordingID: recording.id) }
-        )
+        entrySteps.processing(.recording(recording.id), .summary(asMeeting: asMeeting), configID: config.id)
     }
 
-    /// 总结步骤（快捷笔记）
     func summaryStep(_ note: QuickNote, config: LLMConfig) -> TaskCenter.Step {
-        let context = modelContext
-        let imageURL = note.hasImage ? note.sourceImageURL : nil
-        return TaskCenter.Step(
-            kind: .summary,
-            run: { failure in
-                note.summaryStatus = .processing
-                let task = quickNoteVM.generateSummary(
-                    for: note,
-                    llmConfig: config,
-                    context: context,
-                    experience: AppExperiencePreference.resolved()
-                )
-                let outcome = await task.value
-                if outcome == .failed { failure.code = Self.fallbackFailureCode(inputFileURL: imageURL) }
-                applyOutcome(outcome) { note.summaryStatus = $0 }
-                return outcome
-            },
-            cancel: { quickNoteVM.cancelSummary(noteID: note.id) }
-        )
+        entrySteps.processing(.note(note.id), .summary(asMeeting: nil), configID: config.id)
     }
 
-    /// 画面要点步骤（录屏 / 导入视频）。不弹帧数确认，直接走多模态大模型分析
     func visualStep(_ recording: AudioRecording, config: LLMConfig) -> TaskCenter.Step {
-        let context = modelContext
-        let videoURL = recording.videoFileURL
-        return TaskCenter.Step(
-            kind: .visualAnalysis,
-            run: { failure in
-                recording.visualStatus = .processing
-                let task = viewModel.generateVisualNotes(recording: recording, llmConfig: config, context: context)
-                let outcome = await task.value
-                if outcome == .failed { failure.code = Self.fallbackFailureCode(inputFileURL: videoURL) }
-                applyOutcome(outcome) { recording.visualStatus = $0 }
-                return outcome
-            },
-            cancel: { viewModel.cancelVisualNotes() }
-        )
+        entrySteps.processing(.recording(recording.id), .visual, configID: config.id)
     }
 
-    /// 拆解待办步骤（只落盘 TodoDocument，不写入提醒事项）
     func todoStep(_ recording: AudioRecording, config: LLMConfig) -> TaskCenter.Step {
-        return TaskCenter.Step(
-            kind: .todoExtraction,
-            run: { failure in
-                recording.todoStatus = .processing
-                let task = viewModel.extractTodos(from: recording, llmConfig: config)
-                let outcome = await task.value
-                if outcome == .failed { failure.code = Self.fallbackFailureCode(inputFileURL: nil) }
-                applyOutcome(outcome) { recording.todoStatus = $0 }
-                return outcome
-            },
-            cancel: { viewModel.cancelTodoExtraction(recordingID: recording.id) }
-        )
+        entrySteps.processing(.recording(recording.id), .todos, configID: config.id)
     }
 
-    /// 拆解待办步骤（快捷笔记）
     func todoStep(_ note: QuickNote, config: LLMConfig) -> TaskCenter.Step {
-        let context = modelContext
-        return TaskCenter.Step(
-            kind: .todoExtraction,
-            run: { failure in
-                note.todoStatus = .processing
-                let task = quickNoteVM.extractTodos(from: note, llmConfig: config, context: context)
-                let outcome = await task.value
-                if outcome == .failed { failure.code = Self.fallbackFailureCode(inputFileURL: nil) }
-                applyOutcome(outcome) { note.todoStatus = $0 }
-                return outcome
-            },
-            cancel: { quickNoteVM.cancelTodoExtraction(noteID: note.id) }
-        )
+        entrySteps.processing(.note(note.id), .todos, configID: config.id)
     }
 
-    /// 润色标题步骤（录音）
     func titleStep(_ recording: AudioRecording, config: LLMConfig) -> TaskCenter.Step {
-        let context = modelContext
-        return TaskCenter.Step(
-            kind: .title,
-            run: { failure in
-                let task = viewModel.polishRecordingTitle(recording, llmConfig: config, context: context)
-                let outcome = await task.value
-                if outcome == .failed { failure.code = Self.fallbackFailureCode(inputFileURL: nil) }
-                return outcome
-            },
-            cancel: { viewModel.cancelTitle(recordingID: recording.id) }
-        )
+        entrySteps.processing(.recording(recording.id), .title, configID: config.id)
     }
 
-    /// 润色标题步骤（快捷笔记）
     func titleStep(_ note: QuickNote, config: LLMConfig) -> TaskCenter.Step {
-        let context = modelContext
-        return TaskCenter.Step(
-            kind: .title,
-            run: { failure in
-                let task = quickNoteVM.polishNoteTitle(note, llmConfig: config, context: context)
-                let outcome = await task.value
-                if outcome == .failed { failure.code = Self.fallbackFailureCode(inputFileURL: nil) }
-                return outcome
-            },
-            cancel: { quickNoteVM.cancelTitle(noteID: note.id) }
-        )
+        entrySteps.processing(.note(note.id), .title, configID: config.id)
     }
 }
 

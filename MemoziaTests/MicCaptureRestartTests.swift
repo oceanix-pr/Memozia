@@ -186,13 +186,19 @@ struct MicCaptureRestartTests {
     @Test func muteBuffersClearInterleavedStereoAndReuseSafely() throws {
         let format = try #require(AVAudioFormat(commonFormat: .pcmFormatFloat32,
             sampleRate: 24_000, channels: 2, interleaved: true))
-        let pool = MicCaptureZeroBufferBox()
-        let first = try #require(pool.zeroBuffer(matching: format, frameLength: 32))
-        let samples = try #require(first.floatChannelData)[0]
+        let input = try #require(AVAudioPCMBuffer(pcmFormat: format, frameCapacity: 32))
+        input.frameLength = 32
+        let samples = try #require(input.floatChannelData)[0]
         samples.update(repeating: 1, count: 64)
-        let reused = try #require(pool.zeroBuffer(matching: format, frameLength: 16))
+        let pool = MicBufferPool(format: format)
+        let first = try #require(pool.copy(input.audioBufferList, frames: 32, muted: false))
+        let output = try #require(first.buffer.floatChannelData)[0]
+        #expect(UnsafeBufferPointer(start: output, count: 64).allSatisfy { $0 == 1 })
+        pool.recycle(first)
+        let reused = try #require(pool.copy(input.audioBufferList, frames: 16, muted: true))
         #expect(reused === first)
-        #expect(UnsafeBufferPointer(start: samples, count: 32).allSatisfy { $0 == 0 })
+        #expect(UnsafeBufferPointer(start: output, count: 32).allSatisfy { $0 == 0 })
+        #expect(samples[0] == 1)
     }
 
     @Test func staleClientFormatUsesHardwareRateAndWritesPlayableCAF() throws {

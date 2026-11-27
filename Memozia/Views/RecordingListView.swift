@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 /// 录音列表视图（侧边栏）- 合并显示录音与快捷笔记
 struct RecordingListView: View {
@@ -28,6 +29,8 @@ struct RecordingListView: View {
     var contextMenuContent: (Set<ListItem>) -> AnyView = { _ in AnyView(EmptyView()) }
     var onToggleMeetingRecording: () -> Void = {}
 
+    @Environment(\.modelContext) private var modelContext
+    @State private var searchIndex = FullTextSearch.Index()
     @State private var searchText = ""
     /// P2-7: 防抖后的搜索文本
     @State private var debouncedSearchText = ""
@@ -68,13 +71,15 @@ struct RecordingListView: View {
         let titleDate: Date
         let items: [ListItem]
 
-        var id: String { key }
-    }
+        struct ID: Hashable { let month: String; let items: [String] }
+        let id: ID
 
-    /// 原生 List 的内容身份：记录月份与组内条目的顺序，覆盖新增、删除、替换和重排。
-    /// 标题、状态和待办数量不参与，避免普通行更新打断编辑或滚动。
-    private var listContentIdentity: [[String]] {
-        filteredGroups.map { group in [group.key] + group.items.map(\.id) }
+        init(key: String, titleDate: Date, items: [ListItem]) {
+            self.key = key
+            self.titleDate = titleDate
+            self.items = items
+            id = ID(month: key, items: items.map(\.id))
+        }
     }
 
     /// 月份分组 key 格式化器（yyyy-MM，字符串倒序即时间倒序）
@@ -131,31 +136,23 @@ struct RecordingListView: View {
             return
         }
         isSearching = true
-        let entries = recordings.filter { showHiddenRecordings || !$0.isHidden }.map { recording in
-            let summary = recording.summary.map { FullTextSearch.Field(value: $0, seconds: nil, isSummary: true) }
-            let visual = recording.visualSummary.map { FullTextSearch.Field(value: $0, seconds: nil) }
-            return FullTextSearch.Entry(folder: recording.folderName, title: recording.fileName,
-                fields: recording.segments.sorted { $0.startTime < $1.startTime }.map {
-                    FullTextSearch.Field(value: $0.text, seconds: $0.startTime)
-                } + [summary, visual].compactMap { $0 })
-        } + quickNotes.filter { showHiddenRecordings || !$0.isHidden }.map { note in
-            let text = note.textContent.map { FullTextSearch.Field(value: $0, seconds: nil) }
-            let ocr = note.ocrText.map { FullTextSearch.Field(value: $0, seconds: nil) }
-            let summary = note.summaryText.map { FullTextSearch.Field(value: $0, seconds: nil, isSummary: true) }
-            return FullTextSearch.Entry(folder: note.folderName, title: note.title,
-                fields: [text, ocr, summary].compactMap { $0 })
-        }
-        let work = Task.detached(priority: .userInitiated) { try FullTextSearch.find(query, in: entries) }
         do {
-            let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
+            let result = try await searchIndex.search(query, in: modelContext.container, includeHidden: showHiddenRecordings)
             try Task.checkCancellation()
             searchHits = result.hits
             searchUnreadable = result.unreadable
             debouncedSearchText = query
             isSearching = false
             recomputeFilteredItems()
-        } catch is CancellationError { /* A newer search owns the UI state. */ }
-        catch { searchUnreadable = 1; isSearching = false }
+        } catch is CancellationError { return }
+        catch {
+            guard !Task.isCancelled else { return }
+            searchHits = [:]
+            debouncedSearchText = query
+            searchUnreadable = 1
+            isSearching = false
+            recomputeFilteredItems()
+        }
     }
 
     /// 增量重建待办索引：主线程只快照条目文件夹名（@Model 不跨 actor 传递），
@@ -272,10 +269,7 @@ struct RecordingListView: View {
             List(selection: effectiveSelection) {
                 listContent
             }
-            // macOS 的 List 在 DisclosureGroup 内增删/替换条目时，旧行内容可能残留并叠在
-            // 新行上。按实际分组与有序条目 ID 重建 List，而非只在搜索/隐藏开关变化时重建。
-            // 搜索、选中和月份折叠状态均在 List 外持有，不受重建影响。
-            .id(listContentIdentity)
+            // MonthGroup 的身份包含组内顺序，仅变动的 DisclosureGroup 需要重建。
             .listStyle(.sidebar)
             .contextMenu(forSelectionType: ListItem.self) { items in
                 contextMenuContent(items)
@@ -285,14 +279,9 @@ struct RecordingListView: View {
         // P2-7: 搜索防抖，300ms 内连续输入只触发一次过滤
         .task(id: searchRequest) { await searchContents() }
         .onChange(of: searchText) { searchRequest = UUID() }
-        .onChange(of: recordings.map(\.transcriptModifiedAt)) { searchRequest = UUID() }
-        .onChange(of: recordings.map(\.summary)) { searchRequest = UUID() }
-        .onChange(of: recordings.map(\.visualSummary)) { searchRequest = UUID() }
-        .onChange(of: recordings.map(\.fileName)) { searchRequest = UUID() }
-        .onChange(of: quickNotes.map(\.textContent)) { searchRequest = UUID() }
-        .onChange(of: quickNotes.map(\.ocrText)) { searchRequest = UUID() }
-        .onChange(of: quickNotes.map(\.summaryText)) { searchRequest = UUID() }
-        .onChange(of: quickNotes.map(\.title)) { searchRequest = UUID() }
+        .onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave).receive(on: DispatchQueue.main)) { _ in
+            if !searchText.isEmpty { searchRequest = UUID() }
+        }
         .safeAreaInset(edge: .bottom) {
             if isSearching { ProgressView().controlSize(.small).padding(6) }
             if searchUnreadable > 0 && !searchText.isEmpty {
@@ -326,8 +315,12 @@ struct RecordingListView: View {
             NotificationCenter.default.publisher(for: .todoDocumentDidChange)
                 .receive(on: DispatchQueue.main)
         ) { note in
-            if !searchText.isEmpty { searchRequest = UUID() }
-            if let folder = note.userInfo?[TodoDocument.folderNameUserInfoKey] as? String,
+            let changedFolder = note.userInfo?[TodoDocument.folderNameUserInfoKey] as? String
+            Task {
+                await searchIndex.invalidateTodo(folder: changedFolder)
+                if !searchText.isEmpty { searchRequest = UUID() }
+            }
+            if let folder = changedFolder,
                !folder.isEmpty {
                 todoScanRequest = .folder(folder, UUID())
             } else {
@@ -349,7 +342,7 @@ struct RecordingListView: View {
     /// 外观走 macOS 26+ 的 Liquid Glass（`glassEffect`），旧系统回退为半透明填充，
     /// 详见 `searchFieldSurface`。原 `.searchable` 在 macOS 会并入窗口工具栏
     /// （与右上角按钮同区），现改为侧栏顶部独立搜索条；过滤/防抖/重建等既有逻辑
-    /// 保持不变（见 body 中 `.task(id: searchText)` 与 `.id(listContentIdentity)`）。
+    /// 保持不变（见 body 中 `.task(id: searchText)`）。
     @ViewBuilder
     private var searchField: some View {
         searchFieldSurface

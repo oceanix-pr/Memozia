@@ -430,13 +430,14 @@ final class WhisperLocalService {
                 return nil // nil = 继续
             }
 
-            let results = try await whisperKit.transcribe(
-                audioPath: audioURL.path,
-                decodeOptions: options,
-                callback: callback
-            )
+            let results = try await withTaskCancellationHandler {
+                try await whisperKit.transcribe(audioPath: audioURL.path, decodeOptions: options, callback: callback)
+            } onCancel: {
+                cancelFlag.cancel()
+            }
 
-            // 被取消时 WhisperKit 返回部分结果，此处统一抛 CancellationError
+            // 模型卸载和调用方取消都可能让原生层返回部分结果。
+            guard !cancelFlag.isCancelled else { throw CancellationError() }
             try Task.checkCancellation()
 
             guard !results.isEmpty else {
@@ -469,7 +470,7 @@ final class WhisperLocalService {
         }
     }
 
-    /// 取消当前进行中的转写（外部取消入口，VM 的取消路径调用）
+    /// 取消当前进行中的转写（卸载共享模型时使用）
     func cancelActiveTranscription() {
         activeCancelFlagBox.cancelAll()
     }

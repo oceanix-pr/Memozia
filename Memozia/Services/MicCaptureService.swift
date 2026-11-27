@@ -572,11 +572,12 @@ final class MicCaptureService: @unchecked Sendable {
 
     /// 仅当前 tap 的非空成功写入可确认恢复（静音的全零缓冲同样有效）。
     private func noteSuccessfulWrite(_ token: MicCaptureRecovery.Attempt?, session: Int, tapID: UUID, frames: Int) {
-        guard fileBox.isCurrentTap(tapID) else { return }
+        let currentTap = fileBox.isCurrentTap(tapID)
         stateLock.lock()
         guard _generation == session else { stateLock.unlock(); return }
-        _lastSuccessfulWriteAt = Date()
         _writtenFrames += Int64(frames)
+        guard currentTap else { stateLock.unlock(); return }
+        _lastSuccessfulWriteAt = Date()
         liveness.wrote()
         let accepted = token != nil && pendingRecoveryAttempt == token
         if accepted { pendingRecoveryAttempt = nil }
@@ -762,121 +763,40 @@ final class MicCaptureService: @unchecked Sendable {
         recoveryAttempt: MicCaptureRecovery.Attempt?,
         tapID: UUID
     ) throws {
-        if #available(macOS 27.0, iOS 27.0, tvOS 27.0, visionOS 27.0, *) {
-            try installModernTap(on: inputNode, format: format, recoveryAttempt: recoveryAttempt, tapID: tapID)
+        let session = generation
+        let pool = MicBufferPool(format: format, frameCapacity: max(4096, inputNode.auAudioUnit.maximumFramesToRender))
+        let errors = WriteErrorRateBox()
+        let timeline = segmentTimeline
+        let receive: @Sendable (UnsafePointer<AudioBufferList>, AVAudioFrameCount, AVAudioTime) -> Void = { [weak self] input, frames, time in
+            guard let self, frames > 0 else { return }
+            let hostTime = time.isHostTimeValid ? AVAudioTime.seconds(forHostTime: time.hostTime)
+                : CMClockGetTime(CMClockGetHostTimeClock()).seconds - Double(frames) / format.sampleRate
+            let admission = self.fileBox.enqueue(tap: tapID, frames: Int(frames)) {
+                guard let slot = pool.copy(input, frames: frames, muted: self.silencedBox.isSilenced) else { return nil }
+                return { file in
+                    defer { pool.recycle(slot) }
+                    do {
+                        try file.write(from: slot.buffer)
+                        timeline?.noteWrite(to: file.url, hostTime: hostTime, frames: Int(frames))
+                        self.noteSuccessfulWrite(recoveryAttempt, session: session, tapID: tapID, frames: Int(frames))
+                    } catch { self.reportWriteError(error, session: session, tapID: tapID, rateLimiter: errors) }
+                }
+            }
+            switch admission {
+            case .accepted, .retired: break
+            case .full: self.reportWriteError(MicCaptureError.writerBackpressure, session: session, tapID: tapID, rateLimiter: errors)
+            case .invalidBuffer: self.reportWriteError(MicCaptureError.invalidBuffer, session: session, tapID: tapID, rateLimiter: errors)
+            }
+        }
+        if #available(macOS 27.0, *) {
+            try inputNode.installAudioTap(onBus: 0, bufferSize: 1024, format: format) { buffer, time in
+                buffer.withUnsafeAudioBufferList { receive($0, AVAudioFrameCount(buffer.frameLength), time) }
+            }
         } else {
-            installLegacyTap(on: inputNode, format: format, recoveryAttempt: recoveryAttempt, tapID: tapID)
-        }
-    }
-
-    /// macOS 27 的只读音频 Tap。AVAudioFile 同版本提供只读 buffer 写入，
-    /// 可避免为了保存实时输入而复制正常（非静音）采样。
-    @available(macOS 27.0, iOS 27.0, tvOS 27.0, visionOS 27.0, *)
-    nonisolated private func installModernTap(
-        on inputNode: AVAudioInputNode,
-        format: AVAudioFormat,
-        recoveryAttempt: MicCaptureRecovery.Attempt?,
-        tapID: UUID
-    ) throws {
-        let session = generation
-        let box = fileBox
-        let silenced = silencedBox
-        let zeroBox = MicCaptureZeroBufferBox() // 每个 tap 独立，避免新旧音频回调共用可变缓冲
-        let writeErrors = WriteErrorRateBox()
-        let timeline = segmentTimeline
-        let tap: @Sendable (AVReadOnlyAudioPCMBuffer, AVAudioTime) -> Void = { [weak self] buffer, time in
-            guard let self, box.isCurrentTap(tapID) else { return }
-            if silenced.isSilenced {
-                guard let zero = zeroBox.zeroBuffer(
-                    matching: buffer.format,
-                    frameLength: AVAudioFrameCount(buffer.frameLength)
-                ) else { return }
-                do {
-                    let didWrite = try box.write(tap: tapID) { file in
-                        try file.write(from: AVReadOnlyAudioPCMBuffer(copying: zero))
-                        timeline?.noteWrite(to: file.url, hostTime: time.isHostTimeValid
-                            ? AVAudioTime.seconds(forHostTime: time.hostTime)
-                            : CMClockGetTime(CMClockGetHostTimeClock()).seconds - Double(buffer.frameLength) / buffer.format.sampleRate,
-                            frames: Int(buffer.frameLength))
-                    }
-                    if didWrite, buffer.frameLength > 0 { self.noteSuccessfulWrite(recoveryAttempt, session: session, tapID: tapID, frames: Int(buffer.frameLength)) }
-                } catch {
-                    self.reportWriteError(error, session: session, tapID: tapID, rateLimiter: writeErrors)
-                }
-                return
-            }
-            do {
-                let didWrite = try box.write(tap: tapID) { file in
-                    try file.write(from: buffer)
-                        timeline?.noteWrite(to: file.url, hostTime: time.isHostTimeValid
-                            ? AVAudioTime.seconds(forHostTime: time.hostTime)
-                            : CMClockGetTime(CMClockGetHostTimeClock()).seconds - Double(buffer.frameLength) / buffer.format.sampleRate,
-                            frames: Int(buffer.frameLength))
-                }
-                if didWrite, buffer.frameLength > 0 { self.noteSuccessfulWrite(recoveryAttempt, session: session, tapID: tapID, frames: Int(buffer.frameLength)) }
-            } catch {
-                self.reportWriteError(error, session: session, tapID: tapID, rateLimiter: writeErrors)
+            inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, time in
+                receive(buffer.audioBufferList, buffer.frameLength, time)
             }
         }
-        try inputNode.installAudioTap(
-            onBus: 0,
-            bufferSize: 1024,
-            format: format,
-            tapProvider: tap
-        )
-    }
-
-    /// macOS 15–26 / iOS 18–26 兼容路径。
-    @available(macOS, deprecated: 27.0)
-    @available(iOS, deprecated: 27.0)
-    @available(tvOS, deprecated: 27.0)
-    @available(visionOS, deprecated: 27.0)
-    nonisolated private func installLegacyTap(
-        on inputNode: AVAudioInputNode,
-        format: AVAudioFormat,
-        recoveryAttempt: MicCaptureRecovery.Attempt?,
-        tapID: UUID
-    ) {
-        let session = generation
-        let box = fileBox
-        let silenced = silencedBox
-        let zeroBox = MicCaptureZeroBufferBox() // 每个 tap 独立，避免新旧音频回调共用可变缓冲
-        let writeErrors = WriteErrorRateBox()
-        let timeline = segmentTimeline
-        let tap: @Sendable (AVAudioPCMBuffer, AVAudioTime) -> Void = { [weak self] buffer, time in
-            guard let self, box.isCurrentTap(tapID) else { return }
-            // 静音中：写全零缓冲，保持分片时间轴连续（用户预期静音 = 无真实麦克风数据）
-            if silenced.isSilenced {
-                guard let zero = zeroBox.zeroBuffer(matching: buffer.format, frameLength: buffer.frameLength) else { return }
-                do {
-                    let didWrite = try box.write(tap: tapID) { file in
-                        try file.write(from: zero)
-                        timeline?.noteWrite(to: file.url, hostTime: time.isHostTimeValid
-                            ? AVAudioTime.seconds(forHostTime: time.hostTime)
-                            : CMClockGetTime(CMClockGetHostTimeClock()).seconds - Double(buffer.frameLength) / buffer.format.sampleRate,
-                            frames: Int(buffer.frameLength))
-                    }
-                    if didWrite, buffer.frameLength > 0 { self.noteSuccessfulWrite(recoveryAttempt, session: session, tapID: tapID, frames: Int(buffer.frameLength)) }
-                } catch {
-                    self.reportWriteError(error, session: session, tapID: tapID, rateLimiter: writeErrors)
-                }
-                return
-            }
-            do {
-                let didWrite = try box.write(tap: tapID) { file in
-                    try file.write(from: buffer)
-                        timeline?.noteWrite(to: file.url, hostTime: time.isHostTimeValid
-                            ? AVAudioTime.seconds(forHostTime: time.hostTime)
-                            : CMClockGetTime(CMClockGetHostTimeClock()).seconds - Double(buffer.frameLength) / buffer.format.sampleRate,
-                            frames: Int(buffer.frameLength))
-                }
-                if didWrite, buffer.frameLength > 0 { self.noteSuccessfulWrite(recoveryAttempt, session: session, tapID: tapID, frames: Int(buffer.frameLength)) }
-            } catch {
-                // C-1: 传播写入错误而非静默吞掉，便于上层提示用户磁盘空间不足等问题
-                self.reportWriteError(error, session: session, tapID: tapID, rateLimiter: writeErrors)
-            }
-        }
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format, block: tap)
     }
 
     /// 写失败上报（去抖）：磁盘满/IO 故障时 tap 每 ~21ms 失败一次，
@@ -1018,28 +938,6 @@ private final class SilencedBox: @unchecked Sendable {
     func set(_ value: Bool) { lock.lock(); defer { lock.unlock() }; self.value = value }
 }
 
-/// 全零 PCM 缓冲池：静音写入按传入缓冲格式/长度复用，每次取出前重新清零
-final class MicCaptureZeroBufferBox: @unchecked Sendable {
-    private let lock = NSLock()
-    private var buffer: AVAudioPCMBuffer?
-    func zeroBuffer(matching format: AVAudioFormat, frameLength: AVAudioFrameCount) -> AVAudioPCMBuffer? {
-        lock.lock(); defer { lock.unlock() }
-        if let b = buffer, b.format == format, b.frameCapacity >= frameLength {
-            b.frameLength = frameLength
-        } else {
-            guard let b = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameLength) else { return nil }
-            b.frameLength = frameLength
-            buffer = b
-        }
-        guard let b = buffer else { return nil }
-        // interleaved PCM 只有一个数据指针，不能按声道数索引 floatChannelData。
-        for audioBuffer in UnsafeMutableAudioBufferListPointer(b.mutableAudioBufferList) {
-            if let data = audioBuffer.mData { memset(data, 0, Int(audioBuffer.mDataByteSize)) }
-        }
-        return b
-    }
-}
-
 /// 写入错误上报节流（5 秒冷却）
 private final class WriteErrorRateBox: @unchecked Sendable {
     private let lock = NSLock()
@@ -1062,8 +960,13 @@ enum MicCaptureError: LocalizedError {
     case alreadyCapturing
     case startupFailed
 
+    case invalidBuffer
+    case writerBackpressure
+
     var errorDescription: String? {
         switch self {
+        case .invalidBuffer: return String(localized: "无法创建音频读取缓冲")
+        case .writerBackpressure: return String(localized: "麦克风写入缓冲已满，部分音频未能保存。")
         case .microphonePermissionNotGranted:
             return String(localized: "麦克风权限未授予。请到「系统设置 → 隐私与安全性 → 麦克风」中开启 Memozia，然后重新开始录音。")
         case .alreadyCapturing:

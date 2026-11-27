@@ -120,6 +120,8 @@ struct QuickNoteDetailView: View {
             viewModel.loadSummary(for: quickNote)
         }
         .onChange(of: quickNote.id) { _, _ in
+            showTodoEdit = false
+            editingTodoItem = nil
             viewModel.loadTodoDocument(for: quickNote)
             viewModel.loadSummary(for: quickNote)
         }
@@ -132,11 +134,6 @@ struct QuickNoteDetailView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSLocale.currentLocaleDidChangeNotification)) { _ in
             systemLanguages = NoteSpeechAvailability.systemPreferredLanguages
         }
-        #if os(macOS)
-        .onReceive(NotificationCenter.default.publisher(for: .screenshotReannotated)) { notification in
-            handleReannotated(notification)
-        }
-        #endif
         .sheet(isPresented: $showTodoEdit) {
             TodoItemEditView(
                 isPresented: $showTodoEdit,
@@ -161,27 +158,26 @@ struct QuickNoteDetailView: View {
     #if os(macOS)
     /// 启动重新标注：读取当前图片 → 交给 ScreenshotManager 进入标注界面
     private func startReannotate() {
-        guard quickNote.hasImage,
-              let imageURL = quickNote.sourceImageURL,
-              let imageData = try? Data(contentsOf: imageURL) else {
-            viewModel.errorMessage = String(localized: "无法加载图片文件")
-            viewModel.showError = true
-            return
-        }
-        ScreenshotManager.shared.reannotate(imageData: imageData)
-    }
-
-    /// 接收重新标注结果，覆盖保存到当前笔记
-    private func handleReannotated(_ notification: Notification) {
-        guard let markedPNG = (notification.userInfo?["markedPNG"] as? ScreenshotPayloadBox)?.data else { return }
-        guard let url = quickNote.sourceImageURL else { return }
-        do {
-            try markedPNG.write(to: url, options: .atomic)
-            // 触发视图刷新（通过 objectWillChange）
-            viewModel.selectedQuickNote = quickNote
-        } catch {
-            viewModel.errorMessage = String(localized: "保存标注图片失败: \(UserFacingError.summary(for: error))")
-            viewModel.showError = true
+        guard !isReadOnly, let url = quickNote.sourceImageURL else { return }
+        let note = quickNote
+        Task {
+            do {
+                let data = try await Task.detached(priority: .userInitiated) { try Data(contentsOf: url) }.value
+                guard !note.isDeleted, note.modelContext != nil, note.sourceImageURL == url else { return }
+                ScreenshotManager.shared.reannotate(imageData: data) { marked in
+                    guard !isReadOnly, !note.isDeleted, note.modelContext != nil, note.sourceImageURL == url else { return }
+                    do {
+                        try marked.write(to: url, options: .atomic)
+                        NotificationCenter.default.post(name: .screenshotReannotated, object: url)
+                    } catch {
+                        viewModel.errorMessage = String(localized: "保存标注图片失败: \(UserFacingError.summary(for: error))")
+                        viewModel.showError = true
+                    }
+                }
+            } catch {
+                viewModel.errorMessage = String(localized: "无法加载图片文件")
+                viewModel.showError = true
+            }
         }
     }
     #endif
@@ -429,10 +425,7 @@ struct QuickNoteDetailView: View {
             }
 
             #if os(macOS)
-            if let nsImage = loadNoteImage(at: url) {
-                Image(nsImage: nsImage)
-                    .resizable()
-                    .scaledToFit()
+            NoteImageView(url: url, maxPoints: 760 * max(1, imageScale))
                     .frame(maxWidth: .infinity)
                     .scaleEffect(imageScale)
                     .offset(imageOffset)
@@ -456,9 +449,6 @@ struct QuickNoteDetailView: View {
                     .shadow(radius: 2)
                     .frame(maxHeight: 500)
                     .clipped()
-            } else {
-                ContentUnavailableView("图片加载失败", systemImage: "photo.bad")
-            }
             #endif
         }
         .sheet(isPresented: $showImageFullscreen) {
@@ -636,7 +626,7 @@ struct QuickNoteDetailView: View {
                     Text(viewModel.todoExtractionProgressText)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                } else if let doc = viewModel.currentTodoDocument {
+                } else if let doc = viewModel.currentTodoDocument(for: quickNote) {
                     let exportedCount = doc.items.filter { $0.status == .exported }.count
                     if exportedCount > 0 {
                         Text("已写入提醒事项 \(exportedCount)/\(doc.items.count)")
@@ -658,19 +648,19 @@ struct QuickNoteDetailView: View {
                     .buttonStyle(.borderless)
                     .help("手动新增待办")
                     .accessibilityLabel(Text("手动新增待办"))
-                    .disabled(isReadOnly)
+                    .disabled(isReadOnly || !viewModel.todoEditor.ready)
                 }
 
                 // 写入提醒事项按钮
                 if !viewModel.isExtractingTodos,
-                   let doc = viewModel.currentTodoDocument,
+                   let doc = viewModel.currentTodoDocument(for: quickNote),
                    !doc.items.isEmpty {
                     let hasPending = doc.items.contains { $0.status != .exported }
                     if hasPending {
                         Button {
                             Task {
                                 await viewModel.writeTodosToReminders(
-                                    note: quickNote,
+                                    for: quickNote,
                                     defaultListID: defaultReminderListID
                                 )
                             }
@@ -686,7 +676,7 @@ struct QuickNoteDetailView: View {
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(.accentColor)
-                        .disabled(viewModel.isWritingTodos)
+                        .disabled(isReadOnly || viewModel.isWritingTodos)
                     }
 
                     if isProMode {
@@ -700,7 +690,7 @@ struct QuickNoteDetailView: View {
                         .buttonStyle(.borderless)
                         .help("清除待办（同时从提醒事项中删除）")
                         .accessibilityLabel(Text("清除待办（同时从提醒事项中删除）"))
-                        .disabled(viewModel.isWritingTodos)
+                        .disabled(isReadOnly || viewModel.isWritingTodos)
                         .confirmationDialog(
                             "确认清除所有待办？",
                             isPresented: $showClearTodosConfirmation,
@@ -718,12 +708,12 @@ struct QuickNoteDetailView: View {
             }
 
             // 待办列表
-            if let doc = viewModel.currentTodoDocument {
+            if let doc = viewModel.currentTodoDocument(for: quickNote) {
                 VStack(spacing: 6) {
                     ForEach(doc.items) { item in
                         TodoItemRow(
                             item: item,
-                            allowsEditing: isProMode && !isReadOnly,
+                            allowsEditing: isProMode && !isReadOnly && !viewModel.isWritingTodos,
                             onEdit: {
                                 editingTodoItem = item
                                 showTodoEdit = true
@@ -793,61 +783,74 @@ struct QuickNoteDetailView: View {
 
 #if os(macOS)
 
-/// 笔记图片加载辅助（缩放/拖拽手势会触发 body 频繁重算，
-/// 直接 NSImage(contentsOf:) 会导致同一张图每帧重复解码）
-private final class NoteImageCacheBox: @unchecked Sendable {
-    /// 按 URL 缓存解码结果：body 重算时命中缓存，避免重复解码；
-    /// NSCache 在内存压力下自动驱逐
-    let cache = NSCache<NSURL, NSImage>()
-    init() {
-        // 解码位图缓存上限 128MB（cost = 位图字节数估算）
-        cache.totalCostLimit = 128 * 1024 * 1024
+/// ImageIO 在后台按显示像素解码。原子替换保留路径，但会改变文件身份。
+actor NoteImageLoader {
+    static let shared = NoteImageLoader()
+    private let cache = NSCache<NSString, CGImage>()
+
+    init() { cache.totalCostLimit = 128 * 1024 * 1024 }
+
+    func load(_ url: URL, pixels: Int) throws -> CGImage {
+        let attrs = try FileManager.default.attributesOfItem(atPath: url.path)
+        let inode = (attrs[.systemFileNumber] as? NSNumber)?.uint64Value ?? 0
+        let modified = (attrs[.modificationDate] as? Date)?.timeIntervalSinceReferenceDate ?? 0
+        let key = "\(url.path)|\(inode)|\(modified)|\(pixels)" as NSString
+        if let cached = cache.object(forKey: key) { return cached }
+        try Task.checkCancellation()
+        let options = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, options),
+              let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [
+                kCGImageSourceCreateThumbnailFromImageAlways: true,
+                kCGImageSourceThumbnailMaxPixelSize: pixels,
+                kCGImageSourceCreateThumbnailWithTransform: true,
+                kCGImageSourceShouldCacheImmediately: true
+              ] as CFDictionary) else { throw CocoaError(.fileReadCorruptFile) }
+        try Task.checkCancellation()
+        cache.setObject(image, forKey: key, cost: image.bytesPerRow * image.height)
+        return image
     }
 }
 
-private let noteImageCacheBox = NoteImageCacheBox()
+private struct NoteImageView: View {
+    let url: URL
+    let maxPoints: CGFloat
+    @Environment(\.displayScale) private var displayScale
+    @State private var revision = 0
+    @State private var image: CGImage?
+    @State private var loadedURL: URL?
+    @State private var failed = false
+    private struct Request: Hashable { let url: URL; let pixels: Int; let revision: Int }
 
-/// 加载笔记图片：小图（≤10MB）保持原逻辑直接加载；
-/// 大图（>10MB，通常是超高分辨率截图）用 CGImageSource 降采样到最大边 4096px，
-/// 避免全尺寸解码造成内存峰值过高
-private func loadNoteImage(at url: URL) -> NSImage? {
-    if let cached = noteImageCacheBox.cache.object(forKey: url as NSURL) {
-        return cached
+    var body: some View {
+        let pixels = min(8192, max(128, Int(ceil(maxPoints * displayScale / 128)) * 128))
+        let request = Request(url: url, pixels: pixels, revision: revision)
+        Group {
+            if loadedURL == url, let image {
+                Image(decorative: image, scale: displayScale).resizable().scaledToFit()
+            } else if loadedURL == url, failed {
+                ContentUnavailableView("图片加载失败", systemImage: "photo.bad")
+            } else {
+                ProgressView().frame(maxWidth: .infinity, minHeight: 100)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .screenshotReannotated)) { note in
+            if note.object as? URL == url { revision += 1 }
+        }
+        .task(id: request) {
+            do {
+                let decoded = try await NoteImageLoader.shared.load(url, pixels: pixels)
+                try Task.checkCancellation()
+                image = decoded
+                loadedURL = url
+                failed = false
+            } catch {
+                guard !Task.isCancelled else { return }
+                loadedURL = url
+                image = nil
+                failed = true
+            }
+        }
     }
-
-    let fileSize = ((try? FileManager.default.attributesOfItem(atPath: url.path))?[.size] as? NSNumber)?.int64Value ?? 0
-
-    // 超过 10MB 才降采样，小图原样直出
-    let image: NSImage?
-    if fileSize > 10 * 1024 * 1024 {
-        image = downsampledImage(at: url, maxPixelSize: 4096)
-            ?? NSImage(contentsOf: url) // 降采样失败时回退原逻辑
-    } else {
-        image = NSImage(contentsOf: url)
-    }
-
-    if let image {
-        let bitmapBytes = Int(image.size.width * image.size.height) * 4
-        noteImageCacheBox.cache.setObject(image, forKey: url as NSURL, cost: bitmapBytes)
-    }
-    return image
-}
-
-/// CGImageSource 降采样：只解码目标尺寸，内存占用与 MaxPixelSize 挂钩而非原图分辨率
-private func downsampledImage(at url: URL, maxPixelSize: CGFloat) -> NSImage? {
-    let sourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
-    guard let source = CGImageSourceCreateWithURL(url as CFURL, sourceOptions) else { return nil }
-    let thumbnailOptions = [
-        kCGImageSourceCreateThumbnailFromImageAlways: true,
-        kCGImageSourceThumbnailMaxPixelSize: maxPixelSize,
-        kCGImageSourceCreateThumbnailWithTransform: true,
-        kCGImageSourceShouldCacheImmediately: true,
-    ] as CFDictionary
-    guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, thumbnailOptions) else { return nil }
-    return NSImage(
-        cgImage: cgImage,
-        size: NSSize(width: cgImage.width, height: cgImage.height)
-    )
 }
 
 struct FullscreenImageView: View {
@@ -861,10 +864,9 @@ struct FullscreenImageView: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            if let nsImage = loadNoteImage(at: url) {
-                Image(nsImage: nsImage)
-                    .resizable()
-                    .scaledToFit()
+            GeometryReader { proxy in
+                NoteImageView(url: url, maxPoints: max(proxy.size.width, proxy.size.height) * max(1, scale))
+                    .frame(width: proxy.size.width, height: proxy.size.height)
                     .scaleEffect(scale)
                     .offset(offset)
                     .gesture(

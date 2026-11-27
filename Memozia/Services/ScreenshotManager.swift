@@ -42,7 +42,6 @@ final class ScreenshotManager {
     }
 
     /// 当前是否为重新标注会话
-    private var isReannotating = false
     private var pendingPermissionRepairCapture: (() -> Void)?
 
     private func deferCaptureForPermissionRepair(_ retry: @escaping () -> Void) -> Bool {
@@ -235,14 +234,13 @@ final class ScreenshotManager {
 
     /// 从已有图片重新标注
     /// - Parameter imageData: 原始图片 PNG 数据
-    func reannotate(imageData: Data) {
+    func reannotate(imageData: Data, onSave: @escaping @MainActor (Data) -> Void) {
         guard RegionSelectionController.shared.isIdle else {
             reportSessionBusy(context: "重新标注")
             return
         }
-        isReannotating = true
         RegionSelectionController.shared.reannotate(imageData: imageData) { [weak self] outcome in
-            self?.handle(outcome: outcome)
+            self?.handle(outcome: outcome, onReannotated: onSave)
         }
     }
 
@@ -317,19 +315,12 @@ final class ScreenshotManager {
 
     // MARK: - 私有实现
 
-    private func handle(outcome: RegionSelectionController.Outcome) {
-        let wasReannotating = isReannotating
-        isReannotating = false
+    private func handle(outcome: RegionSelectionController.Outcome, onReannotated: (@MainActor (Data) -> Void)? = nil) {
 
         switch outcome {
         case .saved(let originalPNG, let markedPNG, let pixelWidth, let pixelHeight, let captureMode):
-            if wasReannotating {
-                let finalPNG = markedPNG ?? originalPNG
-                NotificationCenter.default.post(
-                    name: .screenshotReannotated,
-                    object: nil,
-                    userInfo: ["markedPNG": ScreenshotPayloadBox(finalPNG)]
-                )
+            if let onReannotated {
+                onReannotated(markedPNG ?? originalPNG)
             } else {
                 NotificationCenter.default.post(
                     name: .screenshotCaptureSaved,

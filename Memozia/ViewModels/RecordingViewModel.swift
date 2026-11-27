@@ -9,12 +9,13 @@ import Metal
 /// 录音业务逻辑 ViewModel
 @MainActor
 @Observable
-final class RecordingViewModel {
+final class RecordingViewModel: EntryTodoEditing {
 
     var selectedRecording: AudioRecording? {
         didSet {
             // 切换选中录音时清空撤销栈，避免撤销操作作用到另一条录音的片段
             if selectedRecording?.id != oldValue?.id {
+                todoEditor.select(selectedRecording.flatMap { TodoLocation($0) })
                 editUndoStack.removeAll()
                 // 切换条目时按新条目恢复「进行中态 + 流式内容」：后台正在跑的另一条目
                 // 不得把它的总结/进行中态显示到当前条目上
@@ -173,8 +174,8 @@ final class RecordingViewModel {
         selectedRecording.flatMap { todoExtractionProgress[$0.id] }?.text ?? String(localized: "AI 拆解中...")
     }
     /// 当前展示的待办文档（按 recording.id 缓存，切换录音时重载）
-    var currentTodoDocument: TodoDocument?
-    var isWritingTodos = false
+    let todoEditor = EntryTodoEditor()
+    func reportTodoError(_ message: String) { showErrorMessage(message) }
 
     /// F-3: 录音停止后音频合并进行中（用于 UI 反馈合并进度）
     var isMergingAudio = false
@@ -201,14 +202,6 @@ final class RecordingViewModel {
     /// onRequestStopForDiskPressure 等回调，而第一路的合并仍在进行，导致告警与止损被吞
     private var isStoppingRecording = false
 
-    /// 转写镜像写入的串行队列：主线程只做 Sendable 快照，逐段 AES-GCM 解密与提交
-    /// 放到这里顺序执行。必须串行——`EntryMirrorStore` 的「最新一份胜出」按提交世代
-    /// 判定，若解密耗时不同导致提交乱序，旧内容会被当成最新写盘
-    private let transcriptMirrorQueue = DispatchQueue(
-        label: "app.memozia.transcriptMirror",
-        qos: .utility
-    )
-
     /// 当前采集问题常驻横幅；恢复与保存结果使用非模态一次性反馈。
     var liveRecordingWarning: String?
     var recordingFailureFolder: URL?
@@ -216,12 +209,12 @@ final class RecordingViewModel {
     var captureReportRequestedFolder: String?
     private var lastRecoveredFeedback: String?
 
-    private var transcriptionTask: Task<Void, Never>?
+    private var transcriptionTask: Task<StepOutcome, Never>?
     /// 正在转写的目标。取消时要**立刻**回写条目状态并出队：
     /// 转写中有「无法即时中断」的窗口（WhisperKit 的协作标志要等下个窗口边界，
     /// 分离的 native process 更是完全不可中断），不能等那段调用返回再收尾
     @ObservationIgnored
-    private var activeTranscriptionTarget: (folderName: String, recording: AudioRecording)?
+    private var activeTranscriptionTarget: (recording: AudioRecording, durable: ForegroundTaskRecord?)?
     /// 转写任务代次：每次发起转写递增。任务收尾时用它判定自己是否已被更新的任务取代
     /// （旧任务的 defer 不得改动新任务的共享状态，也不得按「类型+文件夹」出队新任务的队列项）
     private var transcriptionGeneration = 0
@@ -373,30 +366,24 @@ final class RecordingViewModel {
     func startTranscription(
         recording: AudioRecording,
         sttConfig: STTConfig,
-        context: ModelContext
-    ) -> Task<Void, Never> {
-        guard !rejectWriteIfReadOnly(.startProcessing) else { return Task {} }
-        transcriptionTask?.cancel()
-        // 递增代次：本次任务拥有唯一代次；旧任务的收尾逻辑据此判定自己已过期，
-        // 不得提交结果、不得改动共享状态、也不得按「类型+文件夹」出队（会误清新任务的队列项）
+        context: ModelContext,
+        origin: TaskExecutionOrigin = .foreground
+    ) -> Task<StepOutcome, Never> {
+        guard !rejectWriteIfReadOnly(.startProcessing) else { return Task { .failed } }
+        if activeTranscriptionTarget != nil { cancelTranscription() }
         transcriptionGeneration += 1
         let generation = transcriptionGeneration
         let recordingID = recording.id
-        // 后台任务队列埋点：用户发起转写时入队（快照 STT 配置，幂等），
-        // 主应用退出后守护进程据此续跑；所有结束路径（完成/失败/取消）在 defer 出队
-        if !BackgroundTaskQueue.enqueue(BackgroundTaskEntry(
-            kind: .transcription,
-            folderName: recording.folderName,
-            sttSnapshot: STTConfigSnapshot(config: sttConfig)
-        )) {
-            // 入队未落盘：前台仍可继续，但退出后无法续跑；明确告知而不是静默
-            showErrorMessage(String(localized: "任务已在前台开始，但未能写入后台续跑队列；请保持应用开启完成本次任务，退出后需重新发起。"))
-        }
-
+        let durable = origin.register(BackgroundTaskEntry(kind: .transcription, folderName: recording.folderName,
+            sttSnapshot: STTConfigSnapshot(config: sttConfig))) { showErrorMessage($0) }
+        activeTranscriptionTarget = (recording, durable)
         let task = Task { @MainActor in
+            guard generation == transcriptionGeneration, !Task.isCancelled else {
+                durable?.finish(.cancelled)
+                return StepOutcome.cancelled
+            }
             isTranscribing = true
             recording.transcriptionStatus = .processing
-            activeTranscriptionTarget = (recording.folderName, recording)
             let wantsDiarization = sttConfig.enableSpeakerDiarization
             transcriptionProgress = ProcessingProgressStatus(
                 phase: .preparing,
@@ -409,213 +396,203 @@ final class RecordingViewModel {
                 )
                 : .idle
             transcriptMergeStage = ""
-            defer {
-                // 过期任务（已被更新的任务取代）：不得改动新任务的共享状态，
-                // 也不得按「类型+文件夹」出队——那会清掉新任务刚入队的队列项。
-                // 用 if 收尾而非 guard-return：defer 内不允许 return 跳出
-                if self.transcriptionGeneration == generation {
-                    isTranscribing = false
-                    transcriptMergeStage = ""
-                    stopProgressTicker()
-                    activeTranscriptionTarget = nil
-                    PersistenceReporting.saveOrReport { try context.save() }
-                    BackgroundTaskQueue.dequeue(kind: .transcription, folderName: recording.folderName)
-                }
+            let outcome = await performTranscription(recording: recording, sttConfig: sttConfig,
+                context: context, generation: generation, recordingID: recordingID, wantsDiarization: wantsDiarization)
+            if generation == transcriptionGeneration {
+                isTranscribing = false
+                transcriptMergeStage = ""
+                stopProgressTicker()
+                activeTranscriptionTarget = nil
+                transcriptionTask = nil
+                PersistenceReporting.saveOrReport { try context.save() }
+                durable?.finish(outcome)
             }
-
-            do {
-                try Task.checkCancellation()
-
-                let audioURL = recording.fileURL
-                try Task.checkCancellation()
-                // 音频输入预检：文件缺失/损坏时快速失败，避免引擎层抛出不明确的错误。
-                // 时长同时用于进度估算（RTF × 时长）
-                let audioSeconds = try await Self.validateAudioInput(at: audioURL)
-
-                // 进度估计器：起点取基线表（按模式 + 本地模型目录名分桶），
-                // 首个样本即采用实测值，之后 EMA 收敛到本机真实速度
-                let rtfKey = TranscriptionRTFStore.transcriptionKey(
-                    mode: sttConfig.mode,
-                    modelPath: sttConfig.modelPath
-                )
-                progressEstimator = TranscriptionProgressEstimator(
-                    audioSeconds: audioSeconds,
-                    diarizationEnabled: wantsDiarization,
-                    profile: TranscriptionRTFStore.shared.profile(for: rtfKey)
-                )
-                refreshMergedProgress()
-                startProgressTicker()
-
-                // 语言码送入引擎前映射为 Whisper 认识的代码（zh-Yue → yue）；
-                // 下方繁简归一化仍使用原始设置值，不受映射影响
-                let lang = sttConfig.language.isEmpty
-                    ? nil
-                    : STTConfig.whisperLanguageCode(sttConfig.language)
-
-                // 文字转写与说话人区分改为**串行**：转写跑完再做分离。
-                // 二者都只读同一音频文件、本无数据依赖，但并行时会互相争抢 CPU/内存带宽：
-                // 转写走 CoreML（ANE/GPU），分离是 ONNX 纯 CPU 推理，同时跑会让两侧都变慢，
-                // 长录音还会叠加内存峰值。串行后分离阶段可独享 CPU 线程，总耗时通常更短。
-                // 界面上两条流水线合并为一条进度条（见 `mergedProgress`）：分离阶段排在转写之后。
-                let engineResults = try await runTranscriptionEngine(
-                    sttConfig: sttConfig,
-                    audioURL: audioURL,
-                    language: lang
-                )
-                // 转写段结束：进度钉在转写段末尾，后半程交给分离段的时间蠕动
-                progressEstimator?.finish(.transcription)
-                try Task.checkCancellation()
-                let analysis = await runSpeakerAnalysis(
-                    sttConfig: sttConfig,
-                    audioURL: audioURL,
-                    enabled: wantsDiarization
-                )
-
-                // 说话人区分已跑完时收口状态（未开启/已跳过/失败时 runSpeakerAnalysis 已自行写入）
-                if wantsDiarization, diarizationProgress.phase == .running {
-                    diarizationProgress = analysis.segments.isEmpty
-                        ? ProcessingProgressStatus(
-                            phase: .skipped,
-                            detail: String(localized: "本次未标注说话人")
-                        )
-                        : ProcessingProgressStatus(
-                            phase: .completed,
-                            fraction: 1,
-                            detail: String(localized: "已完成")
-                        )
-                }
-                // 分离段收口：拿到片段才算真跑完，跑空片段等价于本次未做分离，进度直接收到 100%
-                if wantsDiarization, !analysis.segments.isEmpty {
-                    progressEstimator?.finish(.diarization)
-                } else {
-                    progressEstimator?.abort(.diarization)
-                }
-                refreshMergedProgress()
-                // 实测耗时回写 RTF 基线并打标定日志（只有完整跑完才写，见方法注释）
-                recordTranscriptionTiming(
-                    mode: sttConfig.mode,
-                    modelPath: sttConfig.modelPath,
-                    audioSeconds: audioSeconds
-                )
-
-                try Task.checkCancellation()
-                transcriptMergeStage = String(localized: "正在合并并保存…")
-
-                // 中文场景下做繁简归一化：简体→繁转简，繁体→简转繁（送入后台加工前先取好参数）
-                let targetLanguage = sttConfig.language
-                let needsChineseConversion = (targetLanguage == WhisperLanguage.zh.rawValue)
-                    || (targetLanguage == WhisperLanguage.zhYue.rawValue)
-                let enableDictionaryCorrection = sttConfig.enableDictionaryCorrection
-
-                // 结果先在后台完整准备（贴说话人标签、繁简归一化、词典纠正、逐段加密），
-                // **期间不删除、不触碰现有片段**：只有确认可以提交时才替换旧片段。
-                // 取消通过 withTaskCancellationHandler 传给这份 detached 加工
-                //（detached 不继承取消，故用受锁保护的标志逐段检查，尽快让出）
-                let cancelled = LockedBox(false)
-                let prepared: [(start: TimeInterval, end: TimeInterval, speaker: String?, encrypted: String)]? =
-                    await withTaskCancellationHandler {
-                        await Task.detached(priority: .userInitiated) { () -> [(start: TimeInterval, end: TimeInterval, speaker: String?, encrypted: String)]? in
-                            let labeled = SpeakerDiarizationService.shared.applySpeakerAnalysis(
-                                analysis, to: engineResults
-                            )
-                            var out: [(start: TimeInterval, end: TimeInterval, speaker: String?, encrypted: String)] = []
-                            out.reserveCapacity(labeled.count)
-                            for result in labeled {
-                                if cancelled.value { return nil }
-                                var plainText = result.text.trimmingCharacters(in: .whitespacesAndNewlines)
-                                if needsChineseConversion {
-                                    plainText = await ChineseConverterService.shared.convert(plainText, to: targetLanguage)
-                                }
-                                // 语音解析词典纠正：拼音匹配替换术语误写（繁简归一化之后执行，
-                                // 保证词典术语书写体系与归一化后的文本一致）
-                                if enableDictionaryCorrection {
-                                    plainText = await TranscriptDictionaryService.shared.correct(plainText)
-                                }
-                                let encryptedText: String
-                                do {
-                                    encryptedText = try EncryptionService.encrypt(plainText)
-                                } catch {
-                                    EncryptionService.reportEncryptionFailure(error, context: "转写片段")
-                                    encryptedText = plainText
-                                }
-                                out.append((result.startTime, result.endTime, result.speaker, encryptedText))
-                            }
-                            return out
-                        }.value
-                    } onCancel: {
-                        cancelled.value = true
-                    }
-
-                guard let prepared else { throw CancellationError() }
-
-                // 提交前重新校验：取消 / 已被更新的任务取代 / 条目已被删除 一律不提交，
-                // 避免「正在合并并保存」期间取消或删除条目后，旧结果仍覆盖旧转写
-                try Task.checkCancellation()
-                guard isTranscriptionCommitValid(generation: generation, recordingID: recordingID, context: context) else {
-                    transcriptMergeStage = ""
-                    return
-                }
-
-                // 确认可提交后才替换旧片段
-                recording.segments.forEach { context.delete($0) }
-
-                var newSegments: [TranscriptSegment] = []
-                newSegments.reserveCapacity(prepared.count)
-                for item in prepared {
-                    let seg = TranscriptSegment(
-                        startTime: item.start,
-                        endTime: item.end,
-                        speaker: item.speaker,
-                        text: item.encrypted
-                    )
-                    seg.recording = recording
-                    context.insert(seg)
-                    newSegments.append(seg)
-                }
-                recording.segments = newSegments
-
-                recording.transcriptionStatus = .completed
-                recording.errorMessage = nil
-                transcriptionProgress = ProcessingProgressStatus(
-                    phase: .completed,
-                    fraction: 1,
-                    detail: String(localized: "已完成")
-                )
-                // 转写内容已变化，持久化的会议判定失效（下次总结按规则重判）
-                recording.isMeeting = nil
-                recording.meetingJudgedBy = nil
-                recording.meetingJudgedAt = nil
-                invalidateTranscriptCache(recording)
-                try context.save()
-
-                // 将转写记录保存到文件夹
-                saveTranscriptToFolder(recording)
-
-            } catch is CancellationError {
-                guard isTranscriptionCommitValid(generation: generation, recordingID: recordingID, context: context) else { return }
-                recording.transcriptionStatus = .pending
-                transcriptionProgress = .idle
-                diarizationProgress = .idle
-            } catch {
-                guard isTranscriptionCommitValid(generation: generation, recordingID: recordingID, context: context) else { return }
-                recording.transcriptionStatus = .failed
-                let userMessage = UserFacingError.summary(for: error)
-                transcriptionProgress = ProcessingProgressStatus(
-                    phase: .failed,
-                    detail: userMessage
-                )
-                recording.errorMessage = userMessage
-                showErrorMessage(String(localized: "转写失败：\(userMessage)"))
-            }
+            return outcome
         }
         transcriptionTask = task
         return task
     }
 
+    private func performTranscription(recording: AudioRecording, sttConfig: STTConfig, context: ModelContext,
+                                      generation: Int, recordingID: UUID, wantsDiarization: Bool) async -> StepOutcome {
+        do {
+            try Task.checkCancellation()
+
+            let audioURL = recording.fileURL
+            try Task.checkCancellation()
+            // 音频输入预检：文件缺失/损坏时快速失败，避免引擎层抛出不明确的错误。
+            // 时长同时用于进度估算（RTF × 时长）
+            let audioSeconds = try await Self.validateAudioInput(at: audioURL)
+
+            // 进度估计器：起点取基线表（按模式 + 本地模型目录名分桶），
+            // 首个样本即采用实测值，之后 EMA 收敛到本机真实速度
+            let rtfKey = TranscriptionRTFStore.transcriptionKey(
+                mode: sttConfig.mode,
+                modelPath: sttConfig.modelPath
+            )
+            progressEstimator = TranscriptionProgressEstimator(
+                audioSeconds: audioSeconds,
+                diarizationEnabled: wantsDiarization,
+                profile: TranscriptionRTFStore.shared.profile(for: rtfKey)
+            )
+            refreshMergedProgress()
+            startProgressTicker()
+
+            // 语言码送入引擎前映射为 Whisper 认识的代码（zh-Yue → yue）；
+            // 下方繁简归一化仍使用原始设置值，不受映射影响
+            let lang = sttConfig.language.isEmpty
+                ? nil
+                : STTConfig.whisperLanguageCode(sttConfig.language)
+
+            // 文字转写与说话人区分改为**串行**：转写跑完再做分离。
+            // 二者都只读同一音频文件、本无数据依赖，但并行时会互相争抢 CPU/内存带宽：
+            // 转写走 CoreML（ANE/GPU），分离是 ONNX 纯 CPU 推理，同时跑会让两侧都变慢，
+            // 长录音还会叠加内存峰值。串行后分离阶段可独享 CPU 线程，总耗时通常更短。
+            // 界面上两条流水线合并为一条进度条（见 `mergedProgress`）：分离阶段排在转写之后。
+            let engineResults = try await runTranscriptionEngine(
+                sttConfig: sttConfig,
+                audioURL: audioURL,
+                language: lang
+            )
+            // 转写段结束：进度钉在转写段末尾，后半程交给分离段的时间蠕动
+            progressEstimator?.finish(.transcription)
+            try Task.checkCancellation()
+            let analysis = await runSpeakerAnalysis(
+                sttConfig: sttConfig,
+                audioURL: audioURL,
+                enabled: wantsDiarization
+            )
+
+            // 说话人区分已跑完时收口状态（未开启/已跳过/失败时 runSpeakerAnalysis 已自行写入）
+            if wantsDiarization, diarizationProgress.phase == .running {
+                diarizationProgress = analysis.segments.isEmpty
+                    ? ProcessingProgressStatus(
+                        phase: .skipped,
+                        detail: String(localized: "本次未标注说话人")
+                    )
+                    : ProcessingProgressStatus(
+                        phase: .completed,
+                        fraction: 1,
+                        detail: String(localized: "已完成")
+                    )
+            }
+            // 分离段收口：拿到片段才算真跑完，跑空片段等价于本次未做分离，进度直接收到 100%
+            if wantsDiarization, !analysis.segments.isEmpty {
+                progressEstimator?.finish(.diarization)
+            } else {
+                progressEstimator?.abort(.diarization)
+            }
+            refreshMergedProgress()
+            // 实测耗时回写 RTF 基线并打标定日志（只有完整跑完才写，见方法注释）
+            recordTranscriptionTiming(
+                mode: sttConfig.mode,
+                modelPath: sttConfig.modelPath,
+                audioSeconds: audioSeconds
+            )
+
+            try Task.checkCancellation()
+            transcriptMergeStage = String(localized: "正在合并并保存…")
+
+            // 中文场景下做繁简归一化：简体→繁转简，繁体→简转繁（送入后台加工前先取好参数）
+            let targetLanguage = sttConfig.language
+            let needsChineseConversion = (targetLanguage == WhisperLanguage.zh.rawValue)
+                || (targetLanguage == WhisperLanguage.zhYue.rawValue)
+            let enableDictionaryCorrection = sttConfig.enableDictionaryCorrection
+
+            // 结果先在后台完整准备（贴说话人标签、繁简归一化、词典纠正、逐段加密），
+            // **期间不删除、不触碰现有片段**：只有确认可以提交时才替换旧片段。
+            // 取消通过 withTaskCancellationHandler 传给这份 detached 加工
+            //（detached 不继承取消，故用受锁保护的标志逐段检查，尽快让出）
+            let cancelled = LockedBox(false)
+            let prepared: [AudioRecording.TranscriptSnapshotItem]? =
+                await withTaskCancellationHandler {
+                    await Task.detached(priority: .userInitiated) { () -> [AudioRecording.TranscriptSnapshotItem]? in
+                        let labeled = SpeakerDiarizationService.shared.applySpeakerAnalysis(
+                            analysis, to: engineResults
+                        )
+                        var out: [AudioRecording.TranscriptSnapshotItem] = []
+                        out.reserveCapacity(labeled.count)
+                        for result in labeled {
+                            if cancelled.value { return nil }
+                            var plainText = result.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                            if needsChineseConversion {
+                                plainText = await ChineseConverterService.shared.convert(plainText, to: targetLanguage)
+                            }
+                            // 语音解析词典纠正：拼音匹配替换术语误写（繁简归一化之后执行，
+                            // 保证词典术语书写体系与归一化后的文本一致）
+                            if enableDictionaryCorrection {
+                                plainText = await TranscriptDictionaryService.shared.correct(plainText)
+                            }
+                            let encryptedText: String
+                            do {
+                                encryptedText = try EncryptionService.encrypt(plainText)
+                            } catch {
+                                EncryptionService.reportEncryptionFailure(error, context: "转写片段")
+                                encryptedText = plainText
+                            }
+                            out.append(.init(startTime: result.startTime, endTime: result.endTime,
+                                             speaker: result.speaker, rawText: encryptedText))
+                        }
+                        return out
+                    }.value
+                } onCancel: {
+                    cancelled.value = true
+                }
+
+            guard let prepared else { throw CancellationError() }
+            let replacement = try await AudioRecording.stageTranscript(prepared)
+
+            // 提交前重新校验：取消 / 已被更新的任务取代 / 条目已被删除 一律不提交，
+            // 避免「正在合并并保存」期间取消或删除条目后，旧结果仍覆盖旧转写
+            try Task.checkCancellation()
+            guard isTranscriptionCommitValid(generation: generation, recordingID: recordingID, context: context) else {
+                return .cancelled
+            }
+
+            recording.replaceSegments(with: replacement, in: context)
+            recording.transcriptModifiedAt = Date()
+            recording.transcriptionStatus = .completed
+            recording.errorMessage = nil
+            transcriptionProgress = ProcessingProgressStatus(
+                phase: .completed,
+                fraction: 1,
+                detail: String(localized: "已完成")
+            )
+            // 转写内容已变化，持久化的会议判定失效（下次总结按规则重判）
+            recording.isMeeting = nil
+            recording.meetingJudgedBy = nil
+            recording.meetingJudgedAt = nil
+            invalidateTranscriptCache(recording)
+            try context.save()
+
+            // 将转写记录保存到文件夹
+            submitTranscriptMirror(recording)
+            return .succeeded
+
+        } catch is CancellationError {
+            guard isTranscriptionCommitValid(generation: generation, recordingID: recordingID, context: context) else { return .cancelled }
+            recording.transcriptionStatus = .pending
+            transcriptionProgress = .idle
+            diarizationProgress = .idle
+            return .cancelled
+        } catch {
+            guard isTranscriptionCommitValid(generation: generation, recordingID: recordingID, context: context) else { return .cancelled }
+            recording.transcriptionStatus = .failed
+            let userMessage = UserFacingError.summary(for: error)
+            transcriptionProgress = ProcessingProgressStatus(
+                phase: .failed,
+                detail: userMessage
+            )
+            recording.errorMessage = userMessage
+            showErrorMessage(String(localized: "转写失败：\(userMessage)"))
+            return .failed
+        }
+    }
+
     /// 取消当前转写。
     ///
     /// 为什么不能只发 `task.cancel()`：转写的两段都有「无法即时中断」的窗口——
-    /// WhisperKit 靠协作标志（`cancelActiveTranscription`）在下个窗口边界才停，
+    /// WhisperKit 靠协作标志（每次调用独有的取消标志）在下个窗口边界才停，
     /// 而分离的 `diarization.process()` 是单次 native 调用、根本不能中途取消
     /// （见 `SpeakerDiarizationService.diarizeWithSamples` 的注释）。
     /// 只发 cancel 时界面会一直停在「处理中」，用户点取消看不到任何变化，
@@ -624,11 +601,13 @@ final class RecordingViewModel {
     /// 所以这里分两步：先**立即**收口界面与会话状态（用户视角即时生效），
     /// 阻塞中的那一路在后台自行结束；它的结果不会再被采纳——
     /// 提交前的 `Task.checkCancellation()` 与脱敏/合并阶段的取消标志都会拦住它。
-    func cancelTranscription() {
+    func cancelTranscription(recordingID: UUID? = nil, ifCurrent expected: Task<StepOutcome, Never>? = nil, outcome: StepOutcome = .cancelled) {
+        guard expected == nil || transcriptionTask == expected else { return }
+        guard let target = activeTranscriptionTarget, recordingID == nil || target.recording.id == recordingID else { return }
+        transcriptionGeneration += 1
+        target.durable?.finish(outcome)
         transcriptionTask?.cancel()
         transcriptionTask = nil
-        // 外部取消标志：转写进度回调未必运行在任务上下文，Task.cancel 之外的兜底
-        whisperLocalService.cancelActiveTranscription()
 
         // —— 立即收口（不等阻塞调用返回）——
         stopProgressTicker()
@@ -638,13 +617,12 @@ final class RecordingViewModel {
         transcriptionProgress = .idle
         diarizationProgress = .idle
         mergedTranscriptionProgress = 0
-        if let target = activeTranscriptionTarget,
-           !target.recording.isDeleted,
+        if !target.recording.isDeleted,
            target.recording.transcriptionStatus == .processing {
-            target.recording.transcriptionStatus = .pending
-            // 被取消的任务不得留在后台队列里：否则主应用退出后守护进程会把它接着跑完
-            //（任务自身的 defer 可能还卡在上面那段 native 调用里，迟迟执行不到）
-            BackgroundTaskQueue.dequeue(kind: .transcription, folderName: target.folderName)
+            target.recording.transcriptionStatus = outcome == .failed ? .failed : .pending
+            if let context = target.recording.modelContext {
+                PersistenceReporting.saveOrReport { try context.save() }
+            }
         }
         activeTranscriptionTarget = nil
     }
@@ -961,29 +939,30 @@ final class RecordingViewModel {
         llmConfig: LLMConfig,
         context: ModelContext,
         asMeeting: Bool? = nil,
-        experience: AppExperience? = nil
+        experience: AppExperience? = nil,
+        origin: TaskExecutionOrigin = .foreground
     ) -> Task<StepOutcome, Never> {
         guard !rejectWriteIfReadOnly(.startProcessing) else { return Task { .failed } }
         let recordingID = recording.id
         let folderName = recording.folderName
         // 只取消「同一条目」的上一次总结：不同条目各自持有独立句柄，互不干扰
-        summaryTasks[recordingID]?.cancel()
+        cancelSummary(recordingID: recordingID)
         let executionToken = UUID()
         summaryExecutions[recordingID] = executionToken
 
         let taskExperience = experience ?? AppExperiencePreference.resolved()
         // 后台任务队列埋点：用户发起总结时入队（幂等，携带模板选择），守护进程据此续跑
-        if !BackgroundTaskQueue.enqueue(BackgroundTaskEntry(
+        let durable = origin.register(BackgroundTaskEntry(
             kind: .summary,
             folderName: folderName,
             llmConfigID: llmConfig.id,
             isMeeting: asMeeting,
             experience: taskExperience
         )) {
-            showErrorMessage(String(localized: "任务已在前台开始，但未能写入后台续跑队列；请保持应用开启完成本次任务，退出后需重新发起。"))
+            showErrorMessage($0)
         }
 
-        let state = SummaryStreamState(folderName: folderName)
+        let state = SummaryStreamState(durable: durable)
         summaryStreams[recordingID] = state
         summarizingRecordingIDs.insert(recordingID)
         if isSelected(recordingID) {
@@ -1003,6 +982,7 @@ final class RecordingViewModel {
                 experience: taskExperience,
                 state: state
             )
+            durable?.finish(outcome)
             self.finishSummaryExecution(
                 recordingID: recordingID,
                 executionToken: executionToken,
@@ -1215,17 +1195,17 @@ final class RecordingViewModel {
             // 思考过程仅生成期间可见：收尾即清空，正文与已保存总结不受影响
             summaryReasoningText = ""
         }
-        BackgroundTaskQueue.dequeue(kind: .summary, folderName: state.folderName)
     }
 
     /// 取消指定条目的总结（队列「取消」/ 删除条目入口，只影响该条目的句柄）
-    func cancelSummary(recordingID: UUID) {
+    func cancelSummary(recordingID: UUID, ifCurrent expected: Task<StepOutcome, Never>? = nil, outcome: StepOutcome = .cancelled) {
+        guard expected == nil || summaryTasks[recordingID] == expected else { return }
         summaryTasks[recordingID]?.cancel()
         summaryTasks[recordingID] = nil
         summaryExecutions[recordingID] = nil
         if let state = summaryStreams[recordingID] {
             // 被取消任务的收尾已被执行令牌守卫挡住，这里负责对应的后台队列出队埋点
-            BackgroundTaskQueue.dequeue(kind: .summary, folderName: state.folderName)
+            state.durable?.finish(outcome)
             summaryStreams[recordingID] = nil
         }
         summarizingRecordingIDs.remove(recordingID)
@@ -1244,7 +1224,9 @@ final class RecordingViewModel {
 
     // MARK: - 画面要点（仅适用于导入过原始视频的条目）
 
-    func cancelVisualNotes() {
+    func cancelVisualNotes(folderName: String? = nil, ifCurrent expected: Task<StepOutcome, Never>? = nil) {
+        guard folderName == nil || visualNotesRecordingFolderName == folderName,
+              expected == nil || visualNotesTask == expected else { return }
         // 主动取消留痕：与「无发起方的意外中断」区分开，便于按日志定位中断来源
         FileSyncService.logWarning(
             "画面分析被主动取消（用户停止/删除条目，folder=\(visualNotesRecordingFolderName ?? "-")，generation=\(visualNotesGeneration)）"
@@ -1281,10 +1263,13 @@ final class RecordingViewModel {
     ) -> Task<StepOutcome, Never> {
         guard !rejectWriteIfReadOnly(.startProcessing) else { return Task { .failed } }
         visualNotesTask?.cancel()
+        visualExtractionTask?.cancel()
         visualNotesGeneration += 1
         let generation = visualNotesGeneration
+        visualNotesRecordingFolderName = recording.folderName
 
         let task: Task<StepOutcome, Never> = Task { @MainActor in
+            guard generation == visualNotesGeneration, !Task.isCancelled else { return .cancelled }
             // 原件可能已被「清理视频」删掉：有可复用帧缓存时照常分析，
             // 无原件且无缓存时由 `loadOrExtractFrames` 抛错并提示，不在这里提前拒绝
             let videoURL = recording.videoFileURL.flatMap { url in
@@ -1292,7 +1277,6 @@ final class RecordingViewModel {
             }
 
             isGeneratingVisualNotes = true
-            visualNotesRecordingFolderName = recording.folderName
             visualNotesText = ""
             visualNotesRawBuffer = ""
             visualNotesLastFlushTime = 0
@@ -1468,18 +1452,22 @@ final class RecordingViewModel {
     /// 与画面要点共用 visualNotesTask/取消通道与进行中态；进度映射到 0.02–0.47，
     /// 全程停在“正在抽取并筛选关键帧…”文案（>0.5 是“请模型读画面”，不属于本阶段）
     func extractVisualFrames(recording: AudioRecording, autoResumeAttempt: Int = 0) -> Task<Int?, Never> {
+        visualNotesTask?.cancel()
         visualExtractionTask?.cancel()
         visualNotesGeneration += 1
         let generation = visualNotesGeneration
+        visualNotesRecordingFolderName = recording.folderName
 
         let task = Task { @MainActor () -> Int? in
+            guard generation == visualNotesGeneration, !Task.isCancelled else { return nil }
             guard let videoURL = recording.videoFileURL,
                   FileManager.default.fileExists(atPath: videoURL.path) else {
+                isGeneratingVisualNotes = false
+                visualNotesRecordingFolderName = nil
                 showErrorMessage(String(localized: "该条目没有留存的原始视频，无法抽取关键帧（重新导入视频即可保留原件）"))
                 return nil
             }
             isGeneratingVisualNotes = true
-            visualNotesRecordingFolderName = recording.folderName
             // 抽帧阶段不产出文本：清掉上一条目残留的要点，避免进行中分支显示到别人的结果
             visualNotesText = ""
             visualNotesReasoningText = ""
@@ -1653,7 +1641,8 @@ final class RecordingViewModel {
     }
 
     /// 取消指定条目的标题润色（队列「取消」入口，只影响该条目的句柄）
-    func cancelTitle(recordingID: UUID) {
+    func cancelTitle(recordingID: UUID, ifCurrent expected: Task<StepOutcome, Never>? = nil) {
+        guard expected == nil || titleTasks[recordingID] == expected else { return }
         titleTasks[recordingID]?.cancel()
         titleTasks[recordingID] = nil
         titleExecutions[recordingID] = nil
@@ -1695,7 +1684,7 @@ final class RecordingViewModel {
     /// 表现为「总结内容串到别的录音」。存放于 `@MainActor` 的 `summaryStreams` 中，
     /// 只在主线程访问，无需额外加锁。
     private final class SummaryStreamState {
-        let folderName: String
+        let durable: ForegroundTaskRecord?
         var rawBuffer = ""
         var reasoningRawBuffer = ""
         var scrubMapping: PIIScrubMapping?
@@ -1705,7 +1694,7 @@ final class RecordingViewModel {
         var displayText = ""
         var displayReasoning = ""
 
-        init(folderName: String) { self.folderName = folderName }
+        init(durable: ForegroundTaskRecord?) { self.durable = durable }
     }
 
     @ObservationIgnored private var summaryStreams: [UUID: SummaryStreamState] = [:]
@@ -1946,10 +1935,10 @@ final class RecordingViewModel {
             EncryptionService.reportEncryptionFailure(error, context: "转写片段编辑后")
             segment.text = newText
         }
+        segment.recording?.transcriptModifiedAt = Date()
         PersistenceReporting.saveOrReport { try context.save() }
-        // 同步到文件夹
         if let recording = segment.recording {
-            saveTranscriptToFolder(recording)
+            submitTranscriptMirror(recording)
             invalidateTranscriptCache(recording)
         }
     }
@@ -1999,8 +1988,9 @@ final class RecordingViewModel {
         newSegment.recording = recording
         context.insert(newSegment)
 
+        recording.transcriptModifiedAt = Date()
         PersistenceReporting.saveOrReport { try context.save() }
-        saveTranscriptToFolder(recording)
+        submitTranscriptMirror(recording)
         invalidateTranscriptCache(recording)
     }
 
@@ -2049,8 +2039,9 @@ final class RecordingViewModel {
         for segment in recording.segments where segment.speaker == speaker {
             segment.speaker = name
         }
+        recording.transcriptModifiedAt = Date()
         PersistenceReporting.saveOrReport { try context.save() }
-        saveTranscriptToFolder(recording)
+        submitTranscriptMirror(recording)
         invalidateTranscriptCache(recording)
     }
 
@@ -2058,10 +2049,10 @@ final class RecordingViewModel {
         guard !rejectWriteIfReadOnly(.editTranscript) else { return }
         guard let last = editUndoStack.popLast() else { return }
         last.segment.text = last.originalText
+        last.segment.recording?.transcriptModifiedAt = Date()
         PersistenceReporting.saveOrReport { try context.save() }
-        // 同步到文件夹
         if let recording = last.segment.recording {
-            saveTranscriptToFolder(recording)
+            submitTranscriptMirror(recording)
             invalidateTranscriptCache(recording)
         }
     }
@@ -2518,51 +2509,15 @@ final class RecordingViewModel {
 
     // MARK: - 文件持久化（转写记录、总结保存到文件夹）
 
-    /// 将转写记录以 JSON 格式保存到录音文件夹（G-1: 加密存储）
-    ///
-    /// 性能设计：JSON 序列化与整体加密对长转写是数十毫秒级主线程开销，
-    /// 主线程只做 SwiftData 快照，序列化+加密+写盘移入后台。
-    ///
-    /// 解密也一并移出主线程：旧实现在主线程 `segments.map { seg.decryptedText }` 逐段
-    /// AES-GCM（数千段长会议在停止/编辑时可见卡顿），现在主线程只取 Sendable 的
-    /// **原始密文串 + 时间/说话人**，解密在串行队列上完成后再提交（串行保证提交次序）
-    func saveTranscriptToFolder(_ recording: AudioRecording) {
-        guard !rejectWriteIfReadOnly(.writeMirror) else { return }
-        guard !recording.folderName.isEmpty else { return }
-        recording.transcriptModifiedAt = Date()
-
-        let segments = recording.segments.sorted { $0.startTime < $1.startTime }
-        // speaker 必须随盘持久化：磁盘恢复（loadTranscriptIfNeeded）以此重建片段，
-        // 不存则崩溃/保存失败恢复后说话人标签与声纹姓名全部丢失
-        let snapshot: [(startTime: TimeInterval, endTime: TimeInterval, speaker: String?, rawText: String)] =
-            segments.map { seg in
-                (
-                    startTime: seg.startTime,
-                    endTime: seg.endTime,
-                    speaker: (seg.speaker?.isEmpty == false) ? seg.speaker : nil,
-                    rawText: seg.text
-                )
-            }
-
-        let folderName = recording.folderName
-        let fileURL = recording.transcriptFileURL
-        // 交给 EntryMirrorStore：同一条目连续保存合并为「只写最新一份」，退出前由 flush()
-        // 等待落盘（旧实现是 detached 一把火，保存完立刻退出即丢最后一次修改）
-        transcriptMirrorQueue.async {
-            let items: [TranscriptMirrorItem] = snapshot.map { entry in
-                TranscriptMirrorItem(
-                    startTime: entry.startTime,
-                    endTime: entry.endTime,
-                    speaker: entry.speaker,
-                    text: EncryptionService.decryptSafely(entry.rawText)
-                )
-            }
-            EntryMirrorStore.shared.submitTranscript(items, folderName: folderName, to: fileURL)
-        }
+    /// 在返回前登记磁盘镜像。解密与编码由 EntryMirrorStore 在写入时完成。
+    private func submitTranscriptMirror(_ recording: AudioRecording) {
+        guard !rejectWriteIfReadOnly(.writeMirror), !recording.folderName.isEmpty else { return }
+        EntryMirrorStore.shared.submitStoredTranscript(recording.transcriptSnapshot,
+            folderName: recording.folderName, to: recording.transcriptFileURL)
     }
 
     /// 将总结以 Markdown 格式保存到录音文件夹（G-1: 加密存储）
-    /// 转写保存同款后台写入策略（见 saveTranscriptToFolder）
+    /// 转写保存同款后台写入策略（见 submitTranscriptMirror）
     func saveSummaryToFolder(_ recording: AudioRecording) {
         guard !rejectWriteIfReadOnly(.writeMirror) else { return }
         guard !recording.folderName.isEmpty else { return }
@@ -2634,12 +2589,8 @@ final class RecordingViewModel {
         defer { RecordingMergeActivity.shared.isRunning = false }
         do {
             try context.save()
-            // 等待串行解密队列先提交镜像，再等待镜像落盘，防止迟到的旧镜像覆盖合并结果。
-            await withCheckedContinuation { continuation in
-                transcriptMirrorQueue.async { continuation.resume() }
-            }
             let flush = await EntryMirrorStore.shared.flush()
-            guard flush.remaining.isEmpty, flush.errors.isEmpty else { throw RecordingMergeService.MergeError() }
+            guard flush.isComplete else { throw RecordingMergeService.MergeError() }
             let snapshots = ordered.map {
                 RecordingMergeService.Input(id: $0.id, folderName: $0.folderName, folderURL: $0.folderURL,
                     audioURL: $0.fileURL, title: $0.fileName, segments: $0.transcriptSnapshot,
@@ -2750,16 +2701,16 @@ final class RecordingViewModel {
     ///   - deleteFile: 是否同时删除磁盘文件，默认为 true
     func deleteRecording(_ recording: AudioRecording, context: ModelContext, deleteFile: Bool = true) {
         guard !rejectWriteIfReadOnly(.deleteEntry) else { return }
+        let todoDocument: TodoDocument?
+        do { todoDocument = deleteFile && !recording.folderName.isEmpty ? try TodoDocument.read(from: recording.folderURL) : nil }
+        catch { showErrorMessage(String(localized: "条目文件缺失或无法读取。")); return }
         // 按条目 id 取消该条目上正在跑的总结/待办/标题：无论是否当前展示条目，
         // 都要停掉它会继续落盘到「即将删除文件夹」的任务
         cancelSummary(recordingID: recording.id)
         cancelTodoExtraction(recordingID: recording.id)
         cancelTitle(recordingID: recording.id)
-        if selectedRecording?.id == recording.id {
-            cancelTranscription()
-            // 画面要点生成中删条目：不取消会让抽帧与写入继续落在已删目录上
-            cancelVisualNotes()
-        }
+        cancelTranscription(recordingID: recording.id)
+        cancelVisualNotes(folderName: recording.folderName)
 
         // P3-9: 先删除磁盘文件——若失败则保留数据库记录，防止下次 syncFromDisk 数据复活
         if deleteFile {
@@ -2793,37 +2744,13 @@ final class RecordingViewModel {
         } catch {
             showErrorMessage(String(localized: "删除失败：\(UserFacingError.summary(for: error))"))
         }
+        deleteLinkedReminders(in: todoDocument?.items ?? [])
         if selectedRecording?.id == recording.id {
             selectedRecording = nil
-            currentTodoDocument = nil
         }
     }
 
     // MARK: - 待办拆解（总结 → 待办）
-
-    /// 待办文档加载代次：丢弃过期的后台读结果（快速切换条目时避免旧内容覆盖新内容）
-    @ObservationIgnored
-    private var todoDocumentLoadToken = 0
-
-    /// 从磁盘加载该录音的待办文档（切换录音时调用）
-    func loadTodoDocument(for recording: AudioRecording) {
-        todoDocumentLoadToken += 1
-        guard !recording.folderName.isEmpty else {
-            currentTodoDocument = nil
-            return
-        }
-        // TodoDocument.load 是同步磁盘读 + 解密，而本方法在详情页 onAppear / 切换条目时调用，
-        // 主线程读盘会卡住首帧。改为后台读、主线程回填，并用代次守卫丢弃过期结果
-        let token = todoDocumentLoadToken
-        let folderURL = recording.folderURL
-        Task { [weak self] in
-            let document = await Task.detached(priority: .userInitiated) {
-                TodoDocument.load(from: folderURL)
-            }.value
-            guard let self, self.todoDocumentLoadToken == token else { return }
-            self.currentTodoDocument = document
-        }
-    }
 
     /// AI 拆解总结为待办事项
     /// - Returns: 任务结果强类型化：`.succeeded` 仅当本次确实拆出待办并已落盘
@@ -2859,6 +2786,7 @@ final class RecordingViewModel {
             }
 
             do {
+                let previous = try TodoDocument.read(from: recording.folderURL)
                 let snapshot = try LLMConfigSnapshot(config: llmConfig)
                 // 端点信任与模型类型解耦；待办文档返回后逐字段还原。
                 let savedPIIValue = UserDefaults.standard.object(forKey: "enable_pii_scrub") as? Bool ?? true
@@ -2887,8 +2815,7 @@ final class RecordingViewModel {
                     document = PIIScrubService.restore(document, mapping: mapping)
                 }
                 // 只有当前展示条目才更新共享的待办文档 UI；持久化始终按本条目的文件夹写入
-                if self.isSelected(recordingID) { self.currentTodoDocument = document }
-                let saved = self.saveTodosToFolder(document, for: recording)
+                let saved = try self.saveExtracted(document, for: recording, replacing: previous)
                 // 成功仅当本次确实拆出非空待办并已落盘；空结果不算成功
                 return (!document.items.isEmpty && saved) ? .succeeded : .failed
             } catch is CancellationError {
@@ -2904,7 +2831,8 @@ final class RecordingViewModel {
     }
 
     /// 取消指定条目的待办拆解（队列「取消」入口，只影响该条目的句柄）
-    func cancelTodoExtraction(recordingID: UUID) {
+    func cancelTodoExtraction(recordingID: UUID, ifCurrent expected: Task<StepOutcome, Never>? = nil) {
+        guard expected == nil || todoExtractionTasks[recordingID] == expected else { return }
         todoExtractionTasks[recordingID]?.cancel()
         todoExtractionTasks[recordingID] = nil
         todoExtractionExecutions[recordingID] = nil
@@ -2917,154 +2845,6 @@ final class RecordingViewModel {
     func cancelTodoExtraction() {
         guard let id = selectedRecording?.id else { return }
         cancelTodoExtraction(recordingID: id)
-    }
-
-    /// 把待办写入提醒事项（使用 settingsVM.defaultReminderListID）
-    func writeTodosToReminders(
-        recording: AudioRecording,
-        defaultListID: String
-    ) async {
-        guard let document = currentTodoDocument else { return }
-        guard !document.items.isEmpty else {
-            showErrorMessage(String(localized: "待办列表为空，无需写入"))
-            return
-        }
-
-        // 显式授权检查：未授权时先请求，仍无授权则给出明确引导
-        if !RemindersService.shared.isAuthorized {
-            let granted = await RemindersService.shared.requestAccess()
-            if !granted {
-                showErrorMessage(String(localized: "未授权提醒事项访问，无法写入待办。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中开启 Memozia，或在「应用设置 → 待办」中点击「请求授权」后重试。"))
-                return
-            }
-        }
-
-        isWritingTodos = true
-        defer { isWritingTodos = false }
-
-        let result = await RemindersService.shared.writeReminders(
-            items: document.items,
-            to: defaultListID
-        )
-
-        var updatedDocument = document
-        updatedDocument.items = result.updatedItems
-        currentTodoDocument = updatedDocument
-        saveTodosToFolder(updatedDocument, for: recording)
-
-        if result.failed > 0 {
-            // 进一步判断失败是否因授权丢失
-            if !RemindersService.shared.isAuthorized {
-                showErrorMessage(String(localized: "待办写入失败：提醒事项授权已失效。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中重新开启 Memozia 后重试。"))
-            } else {
-                showErrorMessage(String(localized: "部分待办写入失败：成功 \(result.success) 个，失败 \(result.failed) 个"))
-            }
-        }
-    }
-
-    /// 删除当前待办文档（本地与提醒事项中的记录均清除）
-    func clearTodos(for recording: AudioRecording) {
-        guard let document = currentTodoDocument else { return }
-        // 删除已写入提醒事项中的对应记录
-        var hasDeleteFailure = false
-        for item in document.items where item.status == .exported {
-            if let identifier = item.reminderIdentifier {
-                if !RemindersService.shared.deleteReminder(identifier: identifier) {
-                    hasDeleteFailure = true
-                }
-            }
-        }
-        TodoDocument.remove(from: recording.folderURL)
-        currentTodoDocument = nil
-        if hasDeleteFailure {
-            showErrorMessage(String(localized: "部分提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。"))
-        }
-    }
-
-    // MARK: - 手动增删改单个待办
-
-    /// 手动新增一个待办（状态为 pending，未写入提醒事项）
-    func addTodoItem(_ item: TodoItem, for recording: AudioRecording) {
-        var document = currentTodoDocument ?? TodoDocument(
-            source: "manual",
-            model: String(localized: "手动添加"),
-            generatedAt: Date(),
-            items: []
-        )
-        document.items.append(item)
-        currentTodoDocument = document
-        saveTodosToFolder(document, for: recording)
-    }
-
-    /// 手动修改一个待办
-    /// - 若该待办已写入提醒事项，同步更新 EKReminder
-    func updateTodoItem(_ updatedItem: TodoItem, for recording: AudioRecording) {
-        guard !rejectWriteIfReadOnly(.editTodo) else { return }
-        guard var document = currentTodoDocument,
-              let index = document.items.firstIndex(where: { $0.id == updatedItem.id }) else { return }
-
-        document.items[index] = updatedItem
-        currentTodoDocument = document
-        saveTodosToFolder(document, for: recording)
-
-        // 已写入提醒事项的，同步更新
-        if updatedItem.status == .exported, let identifier = updatedItem.reminderIdentifier {
-            Task {
-                let ok = await RemindersService.shared.updateReminder(identifier: identifier, with: updatedItem)
-                if !ok {
-                    // 更新失败时回退状态，提示用户
-                    await MainActor.run {
-                        var doc = self.currentTodoDocument
-                        if let i = doc?.items.firstIndex(where: { $0.id == updatedItem.id }) {
-                            doc?.items[i].status = .failed
-                            self.currentTodoDocument = doc
-                            if let d = doc { self.saveTodosToFolder(d, for: recording) }
-                        }
-                        self.showErrorMessage(String(localized: "提醒事项同步更新失败，本地已保存。可重新点击「写入提醒事项」重试。"))
-                    }
-                }
-            }
-        }
-    }
-
-    /// 手动删除一个待办
-    /// - 若该待办已写入提醒事项，同步从提醒事项中删除
-    func deleteTodoItem(_ item: TodoItem, for recording: AudioRecording) {
-        guard !rejectWriteIfReadOnly(.editTodo) else { return }
-        guard var document = currentTodoDocument,
-              let index = document.items.firstIndex(where: { $0.id == item.id }) else { return }
-
-        document.items.remove(at: index)
-        currentTodoDocument = document
-        saveTodosToFolder(document, for: recording)
-
-        // 已写入提醒事项的，同步删除
-        if item.status == .exported, let identifier = item.reminderIdentifier {
-            if !RemindersService.shared.deleteReminder(identifier: identifier) {
-                showErrorMessage(String(localized: "提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。"))
-            }
-        }
-
-        // 删空了就把整个文档清掉
-        if document.items.isEmpty {
-            TodoDocument.remove(from: recording.folderURL)
-            currentTodoDocument = nil
-        }
-    }
-
-    // MARK: - 待办文件持久化
-
-    @discardableResult
-    private func saveTodosToFolder(_ document: TodoDocument, for recording: AudioRecording) -> Bool {
-        guard !rejectWriteIfReadOnly(.editTodo) else { return false }
-        guard !recording.folderName.isEmpty else { return false }
-        do {
-            try document.save(to: recording.folderURL)
-            return true
-        } catch {
-            FileSyncService.logWarning("待办文件写入失败：\(error.localizedDescription)")
-            return false
-        }
     }
 
     private func showErrorMessage(_ message: LocalizedStringResource, folder: URL? = nil) {

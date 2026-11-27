@@ -66,6 +66,7 @@ run_check "check_ephemeral_mode" bash "$RUNTIME_VERIFY_DIR/check_ephemeral_mode.
 # shellcheck disable=SC2086
 run_check "benchmark_memory ($MEMORY_MINUTES)" bash "$RUNTIME_VERIFY_DIR/benchmark_memory.sh" $MEMORY_MINUTES
 run_check "benchmark_filesync ($FILESYNC_COUNT)" bash "$RUNTIME_VERIFY_DIR/benchmark_filesync.sh" "$FILESYNC_COUNT"
+run_check "benchmark_long_transcript (3000)" python3 "$RUNTIME_VERIFY_DIR/benchmark_long_transcript.py" "$Memozia_APP"
 
 echo ""
 echo "===== 汇总 ====="

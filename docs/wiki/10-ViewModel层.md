@@ -58,6 +58,8 @@ extractTodos：summary → [PII scrub] → TodoExtractionService.extract
   → 用户确认 → RemindersService 写入提醒事项
 ```
 
+录音和笔记共用 `EntryTodoEditor`。切换条目会立即清空上一条的显示数据。编辑时按目标条目重读文件，写入成功后更新界面；生成期间遇到人工修改则保留人工版本。提醒事项导出按原条目和待办 ID 合并回执。
+
 ### 1.5 会议录音域
 
 | 成员 | 职责 |

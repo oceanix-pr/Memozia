@@ -2,6 +2,7 @@ import Foundation
 @preconcurrency import AVFoundation
 // sherpa-onnx-shared 动态产品的 Swift 模块名，API 与静态产品完全一致
 import SherpaOnnxShared
+import SherpaOnnxC
 
 /// 说话人分离模型文件夹默认路径
 enum DiarizationModelFolder {
@@ -540,15 +541,8 @@ final class SpeakerDiarizationService: @unchecked Sendable {
         let samples = try Self.loadMonoSamples(audioURL: audioURL, sampleRate: diarization.sampleRate)
         try Task.checkCancellation()
 
-        let result = diarization.process(samples: samples)
-        // sherpa-onnx 的单次 native process 无法中途协作取消；返回后立即截断后处理，
-        // 避免用户已经取消却继续做第二遍嵌入提取与聚类精修。
+        let segments = try processSegments(samples: samples, with: diarization)
         try Task.checkCancellation()
-        let segments = result.map { DiarizationSegment(
-            start: TimeInterval($0.start),
-            end: TimeInterval($0.end),
-            speaker: Int($0.speaker)
-        ) }
 
         // 簇后处理：修复快速聚类的过度分裂（同人拆簇合并 + 碎片簇吸收）；
         // 失败时回退原始聚类结果，不影响主流程
@@ -687,19 +681,34 @@ final class SpeakerDiarizationService: @unchecked Sendable {
         return (renumbered, globalCentroids)
     }
 
+    /// v1.13.6 的 Swift 包装在空结果时跳过释放。两种 C 资源分别在取得后登记清理。
+    nonisolated static func processSegments(
+        samples: [Float], with diarization: SherpaOnnxOfflineSpeakerDiarizationWrapper
+    ) throws -> [DiarizationSegment] {
+        guard let count = Int32(exactly: samples.count),
+              let result = SherpaOnnxOfflineSpeakerDiarizationProcess(diarization.impl, samples, count) else {
+            throw CocoaError(.coderInvalidValue)
+        }
+        defer { SherpaOnnxOfflineSpeakerDiarizationDestroyResult(result) }
+        let n = Int(SherpaOnnxOfflineSpeakerDiarizationResultGetNumSegments(result))
+        guard n > 0 else { return [] }
+        guard let segments = SherpaOnnxOfflineSpeakerDiarizationResultSortByStartTime(result) else {
+            throw CocoaError(.coderInvalidValue)
+        }
+        defer { SherpaOnnxOfflineSpeakerDiarizationDestroySegment(segments) }
+        return UnsafeBufferPointer(start: segments, count: n).map {
+            DiarizationSegment(start: TimeInterval($0.start), end: TimeInterval($0.end), speaker: Int($0.speaker))
+        }
+    }
+
     /// 单段推理 + 段内簇精修。取消在推理返回后立刻向上传播（不再继续无意义的后处理）
     private nonisolated static func diarizeChunk(
         samples: [Float],
         diarization: SherpaOnnxOfflineSpeakerDiarizationWrapper,
         extractor: SherpaOnnxSpeakerEmbeddingExtractorWrapper
     ) throws -> (segments: [DiarizationSegment], centroids: [Int: [Float]]) {
-        let result = diarization.process(samples: samples)
+        let segments = try processSegments(samples: samples, with: diarization)
         try Task.checkCancellation()
-        let segments = result.map { DiarizationSegment(
-            start: TimeInterval($0.start),
-            end: TimeInterval($0.end),
-            speaker: Int($0.speaker)
-        ) }
         guard !segments.isEmpty else { return ([], [:]) }
         do {
             return try Self.refineClusters(segments: segments, samples: samples, extractor: extractor)

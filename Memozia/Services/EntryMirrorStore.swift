@@ -73,6 +73,7 @@ final class EntryMirrorStore: @unchecked Sendable {
         enum Payload: Sendable {
             case text(String)
             case transcript([TranscriptMirrorItem])
+            case storedTranscript([AudioRecording.TranscriptSnapshotItem])
         }
 
         let payload: Payload
@@ -120,7 +121,7 @@ final class EntryMirrorStore: @unchecked Sendable {
         let errors: [String: String]
 
         /// 是否全部落盘且无失败：调用方可据此决定是否提示「有内容未写入」
-        var isComplete: Bool { failed == 0 && remaining.isEmpty }
+        var isComplete: Bool { errors.isEmpty && remaining.isEmpty }
 
         static let empty = FlushResult(succeeded: 0, failed: 0, remaining: [], errors: [:])
     }
@@ -134,6 +135,13 @@ final class EntryMirrorStore: @unchecked Sendable {
         guard !folderName.isEmpty else { return }
         enqueue(payload: .text(content), url: url, requiresResult: false,
                 for: Key(kind: kind, folderName: folderName))
+    }
+
+    /// 先登记密文快照，再由同一写者解密、编码和落盘。flush 可见整个过程。
+    func submitStoredTranscript(_ snapshot: [AudioRecording.TranscriptSnapshotItem], folderName: String, to url: URL) {
+        guard capability.allowsContentMutation, !folderName.isEmpty else { return }
+        enqueue(payload: .storedTranscript(snapshot), url: url, requiresResult: false,
+                for: Key(kind: .transcript, folderName: folderName))
     }
 
     func submitTranscript(_ items: [TranscriptMirrorItem], folderName: String, to url: URL) {
@@ -224,11 +232,14 @@ final class EntryMirrorStore: @unchecked Sendable {
                     case .text(let text):
                         content = text
                     case .transcript(let items):
-                        let data = try JSONEncoder().encode(items)
-                        guard let encoded = String(data: data, encoding: .utf8) else {
-                            throw EntryMirrorStoreError(reason: String(localized: "转写 JSON 无法转换为 UTF-8"))
+                        content = try Self.encodeTranscript(items)
+                    case .storedTranscript(let snapshot):
+                        let items = try snapshot.map {
+                            TranscriptMirrorItem(startTime: $0.startTime, endTime: $0.endTime,
+                                speaker: $0.speaker?.isEmpty == false ? $0.speaker : nil,
+                                text: try EncryptionService.decryptStoredText($0.rawText))
                         }
-                        content = encoded
+                        content = try Self.encodeTranscript(items)
                     }
                     try writer(content, item.url)
                     succeeded = true
@@ -378,6 +389,10 @@ final class EntryMirrorStore: @unchecked Sendable {
             remaining: remaining,
             errors: errors
         )
+    }
+
+    private static func encodeTranscript(_ items: [TranscriptMirrorItem]) throws -> String {
+        String(decoding: try JSONEncoder().encode(items), as: UTF8.self)
     }
 
     // MARK: - 默认写入器（流式临时文件 + 原子 rename）

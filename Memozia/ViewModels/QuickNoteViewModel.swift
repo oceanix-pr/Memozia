@@ -8,12 +8,13 @@ import os.log
 /// 快捷笔记 ViewModel：创建笔记、AI 拆解待办、写入提醒事项
 @MainActor
 @Observable
-final class QuickNoteViewModel {
+final class QuickNoteViewModel: EntryTodoEditing {
 
     /// 当前选中的快捷笔记
     var selectedQuickNote: QuickNote? {
         didSet {
             if selectedQuickNote?.id != oldValue?.id {
+                todoEditor.select(selectedQuickNote.flatMap { TodoLocation($0) })
                 // 切换笔记时按新笔记恢复「进行中态 + 流式内容」
                 syncSummaryDisplayForSelection()
             }
@@ -26,8 +27,8 @@ final class QuickNoteViewModel {
     var todoExtractionProgressText: String {
         selectedQuickNote.flatMap { todoExtractionProgress[$0.id] }?.text ?? String(localized: "AI 拆解中...")
     }
-    var currentTodoDocument: TodoDocument?
-    var isWritingTodos = false
+    let todoEditor = EntryTodoEditor()
+    func reportTodoError(_ message: String) { showErrorMessage(message) }
 
     // 总结相关状态
     var isGeneratingSummary = false
@@ -59,7 +60,7 @@ final class QuickNoteViewModel {
     @ObservationIgnored private var titleTasks: [UUID: Task<StepOutcome, Never>] = [:]
     @ObservationIgnored private var todoExtractionTasks: [UUID: Task<StepOutcome, Never>] = [:]
     /// 每个笔记的总结执行上下文（令牌 + 文件夹，供取消时出队埋点）
-    private struct SummaryRun { let token: UUID; let folderName: String }
+    private struct SummaryRun { let token: UUID; let durable: ForegroundTaskRecord? }
     @ObservationIgnored private var summaryRuns: [UUID: SummaryRun] = [:]
     /// 每个笔记的流式总结缓冲：按笔记隔离，只有当前展示笔记才写入共享 UI 状态
     @ObservationIgnored private var noteSummaryBuffers: [UUID: String] = [:]
@@ -249,26 +250,27 @@ final class QuickNoteViewModel {
         for note: QuickNote,
         llmConfig: LLMConfig,
         context: ModelContext,
-        experience: AppExperience? = nil
+        experience: AppExperience? = nil,
+        origin: TaskExecutionOrigin = .foreground
     ) -> Task<StepOutcome, Never> {
         guard !rejectWriteIfReadOnly(.startProcessing) else { return Task { .cancelled } }
         let noteID = note.id
         let folderName = note.folderName
         // 只取消「同一笔记」的上一次总结：不同笔记各自持有独立句柄，互不干扰
-        summaryTasks[noteID]?.cancel()
+        cancelSummary(noteID: noteID)
         let executionToken = UUID()
-        summaryRuns[noteID] = SummaryRun(token: executionToken, folderName: folderName)
 
         let taskExperience = experience ?? AppExperiencePreference.resolved()
         // 后台任务队列埋点：用户发起总结时入队（幂等），守护进程据此续跑
-        if !BackgroundTaskQueue.enqueue(BackgroundTaskEntry(
+        let durable = origin.register(BackgroundTaskEntry(
             kind: .quicknoteSummary,
             folderName: folderName,
             llmConfigID: llmConfig.id,
             experience: taskExperience
         )) {
-            showErrorMessage(String(localized: "任务已在前台开始，但未能写入后台续跑队列；请保持应用开启完成本次任务，退出后需重新发起。"))
+            showErrorMessage($0)
         }
+        summaryRuns[noteID] = SummaryRun(token: executionToken, durable: durable)
 
         noteSummaryBuffers[noteID] = ""
         noteSummaryReasoningBuffers[noteID] = ""
@@ -282,130 +284,140 @@ final class QuickNoteViewModel {
 
         let task = Task { @MainActor [weak self] in
             guard let self else { return StepOutcome.cancelled }
-            defer { self.finishNoteSummary(noteID: noteID, executionToken: executionToken) }
-            do {
-                try SummaryHistory.preserve(note.summaryText, in: note.folderURL)
-                let snapshot = try LLMConfigSnapshot(config: llmConfig)
-                let result: String
-                if note.hasImage, let imageURL = note.sourceImageURL,
-                   let imageData = try? Data(contentsOf: imageURL) {
-                    // 图片笔记走流式：逐 token 写入本条目的缓冲（视图已有流式渲染分支）
-                    result = try await LLMService.generateSummaryFromImage(
-                        imageData: imageData,
-                        config: snapshot,
-                        onToken: { token in
-                            Task { @MainActor in
-                                self.appendNoteSummaryToken(
-                                    token, noteID: noteID, executionToken: executionToken
-                                )
-                            }
-                        },
-                        onReasoning: { token in
-                            // 思考内容与正文分开展示：仅生成期间可见，用于解释「正文为空」
-                            Task { @MainActor in
-                                self.appendNoteSummaryReasoningToken(
-                                    token, noteID: noteID, executionToken: executionToken
-                                )
-                            }
-                        },
-                        onAttemptStart: {
-                            // 重试前清空本次流式缓冲，避免新旧 token 重复拼接
-                            Task { @MainActor in
-                                self.resetNoteSummaryBuffer(noteID: noteID, executionToken: executionToken)
-                            }
-                        }
-                    )
-                } else {
-                    let text = note.combinedTextForExtraction
-                    guard !text.isEmpty else {
-                        self.showErrorMessage(String(localized: "笔记内容为空，无法生成总结"))
-                        return .failed
-                    }
-                    // 普通模式始终开启云端文本脱敏，并使用任务入队时的模式快照；
-                    // 避免用户在请求执行期间切换模式改变隐私语义。
-                    let savedPIIValue = UserDefaults.standard.object(forKey: "enable_pii_scrub") as? Bool ?? true
-                    let piiEnabled = EffectiveSettingsResolver.piiScrubEnabled(
-                        savedValue: savedPIIValue,
-                        experience: taskExperience
-                    )
-                    let scrubbed = (piiEnabled && snapshot.shouldScrubText)
-                        ? PIIScrubService.scrub(text) : nil
-                    // 记下本次执行的映射：流式正文/思考文本在展示时逐次全量还原，
-                    // 与最终落库用的还原口径一致
-                    self.noteSummaryScrubMappings[noteID] = scrubbed?.mapping
-                    // 文字笔记天然非会议：跳过会议判定，直接走概要总结模板
-                    let generated = try await LLMService.generateSummary(
-                        transcript: scrubbed?.scrubbed ?? text,
-                        config: snapshot,
-                        forceOverview: true,
-                        onToken: { token in
-                            Task { @MainActor in
-                                self.appendNoteSummaryToken(
-                                    token, noteID: noteID, executionToken: executionToken
-                                )
-                            }
-                        },
-                        onReasoning: { token in
-                            Task { @MainActor in
-                                self.appendNoteSummaryReasoningToken(
-                                    token, noteID: noteID, executionToken: executionToken
-                                )
-                            }
-                        },
-                        onAttemptStart: {
-                            Task { @MainActor in
-                                self.resetNoteSummaryBuffer(noteID: noteID, executionToken: executionToken)
-                            }
-                        }
-                    )
-                    result = scrubbed.map {
-                        PIIScrubService.restore(generated, mapping: $0.mapping)
-                    } ?? generated
-                }
-
-                let summary = SummarySources.removingSeekLinks(from: result)
-                guard !summary.isEmpty else {
-                    self.showErrorMessage(String(localized: "总结生成失败：LLM 返回了空内容。请检查模型配置或稍后重试。"))
-                    return .failed
-                }
-
-                let encrypted = try EncryptionService.encrypt(summary)
-                note.summaryText = encrypted
-                note.summaryGeneratedAt = Date()
-                self.saveSummaryToFolder(summary, for: note)
-                let saved = PersistenceReporting.saveOrReport { try context.save() }
-                // 只有当前展示笔记才写入共享 UI 状态，避免并发串数据
-                if self.isSelectedNote(noteID) { self.summaryText = summary }
-                // 总结完成后自动生成标题并更新列表标题（与录音/截图总结后行为一致）；
-                // 仅默认标题时生效，失败仅日志，不影响总结本身
-                await self.autoAssignNoteTitle(
-                    note,
-                    from: summary,
-                    config: snapshot,
-                    context: context,
-                    experience: taskExperience
-                )
-                return saved ? .succeeded : .failed
-            } catch is CancellationError {
-                return .cancelled
-            } catch {
-                if self.isSelectedNote(noteID) {
-                    self.errorMessage = error.localizedDescription
-                    self.showError = true
-                }
-                return .failed
-            }
+            let outcome = await self.performNoteSummary(note, llmConfig: llmConfig, context: context,
+                                                        taskExperience: taskExperience, executionToken: executionToken)
+            durable?.finish(outcome)
+            self.finishNoteSummary(noteID: noteID, executionToken: executionToken)
+            return outcome
         }
         summaryTasks[noteID] = task
         return task
     }
 
+    private func performNoteSummary(_ note: QuickNote, llmConfig: LLMConfig, context: ModelContext,
+                                    taskExperience: AppExperience, executionToken: UUID) async -> StepOutcome {
+        let noteID = note.id
+        do {
+            try SummaryHistory.preserve(note.summaryText, in: note.folderURL)
+            let snapshot = try LLMConfigSnapshot(config: llmConfig)
+            let result: String
+            if note.hasImage, let imageURL = note.sourceImageURL,
+               let imageData = try? Data(contentsOf: imageURL) {
+                // 图片笔记走流式：逐 token 写入本条目的缓冲（视图已有流式渲染分支）
+                result = try await LLMService.generateSummaryFromImage(
+                    imageData: imageData,
+                    config: snapshot,
+                    onToken: { token in
+                        Task { @MainActor in
+                            self.appendNoteSummaryToken(
+                                token, noteID: noteID, executionToken: executionToken
+                            )
+                        }
+                    },
+                    onReasoning: { token in
+                        // 思考内容与正文分开展示：仅生成期间可见，用于解释「正文为空」
+                        Task { @MainActor in
+                            self.appendNoteSummaryReasoningToken(
+                                token, noteID: noteID, executionToken: executionToken
+                            )
+                        }
+                    },
+                    onAttemptStart: {
+                        // 重试前清空本次流式缓冲，避免新旧 token 重复拼接
+                        Task { @MainActor in
+                            self.resetNoteSummaryBuffer(noteID: noteID, executionToken: executionToken)
+                        }
+                    }
+                )
+            } else {
+                let text = note.combinedTextForExtraction
+                guard !text.isEmpty else {
+                    self.showErrorMessage(String(localized: "笔记内容为空，无法生成总结"))
+                    return .failed
+                }
+                // 普通模式始终开启云端文本脱敏，并使用任务入队时的模式快照；
+                // 避免用户在请求执行期间切换模式改变隐私语义。
+                let savedPIIValue = UserDefaults.standard.object(forKey: "enable_pii_scrub") as? Bool ?? true
+                let piiEnabled = EffectiveSettingsResolver.piiScrubEnabled(
+                    savedValue: savedPIIValue,
+                    experience: taskExperience
+                )
+                let scrubbed = (piiEnabled && snapshot.shouldScrubText)
+                    ? PIIScrubService.scrub(text) : nil
+                // 记下本次执行的映射：流式正文/思考文本在展示时逐次全量还原，
+                // 与最终落库用的还原口径一致
+                self.noteSummaryScrubMappings[noteID] = scrubbed?.mapping
+                // 文字笔记天然非会议：跳过会议判定，直接走概要总结模板
+                let generated = try await LLMService.generateSummary(
+                    transcript: scrubbed?.scrubbed ?? text,
+                    config: snapshot,
+                    forceOverview: true,
+                    onToken: { token in
+                        Task { @MainActor in
+                            self.appendNoteSummaryToken(
+                                token, noteID: noteID, executionToken: executionToken
+                            )
+                        }
+                    },
+                    onReasoning: { token in
+                        Task { @MainActor in
+                            self.appendNoteSummaryReasoningToken(
+                                token, noteID: noteID, executionToken: executionToken
+                            )
+                        }
+                    },
+                    onAttemptStart: {
+                        Task { @MainActor in
+                            self.resetNoteSummaryBuffer(noteID: noteID, executionToken: executionToken)
+                        }
+                    }
+                )
+                result = scrubbed.map {
+                    PIIScrubService.restore(generated, mapping: $0.mapping)
+                } ?? generated
+            }
+
+            let summary = SummarySources.removingSeekLinks(from: result)
+            guard !summary.isEmpty else {
+                self.showErrorMessage(String(localized: "总结生成失败：LLM 返回了空内容。请检查模型配置或稍后重试。"))
+                return .failed
+            }
+
+            let encrypted = try EncryptionService.encrypt(summary)
+            note.summaryText = encrypted
+            note.summaryGeneratedAt = Date()
+            self.saveSummaryToFolder(summary, for: note)
+            let saved = PersistenceReporting.saveOrReport { try context.save() }
+            // 只有当前展示笔记才写入共享 UI 状态，避免并发串数据
+            if self.isSelectedNote(noteID) { self.summaryText = summary }
+            // 总结完成后自动生成标题并更新列表标题（与录音/截图总结后行为一致）；
+            // 仅默认标题时生效，失败仅日志，不影响总结本身
+            await self.autoAssignNoteTitle(
+                note,
+                from: summary,
+                config: snapshot,
+                context: context,
+                experience: taskExperience
+            )
+            return saved ? .succeeded : .failed
+        } catch is CancellationError {
+            return .cancelled
+        } catch {
+            if self.isSelectedNote(noteID) {
+                self.errorMessage = error.localizedDescription
+                self.showError = true
+            }
+            return .failed
+        }
+    }
+
     /// 取消指定笔记的总结（队列「取消」入口，只影响该笔记的句柄）
-    func cancelSummary(noteID: UUID) {
+    func cancelSummary(noteID: UUID, ifCurrent expected: Task<StepOutcome, Never>? = nil, outcome: StepOutcome = .cancelled) {
+        guard expected == nil || summaryTasks[noteID] == expected else { return }
         summaryTasks[noteID]?.cancel()
         summaryTasks[noteID] = nil
         if let run = summaryRuns[noteID] {
-            BackgroundTaskQueue.dequeue(kind: .quicknoteSummary, folderName: run.folderName)
+            run.durable?.finish(outcome)
         }
         summaryRuns[noteID] = nil
         noteSummaryBuffers[noteID] = nil
@@ -429,7 +441,6 @@ final class QuickNoteViewModel {
     /// 总结收尾：仅当仍是本次执行时才清理句柄与出队，避免旧执行误清新执行的状态
     private func finishNoteSummary(noteID: UUID, executionToken: UUID) {
         guard summaryRuns[noteID]?.token == executionToken else { return }
-        let folderName = summaryRuns[noteID]?.folderName ?? ""
         summaryRuns[noteID] = nil
         summaryTasks[noteID] = nil
         noteSummaryBuffers[noteID] = nil
@@ -443,7 +454,6 @@ final class QuickNoteViewModel {
             // 思考过程仅生成期间可见：收尾即清空，正文与已保存总结不受影响
             summaryReasoningText = ""
         }
-        BackgroundTaskQueue.dequeue(kind: .quicknoteSummary, folderName: folderName)
     }
 
     /// 流式 token 追加到「本次执行」的缓冲；只有当前展示笔记才写入共享 UI 状态。
@@ -620,29 +630,6 @@ final class QuickNoteViewModel {
 
     // MARK: - 待办拆解
 
-    /// 待办文档加载代次：丢弃过期的后台读结果（快速切换笔记时避免旧内容覆盖新内容）
-    @ObservationIgnored
-    private var todoDocumentLoadToken = 0
-
-    /// 加载快捷笔记的待办文档
-    func loadTodoDocument(for note: QuickNote) {
-        todoDocumentLoadToken += 1
-        guard !note.folderName.isEmpty else {
-            currentTodoDocument = nil
-            return
-        }
-        // 与 RecordingViewModel 同策略：磁盘读 + 解密移出主线程，代次守卫丢弃过期结果
-        let token = todoDocumentLoadToken
-        let folderURL = note.folderURL
-        Task { [weak self] in
-            let document = await Task.detached(priority: .userInitiated) {
-                TodoDocument.load(from: folderURL)
-            }.value
-            guard let self, self.todoDocumentLoadToken == token else { return }
-            self.currentTodoDocument = document
-        }
-    }
-
     /// AI 拆解快捷笔记为待办事项
     /// - Returns: 任务结果强类型化：`.succeeded` 仅当本次确实拆出待办并已落盘
     @discardableResult
@@ -671,6 +658,7 @@ final class QuickNoteViewModel {
             }
 
             do {
+                let previous = try TodoDocument.read(from: note.folderURL)
                 let snapshot = try LLMConfigSnapshot(config: llmConfig)
                 let onProgress: @Sendable (TodoExtractionService.Progress) -> Void = { [weak self] progress in
                     Task { @MainActor in
@@ -719,8 +707,7 @@ final class QuickNoteViewModel {
                 // 只有当前展示笔记才更新共享的待办文档 UI；持久化始终按本笔记文件夹写入
                 try Task.checkCancellation()
                 guard self.todoExtractionExecutions[noteID] == executionToken else { throw CancellationError() }
-                if self.isSelectedNote(noteID) { self.currentTodoDocument = document }
-                let saved = self.saveTodosToFolder(document, for: note)
+                let saved = try self.saveExtracted(document, for: note, replacing: previous)
                 // 成功仅当本次确实拆出非空待办并已落盘；空结果不算成功
                 let outcome: StepOutcome = (!document.items.isEmpty && saved) ? .succeeded : .failed
 
@@ -750,7 +737,8 @@ final class QuickNoteViewModel {
     }
 
     /// 取消指定笔记的待办拆解（队列「取消」入口，只影响该笔记的句柄）
-    func cancelTodoExtraction(noteID: UUID) {
+    func cancelTodoExtraction(noteID: UUID, ifCurrent expected: Task<StepOutcome, Never>? = nil) {
+        guard expected == nil || todoExtractionTasks[noteID] == expected else { return }
         todoExtractionTasks[noteID]?.cancel()
         todoExtractionTasks[noteID] = nil
         todoExtractionExecutions[noteID] = nil
@@ -866,7 +854,8 @@ final class QuickNoteViewModel {
     }
 
     /// 取消指定笔记的标题润色（队列「取消」入口，只影响该笔记的句柄）
-    func cancelTitle(noteID: UUID) {
+    func cancelTitle(noteID: UUID, ifCurrent expected: Task<StepOutcome, Never>? = nil) {
+        guard expected == nil || titleTasks[noteID] == expected else { return }
         titleTasks[noteID]?.cancel()
         titleTasks[noteID] = nil
         titleExecutions[noteID] = nil
@@ -899,132 +888,6 @@ final class QuickNoteViewModel {
         } ?? title
     }
 
-    /// 写入提醒事项
-    func writeTodosToReminders(note: QuickNote, defaultListID: String) async {
-        guard !rejectWriteIfReadOnly(.editTodo) else { return }
-        guard let document = currentTodoDocument else { return }
-        guard !document.items.isEmpty else {
-            showErrorMessage(String(localized: "待办列表为空，无需写入"))
-            return
-        }
-
-        // 显式授权检查：未授权时先请求，仍无授权则给出明确引导
-        if !RemindersService.shared.isAuthorized {
-            let granted = await RemindersService.shared.requestAccess()
-            if !granted {
-                showErrorMessage(String(localized: "未授权提醒事项访问，无法写入待办。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中开启 Memozia，或在「应用设置 → 待办」中点击「请求授权」后重试。"))
-                return
-            }
-        }
-
-        isWritingTodos = true
-        defer { isWritingTodos = false }
-
-        let result = await RemindersService.shared.writeReminders(
-            items: document.items,
-            to: defaultListID
-        )
-
-        var updatedDocument = document
-        updatedDocument.items = result.updatedItems
-        currentTodoDocument = updatedDocument
-        saveTodosToFolder(updatedDocument, for: note)
-
-        if result.failed > 0 {
-            // 进一步判断失败是否因授权丢失
-            if !RemindersService.shared.isAuthorized {
-                showErrorMessage(String(localized: "待办写入失败：提醒事项授权已失效。\n请到「系统设置 → 隐私与安全性 → 提醒事项」中重新开启 Memozia 后重试。"))
-            } else {
-                showErrorMessage(String(localized: "部分待办写入失败：成功 \(result.success) 个，失败 \(result.failed) 个"))
-            }
-        }
-    }
-
-    /// 清除待办
-    func clearTodos(for note: QuickNote) {
-        guard !rejectWriteIfReadOnly(.editTodo) else { return }
-        guard let document = currentTodoDocument else { return }
-        var hasDeleteFailure = false
-        for item in document.items where item.status == .exported {
-            if let identifier = item.reminderIdentifier {
-                if !RemindersService.shared.deleteReminder(identifier: identifier) {
-                    hasDeleteFailure = true
-                }
-            }
-        }
-        TodoDocument.remove(from: note.folderURL)
-        currentTodoDocument = nil
-        if hasDeleteFailure {
-            showErrorMessage(String(localized: "部分提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。"))
-        }
-    }
-
-    // MARK: - 手动增删改单个待办
-
-    /// 手动新增一个待办
-    func addTodoItem(_ item: TodoItem, for note: QuickNote) {
-        guard !rejectWriteIfReadOnly(.editTodo) else { return }
-        var document = currentTodoDocument ?? TodoDocument(
-            source: "manual",
-            model: String(localized: "手动添加"),
-            generatedAt: Date(),
-            items: []
-        )
-        document.items.append(item)
-        currentTodoDocument = document
-        saveTodosToFolder(document, for: note)
-    }
-
-    /// 手动修改一个待办（已写入提醒事项的同步更新）
-    func updateTodoItem(_ updatedItem: TodoItem, for note: QuickNote) {
-        guard !rejectWriteIfReadOnly(.editTodo) else { return }
-        guard var document = currentTodoDocument,
-              let index = document.items.firstIndex(where: { $0.id == updatedItem.id }) else { return }
-
-        document.items[index] = updatedItem
-        currentTodoDocument = document
-        saveTodosToFolder(document, for: note)
-
-        if updatedItem.status == .exported, let identifier = updatedItem.reminderIdentifier {
-            Task {
-                let ok = await RemindersService.shared.updateReminder(identifier: identifier, with: updatedItem)
-                if !ok {
-                    await MainActor.run {
-                        var doc = self.currentTodoDocument
-                        if let i = doc?.items.firstIndex(where: { $0.id == updatedItem.id }) {
-                            doc?.items[i].status = .failed
-                            self.currentTodoDocument = doc
-                            if let d = doc { self.saveTodosToFolder(d, for: note) }
-                        }
-                        self.showErrorMessage(String(localized: "提醒事项同步更新失败，本地已保存。可重新点击「写入提醒事项」重试。"))
-                    }
-                }
-            }
-        }
-    }
-
-    /// 手动删除一个待办（已写入提醒事项的同步删除）
-    func deleteTodoItem(_ item: TodoItem, for note: QuickNote) {
-        guard !rejectWriteIfReadOnly(.editTodo) else { return }
-        guard var document = currentTodoDocument,
-              let index = document.items.firstIndex(where: { $0.id == item.id }) else { return }
-
-        document.items.remove(at: index)
-        currentTodoDocument = document
-        saveTodosToFolder(document, for: note)
-
-        if item.status == .exported, let identifier = item.reminderIdentifier {
-            if !RemindersService.shared.deleteReminder(identifier: identifier) {
-                showErrorMessage(String(localized: "提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。"))
-            }
-        }
-
-        if document.items.isEmpty {
-            TodoDocument.remove(from: note.folderURL)
-            currentTodoDocument = nil
-        }
-    }
-
     // MARK: - 标题更新
 
     func updateTitle(_ note: QuickNote, newTitle: String, context: ModelContext) {
@@ -1050,7 +913,9 @@ final class QuickNoteViewModel {
         cancelTodoExtraction(noteID: note.id)
         cancelTitle(noteID: note.id)
         // 必须在删除文件夹之前加载待办文档，否则无法清理已写入提醒事项的条目
-        let todoDocument = TodoDocument.load(from: note.folderURL)
+        let todoDocument: TodoDocument?
+        do { todoDocument = note.folderName.isEmpty ? nil : try TodoDocument.read(from: note.folderURL) }
+        catch { showErrorMessage(String(localized: "条目文件缺失或无法读取。")); return }
         // P3-9: 先删除磁盘文件——若失败则保留数据库记录，防止下次 syncFromDisk 数据复活
         if !note.folderName.isEmpty {
             let folderURL = note.folderURL
@@ -1064,16 +929,6 @@ final class QuickNoteViewModel {
             }
         }
         // 删除已写入的提醒事项
-        var hasReminderDeleteFailure = false
-        if let document = todoDocument {
-            for item in document.items where item.status == .exported {
-                if let identifier = item.reminderIdentifier {
-                    if !RemindersService.shared.deleteReminder(identifier: identifier) {
-                        hasReminderDeleteFailure = true
-                    }
-                }
-            }
-        }
         context.delete(note)
         do {
             try context.save()
@@ -1082,28 +937,11 @@ final class QuickNoteViewModel {
         }
         if selectedQuickNote?.id == note.id {
             selectedQuickNote = nil
-            currentTodoDocument = nil
         }
-        if hasReminderDeleteFailure {
-            showErrorMessage(String(localized: "部分提醒事项删除失败，系统「提醒事项」中可能仍有残留。请手动打开提醒事项 App 删除。"))
-        }
+        deleteLinkedReminders(in: todoDocument?.items ?? [])
     }
 
     // MARK: - 私有方法
-
-    @discardableResult
-    private func saveTodosToFolder(_ document: TodoDocument, for note: QuickNote) -> Bool {
-        guard !rejectWriteIfReadOnly(.editTodo) else { return false }
-        guard !note.folderName.isEmpty else { return false }
-        do {
-            try document.save(to: note.folderURL)
-            return true
-        } catch {
-            FileSyncService.logWarning("待办文件写入失败：\(error.localizedDescription)")
-            showErrorMessage(String(localized: "待办文件写入失败：\(error.localizedDescription)"))
-            return false
-        }
-    }
 
     private func makeDefaultTitle(text: String, date: Date) -> String {
         // 取第一行作为标题，截断到 30 字符

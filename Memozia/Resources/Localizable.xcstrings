@@ -86922,6 +86922,136 @@
         }
       }
     },
+    "待办已被修改，请核对最新内容后重试。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم تعديل المهام. راجع أحدث إصدار ثم أعد المحاولة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Aufgaben wurden geändert. Prüfe die aktuelle Fassung und versuche es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The tasks have changed. Review the latest version and try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las tareas han cambiado. Revisa la versión más reciente y vuelve a intentarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les tâches ont été modifiées. Vérifiez la dernière version et réessayez."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कार्य बदल गए हैं। नवीनतम संस्करण जाँचें और फिर कोशिश करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tugas telah berubah. Periksa versi terbaru dan coba lagi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le attività sono cambiate. Controlla la versione più recente e riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タスクが変更されました。最新の内容を確認してから、もう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "할 일이 변경되었습니다. 최신 내용을 확인한 후 다시 시도하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De taken zijn gewijzigd. Controleer de nieuwste versie en probeer het opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zadania uległy zmianie. Sprawdź najnowszą wersję i spróbuj ponownie."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As tarefas foram alteradas. Confira a versão mais recente e tente novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Задачи изменились. Проверьте последнюю версию и повторите попытку."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uppgifterna har ändrats. Granska den senaste versionen och försök igen."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รายการงานมีการเปลี่ยนแปลง โปรดตรวจสอบข้อมูลล่าสุดแล้วลองอีกครั้ง"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görevler değişti. En son sürümü gözden geçirip tekrar deneyin."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Завдання змінилися. Перевірте останню версію та спробуйте ще раз."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các việc cần làm đã thay đổi. Hãy kiểm tra nội dung mới nhất rồi thử lại."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待办已被修改，请核对最新内容后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待辦事項已被修改，請核對最新內容後再試一次。"
+          }
+        }
+      }
+    },
     "待办生成超时，请检查模型服务或缩短输入后重试。" : {
       "localizations" : {
         "ar" : {
@@ -192979,6 +193109,136 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "麥克風裝置選擇"
+          }
+        }
+      }
+    },
+    "麦克风写入缓冲已满，部分音频未能保存。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "امتلأ مخزن كتابة الميكروفون المؤقت. تعذّر حفظ جزء من الصوت."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Schreibpuffer des Mikrofons ist voll. Ein Teil der Aufnahme konnte nicht gespeichert werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The microphone write buffer filled up. Some audio could not be saved."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El búfer de escritura del micrófono se llenó. No se pudo guardar parte del audio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le tampon d’écriture du microphone est plein. Une partie du son n’a pas pu être enregistrée."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "माइक्रोफ़ोन का राइट बफ़र भर गया। कुछ ऑडियो सहेजा नहीं जा सका।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buffer penulisan mikrofon penuh. Sebagian audio tidak dapat disimpan."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il buffer di scrittura del microfono è pieno. Parte dell’audio non è stata salvata."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マイクの書き込みバッファがいっぱいになり、一部の音声を保存できませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "마이크 쓰기 버퍼가 가득 차서 일부 오디오를 저장하지 못했습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De schrijfbuffer van de microfoon is vol. Een deel van de audio kon niet worden opgeslagen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bufor zapisu mikrofonu jest pełny. Nie udało się zapisać części nagrania."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O buffer de escrita do microfone ficou cheio. Não foi possível guardar parte do áudio."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Буфер записи микрофона заполнен. Часть звука не удалось сохранить."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mikrofonens skrivbuffert är full. En del av ljudet kunde inte sparas."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บัฟเฟอร์การเขียนของไมโครโฟนเต็ม จึงบันทึกเสียงบางส่วนไม่ได้"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mikrofon yazma arabelleği doldu. Sesin bir bölümü kaydedilemedi."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Буфер запису мікрофона заповнений. Частину звуку не вдалося зберегти."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bộ đệm ghi của micrô đã đầy. Một phần âm thanh không được lưu."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "麦克风写入缓冲已满，部分音频未能保存。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "麥克風寫入緩衝區已滿，部分音訊未能儲存。"
           }
         }
       }

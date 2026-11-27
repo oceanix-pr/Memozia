@@ -15,17 +15,27 @@
 ## 历史审查遗留，逐项复核后排期
 
 - `FileSyncService.syncFromDisk`：顶层目录枚举、视频证据检查和镜像 stat 已移出 MainActor，镜像已双向补齐并显式保存；新增空库快速通道（`fetchCount` 探测为空时跳过两次全表 fetch）；恢复标记的探测也已并入后台批量（`probe(_:)`），消除了对账循环里每条目 3~4 次的 MainActor `stat`。**主线程阻塞已可测**：`--verify-filesync` 新增心跳探针（`mainThreadMaxBlockMs` / `mainThreadBlockedOverThreshold`）。**生产同构口径**（持久容器 + 与生产一致的分工）下基线为：200 条目单次阻塞 ≤6ms、1000 条目 ≤23ms（0 次 ≥50ms）、**10000 条目首轮 33ms / 0 次 ≥50ms（总 6.7s）与次轮 34ms / 0 次（无插入，总 2.60s）**（见 `Scripts/runtime_verify/benchmark_filesync.sh` 头部）。**结论：规模决定一切，但各规模均已达标**——≤10k 条目下单次主线程阻塞 ≤34ms、0 次 ≥50ms。归因：首轮（库空跳过全表 fetch）的阻塞来自**插入路径**（每条目一次 `folderIsPersisted` 存在性查询 ⇒ 10k 条目 ≈ 20k 次查询）；次轮（无插入）来自**全表 fetch + 字典物化**（10k 模型）。**已修：逐条存在性查询合批**为对候选集的分块查询（`persistedFolderNames`，500/批，避开 SQLite 绑定参数上限）——10k 首轮 **41.9s → 6.7s、最大阻塞 558ms → 37ms、≥50ms 82 次 → 0 次**（入库数不变、无保存失败）。**已修：镜像探测目标的构建移出主线程**——此前在主线程 `.map` 构建 10k 个 `RecordingMirrorTarget`（每条 3 个 URL，每个 URL 走一次 `resolveFolderURL` 的 `fileExists`，合计 ≈4 万次系统调用叠成一段同步阻塞），现只把 `folderName` 字符串带出 MainActor、在后台任务里解析并 stat（`RecordingMirrorTarget.forFolder(named:)`）；次轮 **418ms / 44 次 → 202ms / 13 次**。次轮剩余的单块是**同步全表 `fetch`**（10k 模型物化，实测 201ms，`Task.yield()` 无法切分 `fetch` 调用本身）。**注意此前记录的 148ms/10 次是 harness 假象**，由两处造成并已修掉：① 用内存容器当代理（其 fetch/save 成本与实际 SQLite 文件不同，同机同规模会报到 116ms/6 次）；② harness 曾在主线程内联执行 `TodoCountIndex` 的逐目录 stat，而生产里这步在 `Task.detached` 中。**已修：全表 fetch 分页**——按 `folderName` 做 keyset 分页（`folderName > 游标` + `fetchLimit` + 每页间 `Task.yield()`，`folderName` 一目录一条故为全序），把单次 201ms 的 `context.fetch` 拆成每页物化的量级：10k 次轮 **202ms / 13 次 → 34ms / 0 次**，条目集合与顺序无关、语义等价（`discovered`/`inserted` 计数与保存结果不变；总耗时 2.60s 略高于整表 2.46s，为分页开销）。**写方向也已可验证**：`--verify-filesync` 支持 `--db <dir>`（落在隔离目录的持久容器，多次运行共享同一份库），且 CLI 退出前显式 `flush` 镜像写入器（`FileSyncService` 自身不 flush，应用侧由退出流程、worker 在 drain 末尾 flush）——已验证「删掉 summary.md → 再对账 → 按库内容补写回来」。**已试并否决：把深度修复延后到首屏之后**（曾加临时阶段开关，实测后已回退，生产仍为完整对账）。拆分会多一次全表 fetch（总耗时 +16%），而修复循环原本每 20 条的 `Task.yield()` 还起到主线程让出作用；在阻塞源头（见上：全表 fetch 而非修复）认清之前，这条路收益为负。全表 SwiftData 物化本身已用 keyset 分页解决（见上），**未做** ModelActor 迁移；仍留在主线程的是逐条关系访问与插入路径：对账里「库有转写」分支会读 `recording.segments`（每条一次关系 fault），插入路径按条写库。本次 10k 语料不含转写，故未触发 segments fault；**含大量转写的库需另测**，如出现单块回升，优先把该分支改为按需/批读取，其次才考虑整体迁入后台 ModelContext（需跨上下文合并与插入路径的一致改造）。
-- `RecordingListView`：待办数量索引已由「每次数据源变化/待办通知都全库解密解析」改为按 `todos.json` mtime 的增量对账（`EntryTodoCount` / `TodoCountIndex`，未变化目录复用缓存）。`.todoDocumentDidChange` 现携带文件夹名（`TodoDocument.postDidChange`），列表据此只重算该条目（`TodoCountIndex.reconcileOne`），全库逐个 stat 只在数据源变化或无负载通知时发生。总结存在性与预览派生缓存、列表 `.id` 和隐藏状态观察导致的刷新范围仍待处理。
+- `RecordingListView`：待办数量索引已由「每次数据源变化/待办通知都全库解密解析」改为按 `todos.json` mtime 的增量对账（`EntryTodoCount` / `TodoCountIndex`，未变化目录复用缓存）。`.todoDocumentDidChange` 现携带文件夹名（`TodoDocument.postDidChange`），列表据此只重算该条目（`TodoCountIndex.reconcileOne`），全库逐个 stat 只在数据源变化或无负载通知时发生。月份分组已按成员身份更新。总结预览的计算和隐藏状态观察的开销仍需用大库滚动实测。
 - `EntryMirrorStore`：合并写入、退出 flush、`writeNow` 的取消与 30s 超时已落地；`flush` 仍只有 10s 上限，超时记 fault 后继续退出，长转写（数十 MB JSON）在极慢磁盘上仍可能截断，评估按剩余量动态放宽或分片写入。
 - `SpeakerDiarizationService`：音频解码和簇精修已补取消检查，sherpa-onnx 单次 native 推理仍不可中断；超过 30 分钟或估算 256 MB 的音频**已按 8 分钟 + 30 秒重叠分段**，残余项是「单段推理不可取消」（取消需等当前分段结束）与分段身份合并的内存峰值仍需继续量测。
 - `MarkdownView`：总结流式阶段现使用纯文本，完成后才解析 Markdown；后续只需关注超长已完成文档的全文解析与列表构建。
 - `TextFindReplace`：逐字符重刷高亮、全文比较定位编辑器的开销。
-- `RecordingListView`：总结存在性与预览派生缓存、列表 `.id` 和隐藏状态观察导致的刷新范围。
 - `RecordingDetailView`：播放进度定时更新是否导致整个详情树重算，评估播放器子视图隔离。
 - `OverlayAnnotationView`：`dirtyRect` 局部重绘与冻结图烘焙，需肉眼确认标注正确性与拖拽帧率。
 - 菜单栏定时器保留 `.common` RunLoop 模式及 MainActor 跳板；优化时须验证菜单展开期间仍更新。
 - iOS 支持已整体取消：主应用与测试均为 macOS 单平台，iOS Share Extension 与 App Group inbox 链路已删除，不再需要双平台构建验证。
 - 测试：旧报告中的失效模型枚举与不可构造 WriteConfiguration 断言已有后续修改，不再认定测试 target 必然不能编译；以实际 `xcodebuild test` 结果判断。
+
+## 2026-11-26 本机回归记录
+
+| 场景 | 实测结果 |
+|---|---|
+| 长转写冷恢复 | 同一台 Apple Silicon Mac、Release、临时 SQLite 库。一份 1 小时合成 WAV 配 3,000 段时间戳和空正文，两次冷恢复的主线程最长停顿从 1,768–1,803 ms 降到 2.14–2.64 ms，总耗时从 1.99–2.03 s 降到 1.06–1.07 s。改动后的可执行文件使用临时本机签名。 |
+| 重复对账 | 自动基准在首次和重复对账后分别查询 SQLite，两次都得到 1 条录音和 3,000 个关联片段。首次和复跑分别插入 1 条、0 条录音。[可复跑基准](../Scripts/runtime_verify/benchmark_long_transcript.py) |
+| 搜索和图片 | Debug 下 32 条录音共 3,200 段合成文本，首次查询约 164 ms，随后三次约 9 ms。6,000 × 4,000 PNG 的完整解码位图为 91.6 MiB，按 1,024 像素预览时为 2.67 MiB，按每行字节数乘以高度计算。 |
+| 原生泄漏 | 同一 sherpa-onnx 模型连续处理八段 4 秒静音，旧包装器的 `leaks --atExit` 对照为 8 处、256 字节，改用显式释放后为 0 处。 |
+
+原生侧边栏测试核对了增删条目时的行数、列表实例与选择。合成音频测试核对了慢磁盘时的缓冲上限、轮转顺序和实际 CAF 样本。测试宿主缺少麦克风授权，真实设备断流恢复与持续录音仍需在已授权机器上测量。[回归用例](../MemoziaTests/ProcessingReliabilityTests.swift)
 
 ## 回归场景（按改动选择）
 

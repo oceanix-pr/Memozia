@@ -145,7 +145,8 @@ final class RemindersService: ObservableObject {
             return nil
         }
 
-        let reminder = EKReminder(eventStore: store)
+        let existing = item.reminderIdentifier.flatMap { store.calendarItem(withIdentifier: $0) as? EKReminder }
+        let reminder = existing ?? EKReminder(eventStore: store)
         reminder.calendar = targetCalendar
         applyItemFields(reminder, item: item)
 

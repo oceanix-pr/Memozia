@@ -253,7 +253,7 @@ struct VideoUnderstandingView: View {
                         .foregroundStyle(.secondary)
                 } else if viewModel.isGeneratingVisualNotes(for: recording) {
                     Button {
-                        viewModel.cancelVisualNotes()
+                        viewModel.cancelVisualNotes(folderName: recording.folderName)
                     } label: {
                         Label("停止", systemImage: "xmark.circle")
                     }
