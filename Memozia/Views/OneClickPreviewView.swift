@@ -73,6 +73,7 @@ extension OneClickPlan {
         var usesCloudLLM: Bool
         /// 用户显式要求「重新转写」（覆盖已有转写）
         var forceRetranscribe: Bool
+        var experience: AppExperience
 
         /// 副本：仅改写「重新转写」开关，其余输入不变
         func withForceRetranscribe(_ value: Bool) -> Inputs {
@@ -102,7 +103,7 @@ extension OneClickPlan {
                 // 只在「本次真的会覆盖已有转写」时才要求额外确认
                 plan.requiresManualEditConfirmation = willTranscribe && inputs.transcriptManuallyEdited
             }
-            if inputs.hasVideo {
+            if inputs.hasVideo && FeaturePolicy(experience: inputs.experience).allows(.videoUnderstanding) {
                 plan.items.append(Item(
                     kind: .visualAnalysis,
                     willRun: !inputs.visualCompleted,
@@ -145,6 +146,8 @@ extension OneClickPlan {
 /// 「展示标记已置位、内容 state 尚未提交」时内容闭包读到空值的时序问题。
 struct OneClickPreviewPayload: Identifiable {
     let item: ListItem
+    let configID: UUID
+    let endpoint: URL?
     let inputs: OneClickPlan.Inputs
 
     var id: String { item.id }
@@ -158,6 +161,9 @@ struct OneClickPreviewView: View {
     let entryTitle: String
     /// 基础输入（不含「重新转写」开关）
     let inputs: OneClickPlan.Inputs
+    let languageOptionsURL: URL
+    let transcription: STTConfig
+    let readOnly: Bool
     /// 确认回调：传入用户确认后的最终计划
     let onConfirm: (OneClickPlan) -> Void
 
@@ -201,6 +207,12 @@ struct OneClickPreviewView: View {
                         cloudScopeRow(scope)
                     }
 
+                    if plan.runItems.contains(where: { $0.kind == .transcription }) {
+                        EntryLanguagePicker(fileURL: languageOptionsURL, transcription: transcription, readOnly: readOnly)
+                    }
+                    if plan.runItems.contains(where: { $0.kind == .summary || $0.kind == .todoExtraction || $0.kind == .visualAnalysis }) {
+                        EntryLanguagePicker(fileURL: languageOptionsURL, readOnly: readOnly)
+                    }
                     stepList(title: "将执行", items: plan.runItems, isRun: true)
                     if !plan.skipItems.isEmpty {
                         stepList(title: "将跳过", items: plan.skipItems, isRun: false)
@@ -218,7 +230,7 @@ struct OneClickPreviewView: View {
             footer
         }
         #if os(macOS)
-        .frame(width: 460, height: 440)
+        .frame(minWidth: 420, idealWidth: 510, minHeight: 360, idealHeight: 500)
         #endif
     }
 

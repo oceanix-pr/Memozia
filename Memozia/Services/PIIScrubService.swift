@@ -98,14 +98,14 @@ enum PIIScrubService {
 
     /// 对文本做去标识化：先字典替换（长词优先），再正则检测手机号/身份证号/邮箱。
     /// 返回替换后的文本与映射关系（供还原使用）。
-    static func scrub(_ text: String) -> (scrubbed: String, mapping: PIIScrubMapping) {
-        guard !text.isEmpty else { return (text, .empty) }
+    static func scrub(_ text: String, continuing previous: PIIScrubMapping = .empty) -> (scrubbed: String, mapping: PIIScrubMapping) {
+        guard !text.isEmpty else { return (text, previous) }
         var result = text
-        var pairs: [(token: String, original: String)] = []
+        var pairs = previous.pairs
         var counters: [PIICategory: Int] = [:]
 
         func makeToken(_ category: PIICategory) -> String {
-            counters[category, default: 0] += 1
+            counters[category, default: previous.pairs.count] += 1
             return "[\(category.tokenPrefix)\(counters[category]!)]"
         }
 

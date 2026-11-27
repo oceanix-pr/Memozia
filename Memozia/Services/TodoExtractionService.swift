@@ -84,7 +84,7 @@ enum TodoExtractionService {
         let cappedContent = content
 
         // 提示词经 PromptTemplateStore 解析：用户可在「设置 → 提示词」自定义，未自定义时用内置默认
-        let baseSystemPrompt = PromptTemplateStore.resolved(.todoExtraction) + "\n\nFor each item optionally include evidenceQuote (an exact quote from the input), sourceSeekURL (an existing Memozia://seek/ link adjacent to that quote), and owner (only explicitly named). Never fabricate evidence, links, owners or deadlines. All AI items require user review."
+        let baseSystemPrompt = config.prompt(.todoExtraction) + "\n\nFor each item optionally include evidenceQuote (an exact quote from the input), sourceSeekURL (an existing Memozia://seek/ link adjacent to that quote), and owner (only explicitly named). Never fabricate evidence, links, owners or deadlines. All AI items require user review."
         // 已确认非会议（课程/讲座/演示）时追加内容类型条款，
         // 防止把知识要点硬包装成会议式行动项；未判定/会议维持原行为
         let basePrompt = isMeeting == false
@@ -169,7 +169,7 @@ enum TodoExtractionService {
             ["type": "image_url", "image_url": ["url": dataURL]]
         ]
         let request = ChatCompletionRequest(
-            config: config, systemPrompt: PromptTemplateStore.resolved(.todoExtraction),
+            config: config, systemPrompt: config.prompt(.todoExtraction),
             userContent: userContent, stream: config.isLocal, temperature: 0.3
         )
 
@@ -627,7 +627,7 @@ enum TodoExtractionService {
     """
 
     /// 待办拆解内置提示词（保留给「恢复默认」对照）。
-    /// 运行期实际使用 `PromptTemplateStore.resolved(.todoExtraction)`，可能被用户自定义覆盖。
+    /// 运行期实际使用 `config.prompt(.todoExtraction)`，可能被用户自定义覆盖。
     static var systemPrompt: String { PromptTemplateKind.todoExtraction.defaultText }
 
     private static func userPrompt(content: String) -> String {

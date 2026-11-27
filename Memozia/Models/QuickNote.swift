@@ -61,6 +61,10 @@ extension QuickNote {
         AudioRecording.resolveFolderURL(forFolderName: folderName)
     }
 
+    var languageOptionsURL: URL {
+        EntryLanguageOptions.file(in: folderURL, legacyID: folderName.isEmpty ? id : nil)
+    }
+
     /// 源图片 URL（如有）
     var sourceImageURL: URL? {
         guard let name = sourceImageFileName, !name.isEmpty else { return nil }
@@ -216,6 +220,13 @@ enum ListItem: Identifiable, Hashable {
         switch self {
         case .recording(let r): return r.folderURL
         case .quickNote(let n): return n.folderURL
+        }
+    }
+
+    var languageOptionsURL: URL {
+        switch self {
+        case .recording(let recording): return recording.languageOptionsURL
+        case .quickNote(let note): return note.languageOptionsURL
         }
     }
 

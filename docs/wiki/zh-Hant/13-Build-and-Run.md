@@ -39,7 +39,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project Mem
 
 ## 3. 模型與首次執行
 
-- 首啟隱私同意後展示按體驗模式組織的功能引導；引導不再包含模型下載頁。模型在實際使用時按需準備，專業模式也可在設定中管理。麥克風、系統錄音、語音識別、螢幕錄製、輔助功能、提醒事項按功能請求。
+- 同意隱私政策後直接進入主視窗。使用者可從「輔助說明」選單重新開啟首次使用指引。模型及系統權限在使用相關功能時才準備。
 - 系統語音識別透過 `SystemTranscription` / `SystemTranscriptionService` 在 macOS 26+ 使用 SpeechAnalyzer；語言資產由系統按需管理，不依賴 Whisper 模型目錄。`STTMode.defaultMode` 與體驗模式解析器按系統能力決定預設引擎，舊系統保留 WhisperKit 路徑。
 - 本地 Whisper 透過設定選擇模型資料夾，預設目錄由 `WhisperModelFolder.defaultPath` 提供；模型與 tokenizer 檔案須完整，載入邏輯會解析子目錄。
 - 設定頁「下載模型」可按檔位下載（`WhisperModelOption.catalog`），源可選 HuggingFace 官方或 HF-Mirror 映象（預設映象，見 `WhisperModelSource`）；下載走 `WhisperKit.download` 並顯式傳 endpoint，完成後從 `<模型文件夹>/models/<repo>/<档位>` 重新命名到 `<模型文件夹>/<档位>`，隨即載入該模型。下載任務經全域性處理佇列（`TaskCenter.whisperDownloadJob`），是**唯一支援真正暫停 / 續傳**的任務：取消（含暫停觸發的取消）保留已落盤分片與 `.cache` 後設資料，繼續時重新排程該步即從斷點續傳。

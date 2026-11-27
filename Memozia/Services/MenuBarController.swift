@@ -570,14 +570,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     static let appLanguageDefaultsKey = "AppInterfaceLanguage"
 
     /// 可选界面语言（代码与 catalog 的 .lproj 名一致，显示为该语言的自称）
-    static let availableLanguages: [(code: String, nativeName: String)] = [
-        ("zh-Hans", "简体中文"), ("zh-Hant", "繁體中文"), ("en", "English"),
-        ("ja", "日本語"), ("ko", "한국어"), ("de", "Deutsch"), ("fr", "Français"),
-        ("es", "Español"), ("it", "Italiano"), ("pt", "Português"), ("ru", "Русский"),
-        ("uk", "Українська"), ("nl", "Nederlands"), ("pl", "Polski"), ("tr", "Türkçe"),
-        ("ar", "العربية"), ("hi", "हिन्दी"), ("id", "Bahasa Indonesia"),
-        ("sv", "Svenska"), ("th", "ไทย"), ("vi", "Tiếng Việt"),
-    ]
+    static let availableLanguages = ContentLanguages.choices
 
     /// 选择界面语言（representedObject 为空 = 跟随系统）
     @objc nonisolated private func selectLanguage(_ sender: NSMenuItem) {
@@ -925,6 +918,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     var mainWindows: [NSWindow] {
         NSApp.windows.filter { window in
             // 必须有 contentView（排除空面板）
+            window.identifier?.rawValue != OnboardingView.windowID &&
             window.contentView != nil &&
             // 排除菜单栏状态项的小面板（statusItem.button 所在窗口）
             !window.className.contains("StatusBar") &&

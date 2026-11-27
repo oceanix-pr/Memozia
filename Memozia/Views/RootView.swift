@@ -16,6 +16,7 @@ struct RootView: View {
     private var isTransientMode: Bool { persistence.capability.isTransient }
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.openWindow) private var openWindow
     // E1 侧边栏数据源说明：评估过把整表 @Query 改为按月/区间增量加载（先加载最近条目，
     // 展开旧月份再取下一页）。但列表的搜索（跨全库）、详情选中、空状态判据（hasVisibleListItems）
     // 与批量操作都依赖完整集合，分页会在无法运行时验证的情况下引入「旧条目/搜索结果查不到」
@@ -30,6 +31,8 @@ struct RootView: View {
     @State private var settingsVM = SettingsViewModel()
     @State private var experienceStore = AppExperienceStore.shared
     @State private var showSettings = false
+    @State private var settingsSection: SettingsView.SettingsSection? = .stt
+    @State private var settingsAfterHelp: SettingsView.SettingsSection?
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var isDragTargeted = false
     /// 删除确认载荷（单选录音 / 单选快捷笔记 / 批量混合）
@@ -58,7 +61,7 @@ struct RootView: View {
     @State private var showCreateQuickNote = false
     @State private var showMediaImporter = false
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    /// 已完成引导页时记录的应用版本：升级到新版本后重新展示一次引导（新功能介绍）
+    /// 上次展示首屏或更新摘要的版本。
     @AppStorage("onboardingCompletedVersion") private var onboardingCompletedVersion = ""
 
     /// 当前应用版本号（引导页升级重展示的判定依据）
@@ -71,12 +74,10 @@ struct RootView: View {
         version.split(separator: ".").prefix(2).joined(separator: ".")
     }
 
-    /// 是否需要在本次启动重新展示引导页：仅在主/次版本变化时为 true。
-    /// 旧实现比较完整版本号，导致任何 patch 升级都会重弹 12 页引导打扰老用户
-    static func onboardingNeedsRefresh(completed: String, current: String) -> Bool {
-        let completedKey = majorMinorVersion(completed)
-        guard !completedKey.isEmpty else { return true }
-        return completedKey != majorMinorVersion(current)
+    static func showsReleaseHighlights(completed: String, current: String) -> Bool {
+        !completed.isEmpty && completed.compare(current, options: .numeric) == .orderedAscending &&
+            majorMinorVersion(completed) != majorMinorVersion(current) &&
+            majorMinorVersion(current) == ReleaseHighlightsView.release
     }
     @AppStorage(MemoziaPrivacyPolicy.StorageKey.accepted) private var hasAcceptedPrivacyPolicy = false
     @AppStorage(MemoziaPrivacyPolicy.StorageKey.acceptedVersion) private var acceptedPrivacyVersion = ""
@@ -91,7 +92,8 @@ struct RootView: View {
     /// 与设置页「录音 → 输入设备」、菜单栏「麦克风」、截图会话工具栏读写同一偏好，
     /// 改任一处，其余入口立即跟随
     @AppStorage(MicrophoneDeviceRegistry.selectionDefaultsKey) private var microphoneDeviceUID: String = ""
-    @State private var showOnboarding = false
+    @State private var showReleaseHighlights = false
+    @State private var chooseMeetingType = false
     @State private var showPrivacyConsent = false
     @State private var showHelp = false
 
@@ -363,8 +365,15 @@ struct RootView: View {
             onNewQuickNote: { requestCreateQuickNote() },
             onImportMedia: { requestImportMedia() }
         ))
-        .onReceive(NotificationCenter.default.publisher(for: .menuBarOpenSettings)) { _ in
-            showSettings = true
+        .onReceive(NotificationCenter.default.publisher(for: .menuBarOpenSettings)) { notification in
+            let destination = notification.object as? SettingsView.SettingsSection
+            if showHelp {
+                settingsAfterHelp = destination ?? settingsSection ?? .stt
+                showHelp = false
+            } else {
+                if let destination { settingsSection = destination }
+                showSettings = true
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .menuBarCreateQuickNoteFromClipboard)) { _ in
             guard experienceStore.policy.allows(.advancedCapture) else { return }
@@ -382,15 +391,8 @@ struct RootView: View {
         .onAppear {
             if needsPrivacyConsent {
                 showPrivacyConsent = true
-            } else if !hasCompletedOnboarding {
-                showOnboarding = true
-            } else if Self.onboardingNeedsRefresh(
-                completed: onboardingCompletedVersion,
-                current: Self.currentAppVersion
-            ) {
-                // 主/次版本升级（如 6.0.0 新增截图）：重新展示一次引导页介绍新功能；
-                // patch 升级不再重弹
-                showOnboarding = true
+            } else {
+                presentFirstUseOrUpdate()
             }
         }
         .onChange(of: experienceStore.current) { _, _ in
@@ -408,6 +410,19 @@ struct RootView: View {
         }
     }
 
+    private func presentFirstUseOrUpdate() {
+        let version = Self.currentAppVersion
+        if !hasCompletedOnboarding {
+            // 首次任务入口就在主窗口空态中。先解析迁移偏好，再记录首启完成。
+            _ = AppExperiencePreference.resolved()
+            hasCompletedOnboarding = true
+            onboardingCompletedVersion = version
+        } else if onboardingCompletedVersion.compare(version, options: .numeric) == .orderedAscending {
+            showReleaseHighlights = Self.showsReleaseHighlights(completed: onboardingCompletedVersion, current: version)
+            onboardingCompletedVersion = version
+        }
+    }
+
     /// 视图层 2：Sheet 与 Alert 弹窗
     private var sheetAndAlertLayers: some View {
         observerLayers
@@ -416,21 +431,33 @@ struct RootView: View {
                 .interactiveDismissDisabled()
                 .onDisappear {
                     // 直接读 UserDefaults：@AppStorage 的通知可能晚于 sheet 关闭回调，
-                    // 用静态判断保证“刚同意的新用户”能立即进入引导页。
-                    if !MemoziaPrivacyPolicy.needsConsent() && !hasCompletedOnboarding {
-                        showOnboarding = true
+                    // 用静态判断保证“刚同意的新用户”能立即进入主窗口。
+                    if !MemoziaPrivacyPolicy.needsConsent() {
+                        presentFirstUseOrUpdate()
                     }
                 }
         }
-        .sheet(isPresented: $showOnboarding) {
-            OnboardingView()
-                .interactiveDismissDisabled()
+        .sheet(isPresented: $showReleaseHighlights) {
+            ReleaseHighlightsView(experience: experienceStore.current)
+        }
+        .sheet(isPresented: $chooseMeetingType) {
+            MeetingTypeChoiceView { choice in
+                settingsVM.chooseStandardMeetingType(choice)
+                chooseMeetingType = false
+                startMeetingRecording()
+            }
         }
         .sheet(isPresented: $showSettings) {
             settingsSheetContent
         }
-        .sheet(isPresented: $showHelp) {
-            HelpView()
+        .sheet(isPresented: $showHelp, onDismiss: {
+            if let destination = settingsAfterHelp {
+                settingsAfterHelp = nil
+                settingsSection = destination
+                showSettings = true
+            }
+        }) {
+            HelpView(settings: settingsVM) { settingsAfterHelp = $0 }
         }
         .alert("错误", isPresented: $viewModel.showError) {
             if let folder = viewModel.recordingFailureFolder {
@@ -604,9 +631,12 @@ struct RootView: View {
         .sheet(item: $oneClickPreview) { payload in
             OneClickPreviewView(
                 entryTitle: payload.item.title,
-                inputs: payload.inputs
+                inputs: payload.inputs,
+                languageOptionsURL: payload.item.languageOptionsURL,
+                transcription: settingsVM.makeSTTConfig(experience: experienceStore.current),
+                readOnly: isTransientMode
             ) { plan in
-                enqueueOneClick(payload.item, plan: plan)
+                enqueueOneClick(payload, plan: plan)
             }
         }
     }
@@ -727,14 +757,26 @@ struct RootView: View {
         if !hasVisibleListItems {
             // 列表无任何可见条目（真空或条目被全部隐藏）：旧实现返回 `Color.clear`，
             // 右侧是一片纯空白——用户既不知道能做什么，也看不到任何入口。
-            // 补齐标题、说明与两个动作（文案沿用工具栏既有按钮，避免新增未翻译键）。
+            // 首次使用的三个操作与工具栏/菜单共用入口。
             ContentUnavailableView {
                 Label("暂无条目", systemImage: "tray")
             } description: {
-                Text("导入音频或视频，或新建快捷笔记开始使用（条目被隐藏时可切换「显示隐藏条目」找回）")
+                if experienceStore.isPro && (!recordings.isEmpty || !quickNotes.isEmpty) {
+                    Text("导入音频或视频，或新建快捷笔记开始使用（条目被隐藏时可切换「显示隐藏条目」找回）")
+                }
             } actions: {
+                Button(action: toggleMeetingRecording) {
+                    Label(viewModel.isMeetingRecording ? "停止录音" : "开始会议录音",
+                          systemImage: viewModel.isMeetingRecording ? "stop.circle" : "record.circle")
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("firstRecord")
+                .disabled(viewModel.isMeetingRecordingStarting)
                 Button("导入", systemImage: "square.and.arrow.down") { requestImportMedia() }
-                Button("笔记", systemImage: "text.pad.header.badge.plus") { requestCreateQuickNote() }
+                Button("新建快捷笔记", systemImage: "text.pad.header.badge.plus") { requestCreateQuickNote() }
+                Button("首次使用指引") { openWindow(id: OnboardingView.windowID) }
+                    .buttonStyle(.link)
+                    .accessibilityIdentifier("firstUseGuide")
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if selectedListItems.count > 1 {
@@ -831,6 +873,12 @@ struct RootView: View {
         guard !viewModel.isMeetingRecordingStarting else { return }
         guard !blockWriteIfPersistenceUnavailable(.createEntry) else { return }
         guard !viewModel.isMeetingRecording else { return }
+        guard !needsPrivacyConsent else { return }
+        if !microphoneOnly, !experienceStore.isPro, !settingsVM.hasChosenMeetingType {
+            MenuBarController.shared.showMainWindow()
+            chooseMeetingType = true
+            return
+        }
         var config = settingsVM.makeRecordingConfig(experience: experienceStore.current)
         if microphoneOnly {
             guard viewModel.meetingRecorder.recordingPermissionNotice?.offersRecovery == true else { return }
@@ -907,7 +955,7 @@ struct RootView: View {
     /// 设置弹窗内容
     @ViewBuilder
     private var settingsSheetContent: some View {
-        SettingsView(isTransientMode: isTransientMode, settingsVM: settingsVM, experienceStore: experienceStore)
+        SettingsView(isTransientMode: isTransientMode, settingsVM: settingsVM, experienceStore: experienceStore, selectedSection: $settingsSection)
             #if os(macOS)
             .frame(minWidth: 500, minHeight: 500)
             #else
@@ -1917,6 +1965,7 @@ private extension RootView {
 
     /// 画面要点分析（录屏 / 导入视频）
     func enqueueVisual(_ recording: AudioRecording) {
+        guard experienceStore.policy.allows(.videoUnderstanding) else { return }
         guard let config = resolvedLLMConfig() else { return }
         TaskCenter.shared.enqueue(
             makeJob(title: recording.fileName, folder: recording.folderName, durable: false,
@@ -1931,7 +1980,7 @@ private extension RootView {
     func presentOneClickPreview(_ item: ListItem) {
         guard let config = resolvedLLMConfig() else { return }
         oneClickPreview = OneClickPreviewPayload(
-            item: item,
+            item: item, configID: config.id, endpoint: config.chatCompletionsURL,
             inputs: oneClickPlanInputs(for: item, config: config)
         )
     }
@@ -1948,7 +1997,7 @@ private extension RootView {
             let folderURL = recording.folderURL
             return OneClickPlan.Inputs(
                 isRecording: true,
-                hasVideo: recording.hasVideoSource,
+                hasVideo: recording.isVideoRecording,
                 transcriptCompleted: recording.transcriptionStatus == .completed,
                 transcriptManuallyEdited: recording.transcriptModifiedAt != nil,
                 visualCompleted: recording.hasVisualArtifacts,
@@ -1956,8 +2005,9 @@ private extension RootView {
                 todoCompleted: TodoDocument.exists(in: folderURL),
                 audioFileExists: FileManager.default.fileExists(atPath: recording.fileURL.path),
                 isImageNote: false,
-                usesCloudLLM: !config.isLocal,
-                forceRetranscribe: false
+                usesCloudLLM: config.sendsContentOffDevice,
+                forceRetranscribe: false,
+                experience: experienceStore.current
             )
         case .quickNote(let note):
             return OneClickPlan.Inputs(
@@ -1970,8 +2020,9 @@ private extension RootView {
                 todoCompleted: TodoDocument.exists(in: note.folderURL),
                 audioFileExists: false,
                 isImageNote: note.isImageNote,
-                usesCloudLLM: !config.isLocal,
-                forceRetranscribe: false
+                usesCloudLLM: config.sendsContentOffDevice,
+                forceRetranscribe: false,
+                experience: experienceStore.current
             )
         }
     }
@@ -1983,8 +2034,15 @@ private extension RootView {
     /// - 「总结」步骤内部完成后自动润色标题（在 ViewModel 内，未在此处拆开）
     /// - 云端文本请求仍走 PII 脱敏与还原；图片/视频帧不做文本脱敏，故预览里明确数据范围
     /// - 待办只落盘 TodoDocument，不写入系统提醒事项
-    func enqueueOneClick(_ item: ListItem, plan: OneClickPlan) {
-        guard let config = resolvedLLMConfig() else { return }
+    func enqueueOneClick(_ preview: OneClickPreviewPayload, plan: OneClickPlan) {
+        let item = preview.item
+        let config = preview.configID == BuiltInQwenModel.id
+            ? LLMConfig.builtInQwen : llmConfigs.first { $0.id == preview.configID }
+        guard let config, config.chatCompletionsURL == preview.endpoint else {
+            viewModel.errorMessage = String(localized: "请先在设置中选择大模型配置。")
+            viewModel.showError = true
+            return
+        }
         let kinds = Set(plan.runItems.map(\.kind))
         var steps: [TaskCenter.Step] = []
         let title: String
@@ -2001,12 +2059,12 @@ private extension RootView {
                 guard snapshotTranscriptBeforeRetranscribe(recording) else { return }
                 steps.append(transcriptionStep(recording))
             }
-            if kinds.contains(.visualAnalysis) {
+            if kinds.contains(.visualAnalysis), experienceStore.policy.allows(.videoUnderstanding) {
                 steps.append(visualStep(recording, config: config))
             }
             if kinds.contains(.summary) {
                 // 录音 / 录屏默认会议总结
-                steps.append(summaryStep(recording, config: config, asMeeting: true))
+                steps.append(summaryStep(recording, config: config, asMeeting: preview.inputs.experience == .pro ? true : nil))
             }
             if kinds.contains(.todoExtraction) {
                 steps.append(todoStep(recording, config: config))
@@ -2073,41 +2131,42 @@ private extension RootView {
                 steps: [transcriptionStep(recording)])
     }
 
-    var entrySteps: EntryProcessingSteps {
+    func entrySteps(for languageOptionsURL: URL) -> EntryProcessingSteps {
         EntryProcessingSteps(context: modelContext, container: modelContext.container, recordings: viewModel,
-                             notes: quickNoteVM, persistence: viewModel.persistence)
+                             notes: quickNoteVM, experience: experienceStore.current, persistence: viewModel.persistence,
+                             languages: Result { try EntryLanguageOptions.load(from: languageOptionsURL) })
     }
 
     func transcriptionStep(_ recording: AudioRecording) -> TaskCenter.Step {
-        entrySteps.transcription(recording.id, config: STTConfigSnapshot(config: settingsVM.makeSTTConfig(experience: experienceStore.current)))
+        entrySteps(for: recording.languageOptionsURL).transcription(recording.id, config: STTConfigSnapshot(config: settingsVM.makeSTTConfig(experience: experienceStore.current)))
     }
 
     func summaryStep(_ recording: AudioRecording, config: LLMConfig, asMeeting: Bool?) -> TaskCenter.Step {
-        entrySteps.processing(.recording(recording.id), .summary(asMeeting: asMeeting), configID: config.id)
+        entrySteps(for: recording.languageOptionsURL).processing(.recording(recording.id), .summary(asMeeting: asMeeting), approved: config)
     }
 
     func summaryStep(_ note: QuickNote, config: LLMConfig) -> TaskCenter.Step {
-        entrySteps.processing(.note(note.id), .summary(asMeeting: nil), configID: config.id)
+        entrySteps(for: note.languageOptionsURL).processing(.note(note.id), .summary(asMeeting: nil), approved: config)
     }
 
     func visualStep(_ recording: AudioRecording, config: LLMConfig) -> TaskCenter.Step {
-        entrySteps.processing(.recording(recording.id), .visual, configID: config.id)
+        entrySteps(for: recording.languageOptionsURL).processing(.recording(recording.id), .visual, approved: config)
     }
 
     func todoStep(_ recording: AudioRecording, config: LLMConfig) -> TaskCenter.Step {
-        entrySteps.processing(.recording(recording.id), .todos, configID: config.id)
+        entrySteps(for: recording.languageOptionsURL).processing(.recording(recording.id), .todos, approved: config)
     }
 
     func todoStep(_ note: QuickNote, config: LLMConfig) -> TaskCenter.Step {
-        entrySteps.processing(.note(note.id), .todos, configID: config.id)
+        entrySteps(for: note.languageOptionsURL).processing(.note(note.id), .todos, approved: config)
     }
 
     func titleStep(_ recording: AudioRecording, config: LLMConfig) -> TaskCenter.Step {
-        entrySteps.processing(.recording(recording.id), .title, configID: config.id)
+        entrySteps(for: recording.languageOptionsURL).processing(.recording(recording.id), .title, approved: config)
     }
 
     func titleStep(_ note: QuickNote, config: LLMConfig) -> TaskCenter.Step {
-        entrySteps.processing(.note(note.id), .title, configID: config.id)
+        entrySteps(for: note.languageOptionsURL).processing(.note(note.id), .title, approved: config)
     }
 }
 

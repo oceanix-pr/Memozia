@@ -250,12 +250,19 @@ final class QuickNoteViewModel: EntryTodoEditing {
         for note: QuickNote,
         llmConfig: LLMConfig,
         context: ModelContext,
+        outputLanguage: String? = nil,
         experience: AppExperience? = nil,
         origin: TaskExecutionOrigin = .foreground
     ) -> Task<StepOutcome, Never> {
         guard !rejectWriteIfReadOnly(.startProcessing) else { return Task { .cancelled } }
         let noteID = note.id
         let folderName = note.folderName
+        let language: String
+        do { language = try outputLanguage ?? EntryLanguageOptions.load(from: note.languageOptionsURL).output }
+        catch {
+            showErrorMessage(UserFacingError.summary(for: error))
+            return Task { .failed }
+        }
         // 只取消「同一笔记」的上一次总结：不同笔记各自持有独立句柄，互不干扰
         cancelSummary(noteID: noteID)
         let executionToken = UUID()
@@ -266,6 +273,7 @@ final class QuickNoteViewModel: EntryTodoEditing {
             kind: .quicknoteSummary,
             folderName: folderName,
             llmConfigID: llmConfig.id,
+            outputLanguage: language,
             experience: taskExperience
         )) {
             showErrorMessage($0)
@@ -285,7 +293,7 @@ final class QuickNoteViewModel: EntryTodoEditing {
         let task = Task { @MainActor [weak self] in
             guard let self else { return StepOutcome.cancelled }
             let outcome = await self.performNoteSummary(note, llmConfig: llmConfig, context: context,
-                                                        taskExperience: taskExperience, executionToken: executionToken)
+                                                        taskExperience: taskExperience, executionToken: executionToken, outputLanguage: language)
             durable?.finish(outcome)
             self.finishNoteSummary(noteID: noteID, executionToken: executionToken)
             return outcome
@@ -295,11 +303,11 @@ final class QuickNoteViewModel: EntryTodoEditing {
     }
 
     private func performNoteSummary(_ note: QuickNote, llmConfig: LLMConfig, context: ModelContext,
-                                    taskExperience: AppExperience, executionToken: UUID) async -> StepOutcome {
+                                    taskExperience: AppExperience, executionToken: UUID, outputLanguage: String) async -> StepOutcome {
         let noteID = note.id
         do {
             try SummaryHistory.preserve(note.summaryText, in: note.folderURL)
-            let snapshot = try LLMConfigSnapshot(config: llmConfig)
+            let snapshot = try LLMConfigSnapshot(config: llmConfig, outputLanguage: outputLanguage)
             let result: String
             if note.hasImage, let imageURL = note.sourceImageURL,
                let imageData = try? Data(contentsOf: imageURL) {
@@ -633,7 +641,7 @@ final class QuickNoteViewModel: EntryTodoEditing {
     /// AI 拆解快捷笔记为待办事项
     /// - Returns: 任务结果强类型化：`.succeeded` 仅当本次确实拆出待办并已落盘
     @discardableResult
-    func extractTodos(from note: QuickNote, llmConfig: LLMConfig, context: ModelContext) -> Task<StepOutcome, Never> {
+    func extractTodos(from note: QuickNote, llmConfig: LLMConfig, context: ModelContext, outputLanguage: String? = nil) -> Task<StepOutcome, Never> {
         guard !rejectWriteIfReadOnly(.startProcessing) else { return Task { .cancelled } }
         let noteID = note.id
         // 只取消「同一笔记」的上一次拆解
@@ -659,7 +667,7 @@ final class QuickNoteViewModel: EntryTodoEditing {
 
             do {
                 let previous = try TodoDocument.read(from: note.folderURL)
-                let snapshot = try LLMConfigSnapshot(config: llmConfig)
+                let snapshot = try LLMConfigSnapshot(config: llmConfig, outputLanguage: outputLanguage ?? EntryLanguageOptions.load(from: note.languageOptionsURL).output)
                 let onProgress: @Sendable (TodoExtractionService.Progress) -> Void = { [weak self] progress in
                     Task { @MainActor in
                         guard let self, self.todoExtractionExecutions[noteID] == executionToken else { return }
@@ -798,7 +806,7 @@ final class QuickNoteViewModel: EntryTodoEditing {
     /// 更新列表标题为“年月日时分 主旨”。用户显式操作，直接覆盖当前标题（含手动命名）
     /// - Returns: 任务结果强类型化：`.succeeded` 仅当生成了非空标题并已落库
     @discardableResult
-    func polishNoteTitle(_ note: QuickNote, llmConfig: LLMConfig, context: ModelContext) -> Task<StepOutcome, Never> {
+    func polishNoteTitle(_ note: QuickNote, llmConfig: LLMConfig, context: ModelContext, outputLanguage: String? = nil) -> Task<StepOutcome, Never> {
         guard !rejectWriteIfReadOnly(.startProcessing) else { return Task { .cancelled } }
         let noteID = note.id
         // 只取消「同一笔记」的上一次标题润色
@@ -815,7 +823,7 @@ final class QuickNoteViewModel: EntryTodoEditing {
                 }
             }
             do {
-                let snapshot = try LLMConfigSnapshot(config: llmConfig)
+                let snapshot = try LLMConfigSnapshot(config: llmConfig, outputLanguage: outputLanguage ?? EntryLanguageOptions.load(from: note.languageOptionsURL).output)
                 var sources: [String] = []
                 let text = note.combinedTextForExtraction
                 if !text.isEmpty { sources.append(text) }
@@ -917,16 +925,15 @@ final class QuickNoteViewModel: EntryTodoEditing {
         do { todoDocument = note.folderName.isEmpty ? nil : try TodoDocument.read(from: note.folderURL) }
         catch { showErrorMessage(String(localized: "条目文件缺失或无法读取。")); return }
         // P3-9: 先删除磁盘文件——若失败则保留数据库记录，防止下次 syncFromDisk 数据复活
-        if !note.folderName.isEmpty {
-            let folderURL = note.folderURL
-            if FileManager.default.fileExists(atPath: folderURL.path) {
-                do {
-                    try FileManager.default.removeItem(at: folderURL)
-                } catch {
-                    showErrorMessage(String(localized: "快捷笔记文件夹删除失败：\(error.localizedDescription)。数据库记录已保留以防止数据复活，请手动删除文件夹后重试。"))
-                    return
-                }
+        do {
+            if note.folderName.isEmpty {
+                try EntryLanguageOptions.removeLegacyFile(in: note.folderURL, id: note.id)
+            } else if FileManager.default.fileExists(atPath: note.folderURL.path) {
+                try FileManager.default.removeItem(at: note.folderURL)
             }
+        } catch {
+            showErrorMessage(String(localized: "快捷笔记文件夹删除失败：\(error.localizedDescription)。数据库记录已保留以防止数据复活，请手动删除文件夹后重试。"))
+            return
         }
         // 删除已写入的提醒事项
         context.delete(note)

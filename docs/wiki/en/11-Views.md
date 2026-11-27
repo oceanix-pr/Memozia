@@ -46,7 +46,7 @@ body = dialogLayers
 ### 2.2 Main mechanisms
 
 - **Notifications:** Recording controls/shortcut, screenshot controls, saved images, permission/errors, settings, help, clipboard notes; see [Architecture](02-Architecture.md), §6.
-- **First launch:** `MemoziaPrivacyPolicy.needsConsent(...)` checks the consent flag and policy major version. Then `hasCompletedOnboarding` controls onboarding; an app-major-version change tracked by `onboardingCompletedVersion`/`currentAppVersion` introduces new features again.
+- **First launch.** After privacy consent, users can record, import a file, create a note, or open the getting-started guide from the empty library. Standard users choose an online or in-person meeting when they first start recording.
 - **Sidebar:** Import audio/video, create note, capture in Pro, delete, rename, reconcile disk, start/stop recording, and validate dropped files.
 - **Detail routing:** Selected recording/note determines the detail view and its transcription/cancellation/model/reminder dependencies.
 - **Queue:** The persistent upper-right toolbar entry changes icon for failures/activity and opens `QueuePanelView`. Root extensions construct Jobs/Steps for transcription, summaries, titles, visuals, tasks, and one-click work. Steps await existing ViewModel operations, update persistent `ProcessingStatus`, and report stable `TaskErrorCode` values.
@@ -137,8 +137,8 @@ Streaming summaries batch parse off the main thread instead of reparsing all tex
 
 ## 11. Help, onboarding, and consent
 
-- **HelpView:** Recording/start-muted/capture reports, import, notes, speech, transcription, voiceprints, summaries, tasks, capture, background/menu-bar use, management, privacy, shortcuts. The shortcut section comes from `AppCommandCatalog.shortcutReferenceIDs`.
-- **OnboardingView:** Reappears for major upgrades, with a concise Standard flow and fuller Pro introduction. It no longer downloads models. System recognition prepares language assets on demand; `SpeakerDiarizationService.ensureModelsReady` downloads diarization models on first use and visibly degrades without diarization on failure.
+- **HelpView.** Searches localized topics and shows instructions and keyboard shortcuts for the active mode. Troubleshooting includes the current meeting type and the active summary model.
+- **OnboardingView.** Help → Getting Started opens a separate window with the guide for the current mode. Major and minor upgrades with release notes show a short summary once.
 - **PrivacyConsentView:** First-launch consent covering collection, permissions, transmission, local storage, screen sharing, user rights, and third-party boundaries. `interactiveDismissDisabled` requires an explicit choice.
 
 ## 12. Removed iOS Share Extension

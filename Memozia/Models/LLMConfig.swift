@@ -41,6 +41,12 @@ extension LLMConfig {
         return Self.endpointURL(forBaseURL: baseURL, appending: "chat/completions")
     }
 
+    /// 一键处理的数据范围取决于实际接收端点，局域网服务也会离开本机。
+    var sendsContentOffDevice: Bool {
+        if isBuiltIn { return false }
+        return chatCompletionsURL.map { EndpointPolicy.trust(for: $0) != .loopback } ?? true
+    }
+
     // MARK: - 端点构造
 
     /// 规范化并校验 Base URL。返回去掉末尾 `/` 的字符串与解析后的组件；

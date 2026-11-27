@@ -21,7 +21,9 @@ struct EntryProcessingSteps {
     weak var container: ModelContainer?
     weak var recordings: RecordingViewModel?
     weak var notes: QuickNoteViewModel?
+    let experience: AppExperience
     let persistence: PersistenceGuard
+    let languages: Result<EntryLanguageOptions, any Error>
 
     private final class ActiveStep {
         var cancel: ((StepOutcome) -> Void)?
@@ -63,13 +65,14 @@ struct EntryProcessingSteps {
         step(.transcription) { context, failure, active in
             guard let recording = try recording(id, in: context) else { failure.code = .inputFileMissing; return .failed }
             let vm = recordings ?? RecordingViewModel()
-            let stt: STTConfig
-            do throws(BackgroundTaskFailureCode) { stt = try config.restore(for: .foreground) }
+            let restored: STTConfig
+            do throws(BackgroundTaskFailureCode) { restored = try config.restore(for: .foreground) }
             catch {
                 FileSyncService.logWarning("转写配置暂不可用：\(error.rawValue)")
                 failure.code = .unknown
                 return .failed
             }
+            let stt = try languages.get().applying(to: restored)
             let whisper = WhisperLocalService.shared
             if stt.mode == .local, !whisper.isModelLoadedFor(path: stt.modelPath) {
                 do { try await whisper.loadModel(fromPath: stt.modelPath) }
@@ -90,8 +93,10 @@ struct EntryProcessingSteps {
         }
     }
 
-    func processing(_ target: Target, _ operation: Operation, configID: UUID) -> TaskCenter.Step {
-        step(operation.kind) { context, failure, active in
+    func processing(_ target: Target, _ operation: Operation, approved: LLMConfig) -> TaskCenter.Step {
+        let configID = approved.id
+        let endpoint = approved.chatCompletionsURL
+        return step(operation.kind) { context, failure, active in
             let config: LLMConfig
             if configID == BuiltInQwenModel.id { config = .builtInQwen }
             else {
@@ -100,21 +105,26 @@ struct EntryProcessingSteps {
                 guard let stored = try context.fetch(fetch).first else { failure.code = .unknown; return .failed }
                 config = stored
             }
+            guard config.chatCompletionsURL == endpoint else {
+                failure.code = .unknown
+                return .failed
+            }
+            let output = try languages.get().output
             switch target {
             case .recording(let id):
                 guard let r = try recording(id, in: context) else { failure.code = .inputFileMissing; return .failed }
-                return await runRecording(operation, r, config, context, failure, active)
+                return await runRecording(operation, r, config, context, failure, active, output)
             case .note(let id):
                 var fetch = FetchDescriptor<QuickNote>(predicate: #Predicate { $0.id == id })
                 fetch.fetchLimit = 1
                 guard let n = try context.fetch(fetch).first else { failure.code = .inputFileMissing; return .failed }
-                return await runNote(operation, n, config, context, failure, active)
+                return await runNote(operation, n, config, context, failure, active, output)
             }
         }
     }
 
     private func runRecording(_ op: Operation, _ r: AudioRecording, _ config: LLMConfig,
-                              _ context: ModelContext, _ failure: StepFailure, _ active: ActiveStep) async -> StepOutcome {
+                              _ context: ModelContext, _ failure: StepFailure, _ active: ActiveStep, _ output: String) async -> StepOutcome {
         let vm = recordings ?? RecordingViewModel()
         let id = r.id
         let status: ReferenceWritableKeyPath<AudioRecording, ProcessingStatus?>?
@@ -123,27 +133,27 @@ struct EntryProcessingSteps {
         switch op {
         case .summary(let meeting):
             status = \.summaryStatus
-            task = vm.generateSummary(recording: r, llmConfig: config, context: context, asMeeting: meeting)
+            task = vm.generateSummary(recording: r, llmConfig: config, context: context, asMeeting: meeting, outputLanguage: output, experience: experience)
             active.cancel = { vm.cancelSummary(recordingID: id, ifCurrent: task, outcome: $0) }
         case .visual:
             status = \.visualStatus
             input = r.videoFileURL
-            task = vm.generateVisualNotes(recording: r, llmConfig: config, context: context)
+            task = vm.generateVisualNotes(recording: r, llmConfig: config, context: context, outputLanguage: output)
             active.cancel = { _ in vm.cancelVisualNotes(ifCurrent: task) }
         case .todos:
             status = \.todoStatus
-            task = vm.extractTodos(from: r, llmConfig: config)
+            task = vm.extractTodos(from: r, llmConfig: config, outputLanguage: output)
             active.cancel = { _ in vm.cancelTodoExtraction(recordingID: id, ifCurrent: task) }
         case .title:
             status = nil
-            task = vm.polishRecordingTitle(r, llmConfig: config, context: context)
+            task = vm.polishRecordingTitle(r, llmConfig: config, context: context, outputLanguage: output)
             active.cancel = { _ in vm.cancelTitle(recordingID: id, ifCurrent: task) }
         }
         return await finish(task, active: active, kind: op.kind, model: r, status: status, failure: failure, input: input)
     }
 
     private func runNote(_ op: Operation, _ n: QuickNote, _ config: LLMConfig,
-                         _ context: ModelContext, _ failure: StepFailure, _ active: ActiveStep) async -> StepOutcome {
+                         _ context: ModelContext, _ failure: StepFailure, _ active: ActiveStep, _ output: String) async -> StepOutcome {
         let vm = notes ?? QuickNoteViewModel()
         let id = n.id
         let status: ReferenceWritableKeyPath<QuickNote, ProcessingStatus?>?
@@ -153,15 +163,15 @@ struct EntryProcessingSteps {
         case .summary:
             status = \.summaryStatus
             input = n.hasImage ? n.sourceImageURL : nil
-            task = vm.generateSummary(for: n, llmConfig: config, context: context)
+            task = vm.generateSummary(for: n, llmConfig: config, context: context, outputLanguage: output, experience: experience)
             active.cancel = { vm.cancelSummary(noteID: id, ifCurrent: task, outcome: $0) }
         case .todos:
             status = \.todoStatus
-            task = vm.extractTodos(from: n, llmConfig: config, context: context)
+            task = vm.extractTodos(from: n, llmConfig: config, context: context, outputLanguage: output)
             active.cancel = { _ in vm.cancelTodoExtraction(noteID: id, ifCurrent: task) }
         case .title:
             status = nil
-            task = vm.polishNoteTitle(n, llmConfig: config, context: context)
+            task = vm.polishNoteTitle(n, llmConfig: config, context: context, outputLanguage: output)
             active.cancel = { _ in vm.cancelTitle(noteID: id, ifCurrent: task) }
         case .visual: return .failed
         }

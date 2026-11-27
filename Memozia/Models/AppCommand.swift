@@ -40,6 +40,7 @@ enum AppCommandID: String, CaseIterable, Hashable, Sendable {
     case openSettings
     /// 打开帮助（⌘?）
     case openHelp
+    case openGettingStarted
 }
 
 // MARK: - 快捷键
@@ -258,6 +259,14 @@ enum AppCommandCatalog {
             shortcut: .command("?"),
             settingsDestination: nil,
             icon: "questionmark.circle",
+            proOnly: false
+        ),
+        AppCommandDescriptor(
+            id: .openGettingStarted,
+            titleKey: "首次使用指引",
+            shortcut: .none,
+            settingsDestination: nil,
+            icon: "book",
             proOnly: false
         ),
     ]

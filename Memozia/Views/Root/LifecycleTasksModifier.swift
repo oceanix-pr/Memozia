@@ -24,7 +24,7 @@ struct LifecycleTasksModifier: ViewModifier {
         content
             .disabled(AppUpdateService.shared.isPreparingToInstall || RecordingMergeActivity.shared.isRunning)
             .task(id: privacyAccepted) {
-                guard !AppRuntime.isRunningTests else { return }
+                guard !AppRuntime.isRunningTests, !AppRuntime.isIsolatedInterfaceTest else { return }
                 guard privacyAccepted else { await MCPServerController.shared.suspend(); return }
                 if !isTransientMode { await UpdatePermissionRepair.shared.prepareIfNeeded() }
                 // 单一启动协调器：以下步骤共用同一个 ModelContext，必须严格串行执行
@@ -70,7 +70,7 @@ struct LifecycleTasksModifier: ViewModifier {
                 AppUpdateService.shared.start(context: modelContext, hasActiveFileOperation: { viewModel.isImporting })
             }
             .task(id: privacyAccepted) {
-                guard !AppRuntime.isRunningTests else { return }
+                guard !AppRuntime.isRunningTests, !AppRuntime.isIsolatedInterfaceTest else { return }
                 guard privacyAccepted else { return }
                 // 模型预热不碰 ModelContext，只读模型文件，故可脱离上面的关键路径并行执行
                 // （放到关键路径里会让磁盘对账先等模型加载完，大库启动明显变慢）

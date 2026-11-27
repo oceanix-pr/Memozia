@@ -24,7 +24,8 @@ struct OneClickPlanTests {
             audioFileExists: true,
             isImageNote: false,
             usesCloudLLM: false,
-            forceRetranscribe: false
+            forceRetranscribe: false,
+            experience: .pro
         )
     }
 
@@ -40,7 +41,8 @@ struct OneClickPlanTests {
             audioFileExists: false,
             isImageNote: isImage,
             usesCloudLLM: false,
-            forceRetranscribe: false
+            forceRetranscribe: false,
+            experience: .pro
         )
     }
 
@@ -120,6 +122,19 @@ struct OneClickPlanTests {
         let plan = OneClickPlan.make(noteInputs(isImage: true))
         #expect(plan.items.map(\.kind) == [.summary, .todoExtraction])
         #expect(plan.runItems.map(\.kind) == [.summary, .todoExtraction])
+    }
+
+    @Test("普通模式处理视频时只使用音轨，本地和云端均不排画面分析")
+    func standardVideoUsesOnlyAudio() {
+        var inputs = recordingInputs()
+        inputs.experience = .standard
+        inputs.hasVideo = true
+        for usesCloud in [true, false] {
+            inputs.usesCloudLLM = usesCloud
+            let plan = OneClickPlan.make(inputs)
+            #expect(plan.runItems.map(\.kind) == [.transcription, .summary, .todoExtraction])
+            #expect(plan.cloudScope == nil)
+        }
     }
 
     // MARK: - 云端数据范围

@@ -81,10 +81,10 @@ enum WhisperModelFolder {
 }
 
 /// 支持的语言列表
-enum WhisperLanguage: String, Codable, CaseIterable, Identifiable {
+enum WhisperLanguage: String, Codable, CaseIterable, Identifiable, Sendable {
     case auto = ""           // 自动检测
-    case zh = "zh"            // 中文（简体）
-    case zhYue = "zh-Yue"     // 中文（繁體）
+    case zh = "zh"            // 普通话
+    case zhYue = "zh-Yue"     // 粤语，保留已保存的原始值
     case en = "en"            // 英文
     case ja = "ja"            // 日文
     case ko = "ko"            // 韩文
@@ -112,8 +112,8 @@ enum WhisperLanguage: String, Codable, CaseIterable, Identifiable {
         // 是描述性文案，需本地化，否则 21 种语言界面下恒显示中文
         switch self {
         case .auto: return String(localized: "自动检测")
-        case .zh:   return String(localized: "中文（简体）")
-        case .zhYue: return String(localized: "中文（繁體）")
+        case .zh:   return String(localized: "普通话")
+        case .zhYue: return String(localized: "粤语（香港）")
         case .en:   return "English"
         case .ja:   return "日本語"
         case .ko:   return "한국어"
@@ -145,6 +145,16 @@ struct STTConfig: Sendable {
     var apiKey: String
     var baseURL: String
     var language: String
+    var script: TranscriptScript?
+
+    var isChineseSpeech: Bool {
+        language == WhisperLanguage.zh.rawValue || language == WhisperLanguage.zhYue.rawValue || language == "yue"
+    }
+
+    /// Old snapshots used a combined dialect/script field. Keep their output spelling.
+    var effectiveScript: TranscriptScript {
+        script ?? (language == WhisperLanguage.zh.rawValue ? .simplified : (isChineseSpeech ? .traditional : .original))
+    }
     /// 转写后是否执行说话人分离（sherpa-onnx CPU 推理，失败不影响转写）
     var enableSpeakerDiarization: Bool
     /// 说话人分离模型文件夹路径（内含 segmentation.onnx 与 embedding.onnx）
@@ -156,12 +166,12 @@ struct STTConfig: Sendable {
 
     /// 送入 Whisper/API 的语言代码（与设置值解耦）
     ///
-    /// `zh-Yue` 是应用内部的设置值（兼作繁简转换方向标识），
+    /// `zh-Yue` 是应用内部的历史设置值，
     /// 但 Whisper tokenizer 与 OpenAI API 均不认识该代码：
     /// - 云端 API 会返回 400 导致转写失败
     /// - 本地 WhisperKit 找不到 `<|zh-Yue|>` token，静默回退英语
     /// 因此在送入转写引擎前统一映射为 Whisper 支持的粤语代码 `yue`；
-    /// 繁简归一化仍使用原始设置值，不受此映射影响。
+    /// 文字的繁简另由 effectiveScript 决定。
     static func whisperLanguageCode(_ language: String) -> String {
         language == WhisperLanguage.zhYue.rawValue ? "yue" : language
     }
@@ -170,13 +180,13 @@ struct STTConfig: Sendable {
     ///
     /// 系统语音识别没有「自动语种检测」，必须显式给出 locale：
     /// - 空串（普通模式与 Whisper 的「自动检测」共用该值）→ 返回 nil，由调用方使用系统语言
-    /// - 粤语：系统无 `yue` 模型，退化为简体中文识别；原始设置值仍用于繁简归一化，不受影响
+    /// - 粤语使用粤语 locale，由系统报告该语言资产是否可用
     /// - 其余语言直接使用自身代码，由 `SpeechTranscriber.supportedLocale(equivalentTo:)` 匹配
     static func systemLocaleIdentifier(forLanguage language: String) -> String? {
         guard !language.isEmpty else { return nil }
         switch language {
-        case WhisperLanguage.zh.rawValue, WhisperLanguage.zhYue.rawValue, "yue":
-            return "zh_CN"
+        case WhisperLanguage.zh.rawValue: return "zh_CN"
+        case WhisperLanguage.zhYue.rawValue, "yue": return "yue-HK"
         default:
             return language
         }
@@ -188,6 +198,7 @@ struct STTConfig: Sendable {
         apiKey: String = "",
         baseURL: String = "https://api.openai.com/v1",
         language: String = "",
+        script: TranscriptScript? = nil,
         enableSpeakerDiarization: Bool = true,
         diarizationModelPath: String = DiarizationModelFolder.defaultPath,
         enableVoiceprintRecognition: Bool = true,
@@ -198,6 +209,7 @@ struct STTConfig: Sendable {
         self.apiKey = apiKey
         self.baseURL = baseURL
         self.language = language
+        self.script = script
         self.enableSpeakerDiarization = enableSpeakerDiarization
         self.diarizationModelPath = diarizationModelPath
         self.enableVoiceprintRecognition = enableVoiceprintRecognition

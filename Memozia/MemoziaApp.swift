@@ -17,14 +17,21 @@ enum AppRuntime {
             || NSClassFromString("XCTestCase") != nil
     }
 
-    /// XCUITest 驱动的进程：由测试以 `--ui-testing` 启动参数标记。
-    ///
-    /// 与 `isRunningTests` 的区别：被 UI 测试驱动的进程仍是**正常**进程（渲染真实界面、
-    /// 走正常启动流程），只是必须跳过单实例守卫——否则用户机器上已有一个实例在运行时，
-    /// 被测进程会在 UI 出现前 exit(0)，UI 测试永远拿不到窗口。
     static var isUITesting: Bool {
         ProcessInfo.processInfo.arguments.contains("--ui-testing")
     }
+
+    /// 用真实视图和内存库验证首启界面，避开数据库接管、磁盘扫描与热键注册。
+    static var isIsolatedInterfaceTest: Bool {
+        #if DEBUG
+        isUITesting && ProcessInfo.processInfo.arguments.contains("--first-use-ui-test")
+        #else
+        false
+        #endif
+    }
+
+    @MainActor static let interfaceTestContainer = StartupModelContainerFactory.makeTransient()
+
 }
 
 /// 单实例守卫：进程启动最早期的重复实例检查
@@ -159,7 +166,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// 只做主线程检查后直接进入 MainActor 上下文
     nonisolated func applicationDidFinishLaunching(_ notification: Notification) {
         MainActor.assumeOnMainThread {
-            guard !AppRuntime.isRunningTests else { return }
+            guard !AppRuntime.isRunningTests, !AppRuntime.isIsolatedInterfaceTest else { return }
             MenuBarController.shared.start()
             // 截图全局热键（Carbon RegisterEventHotKey）：应用未激活时也可触发截图
             GlobalHotkeyManager.shared.start()
@@ -225,6 +232,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// 收尾完成后由 completeTerminationFlow 直接结束进程（跳过 `exit()` 的静态析构）
     nonisolated func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         MainActor.assumeOnMainThread {
+            if AppRuntime.isIsolatedInterfaceTest { return .terminateNow }
             guard !terminationInProgress else { return .terminateLater }
             terminationInProgress = true
             if AppUpdateService.shared.installationRequested {
@@ -368,6 +376,7 @@ struct MemoziaApp: App {
     #if os(macOS)
     /// 界面语言选择（与菜单栏状态图标菜单共用偏好键）：
     /// 空 = 跟随系统；变更后由 MenuBarController 写入 AppleLanguages 并弹重启询问
+    @Environment(\.openWindow) private var openWindow
     @AppStorage(MenuBarController.appLanguageDefaultsKey) private var interfaceLanguage = ""
     @AppStorage(AppExperiencePreference.defaultsKey)
     private var experienceRawValue = AppExperiencePreference.resolved().rawValue
@@ -390,15 +399,23 @@ struct MemoziaApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if AppRuntime.isRunningTests {
-                // XCTest 只需要一个存活的 host。不构造启动/主界面，避免测试期间
-                // 触发真实握手、真实数据库、磁盘对账、Keychain 迁移或快捷键注册。
-                Color.clear.frame(width: 1, height: 1)
-            } else {
-                StartupRootView(coordinator: startup)
+            Group {
+                if AppRuntime.isIsolatedInterfaceTest {
+                    RootView()
+                        .frame(minWidth: 700, idealWidth: 1100, minHeight: 500, idealHeight: 700)
+                        .modelContainer(AppRuntime.interfaceTestContainer)
+                } else if AppRuntime.isRunningTests {
+                    // XCTest 只需要一个存活的 host。不构造启动/主界面，避免测试期间
+                    // 触发真实握手、真实数据库、磁盘对账、Keychain 迁移或快捷键注册。
+                    Color.clear.frame(width: 1, height: 1)
+                } else {
+                    StartupRootView(coordinator: startup)
+                }
             }
+            .environment(\.layoutDirection, .interfaceLanguageDirection)
         }
         #if os(macOS)
+        .defaultLaunchBehavior(.presented)
         .commands {
             // 主链路入口的窗口内快捷键：此前主链路（导入 / 新建笔记）只能点工具栏，
             // 而 ⌘R/⌘H 只在菜单栏展开时可用。这里补上最常用的两个（⌘N / ⌘O），
@@ -488,9 +505,23 @@ struct MemoziaApp: App {
                 Button(AppCommandCatalog.descriptor(for: .openHelp).localizedTitle) {
                     NotificationCenter.default.post(name: .openHelp, object: nil)
                 }
+                .accessibilityIdentifier("openHelp")
                 .commandShortcut(AppCommandCatalog.descriptor(for: .openHelp).shortcut)
+                Button(AppCommandCatalog.descriptor(for: .openGettingStarted).localizedTitle) {
+                    openWindow(id: OnboardingView.windowID)
+                }
+                .accessibilityIdentifier("openGettingStarted")
             }
         }
+        #endif
+        #if os(macOS)
+        Window("首次使用指引", id: OnboardingView.windowID) {
+            OnboardingView()
+                .environment(\.layoutDirection, .interfaceLanguageDirection)
+        }
+        .defaultSize(width: 560, height: 500)
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
         #endif
     }
 }

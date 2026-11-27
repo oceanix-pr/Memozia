@@ -372,6 +372,13 @@ final class TaskCenter {
         let createdAt = Date()
         /// 守护进程是否可续跑（当前仅转写 / 总结有文件队列埋点）
         let isDurable: Bool
+
+        /// 单步重试还会续跑后面的步骤；整项重试从头执行。
+        func allowsRetry(from index: Int, in experience: AppExperience) -> Bool {
+            guard steps.indices.contains(index) else { return false }
+            return FeaturePolicy(experience: experience).allows(.videoUnderstanding) ||
+                !steps[index...].contains { $0.kind == .visualAnalysis }
+        }
     }
 
     // MARK: 属性
@@ -535,10 +542,11 @@ final class TaskCenter {
 
     /// 重试失败的单个步骤：只清该步骤的失败态并重新排队，已完成的前置步骤不重跑。
     /// 不可重试（取消）的步骤直接忽略，避免用户点了没反应的静默失效。
-    func retryStep(jobID: UUID) {
+    func retryStep(jobID: UUID, experience: AppExperience = AppExperiencePreference.resolved()) {
         guard let idx = jobs.firstIndex(where: { $0.id == jobID }),
               jobs[idx].state == .failed,
-              let stepIdx = failedStepIndex(jobID: jobID) else { return }
+              let stepIdx = failedStepIndex(jobID: jobID),
+              jobs[idx].allowsRetry(from: stepIdx, in: experience) else { return }
         guard jobs[idx].steps[stepIdx].errorCode?.isRetryable ?? true else { return }
         resetStep(at: stepIdx, inJobAt: idx)
         jobs[idx].state = .queued
@@ -547,8 +555,9 @@ final class TaskCenter {
     }
 
     /// 重新执行整个任务：所有步骤回到排队态并从头开始
-    func retryJob(jobID: UUID) {
-        guard let idx = jobs.firstIndex(where: { $0.id == jobID }), jobs[idx].state == .failed else { return }
+    func retryJob(jobID: UUID, experience: AppExperience = AppExperiencePreference.resolved()) {
+        guard let idx = jobs.firstIndex(where: { $0.id == jobID }), jobs[idx].state == .failed,
+              jobs[idx].allowsRetry(from: 0, in: experience) else { return }
         for stepIdx in jobs[idx].steps.indices {
             resetStep(at: stepIdx, inJobAt: idx)
         }

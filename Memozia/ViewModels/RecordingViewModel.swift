@@ -494,9 +494,9 @@ final class RecordingViewModel: EntryTodoEditing {
             transcriptMergeStage = String(localized: "正在合并并保存…")
 
             // 中文场景下做繁简归一化：简体→繁转简，繁体→简转繁（送入后台加工前先取好参数）
-            let targetLanguage = sttConfig.language
-            let needsChineseConversion = (targetLanguage == WhisperLanguage.zh.rawValue)
-                || (targetLanguage == WhisperLanguage.zhYue.rawValue)
+            let script = sttConfig.effectiveScript
+            let needsChineseConversion = sttConfig.isChineseSpeech && script != .original
+            let targetLanguage = script == .traditional ? WhisperLanguage.zhYue.rawValue : WhisperLanguage.zh.rawValue
             let enableDictionaryCorrection = sttConfig.enableDictionaryCorrection
 
             // 结果先在后台完整准备（贴说话人标签、繁简归一化、词典纠正、逐段加密），
@@ -939,12 +939,19 @@ final class RecordingViewModel: EntryTodoEditing {
         llmConfig: LLMConfig,
         context: ModelContext,
         asMeeting: Bool? = nil,
+        outputLanguage: String? = nil,
         experience: AppExperience? = nil,
         origin: TaskExecutionOrigin = .foreground
     ) -> Task<StepOutcome, Never> {
         guard !rejectWriteIfReadOnly(.startProcessing) else { return Task { .failed } }
         let recordingID = recording.id
         let folderName = recording.folderName
+        let language: String
+        do { language = try outputLanguage ?? EntryLanguageOptions.load(from: recording.languageOptionsURL).output }
+        catch {
+            showErrorMessage(UserFacingError.summary(for: error))
+            return Task { .failed }
+        }
         // 只取消「同一条目」的上一次总结：不同条目各自持有独立句柄，互不干扰
         cancelSummary(recordingID: recordingID)
         let executionToken = UUID()
@@ -957,6 +964,7 @@ final class RecordingViewModel: EntryTodoEditing {
             folderName: folderName,
             llmConfigID: llmConfig.id,
             isMeeting: asMeeting,
+            outputLanguage: language,
             experience: taskExperience
         )) {
             showErrorMessage($0)
@@ -979,6 +987,7 @@ final class RecordingViewModel: EntryTodoEditing {
                 llmConfig: llmConfig,
                 context: context,
                 asMeeting: asMeeting,
+                outputLanguage: language,
                 experience: taskExperience,
                 state: state
             )
@@ -1002,6 +1011,7 @@ final class RecordingViewModel: EntryTodoEditing {
         llmConfig: LLMConfig,
         context: ModelContext,
         asMeeting: Bool?,
+        outputLanguage: String,
         experience: AppExperience,
         state: SummaryStreamState
     ) async -> StepOutcome {
@@ -1039,7 +1049,7 @@ final class RecordingViewModel: EntryTodoEditing {
         }
 
         do {
-            let snapshot = try LLMConfigSnapshot(config: llmConfig)
+            let snapshot = try LLMConfigSnapshot(config: llmConfig, outputLanguage: outputLanguage)
 
             // PII 去标识化：端点策略与总开关共同决定，与模型类型无关。
             // 发送前替换为占位符，流式返回时按映射实时还原
@@ -1081,7 +1091,12 @@ final class RecordingViewModel: EntryTodoEditing {
             // 视频条目若已有「画面要点」，作为同时间轴佐证注入总结（会议→视听对照，
             // 非会议→内容大纲模板）；尚未分析画面时**不**自动抽帧上云，
             // 维持「未经确认不发送画面」的既有隐私边界，页签顺序即天然引导
-            let visualForSummary = recording.decryptedVisualSummary
+            var visualForSummary = FeaturePolicy(experience: experience).allows(.videoUnderstanding) ? recording.decryptedVisualSummary : ""
+            if didScrubPII && !visualForSummary.isEmpty {
+                let scrubbed = PIIScrubService.scrub(visualForSummary, continuing: state.scrubMapping ?? .empty)
+                visualForSummary = scrubbed.scrubbed
+                state.scrubMapping = scrubbed.mapping
+            }
 
             let result = try await LLMService.generateSummary(
                 transcript: promptTranscript,
@@ -1157,7 +1172,7 @@ final class RecordingViewModel: EntryTodoEditing {
                 recording.summaryGeneratedAt = Date()
                 saveSummaryToFolder(recording)
                 // 部分总结同样自动生成标题（与完整总结路径一致）；快照重建失败仅跳过标题更新
-                if let snapshot = try? LLMConfigSnapshot(config: llmConfig) {
+                if let snapshot = try? LLMConfigSnapshot(config: llmConfig, outputLanguage: outputLanguage) {
                     await autoAssignRecordingTitle(
                         recording,
                         from: state.displayText,
@@ -1259,7 +1274,8 @@ final class RecordingViewModel: EntryTodoEditing {
         recording: AudioRecording,
         llmConfig: LLMConfig,
         context: ModelContext,
-        autoResumeAttempt: Int = 0
+        autoResumeAttempt: Int = 0,
+        outputLanguage: String? = nil
     ) -> Task<StepOutcome, Never> {
         guard !rejectWriteIfReadOnly(.startProcessing) else { return Task { .failed } }
         visualNotesTask?.cancel()
@@ -1300,7 +1316,7 @@ final class RecordingViewModel: EntryTodoEditing {
             }
 
             do {
-                let snapshot = try LLMConfigSnapshot(config: llmConfig)
+                let snapshot = try LLMConfigSnapshot(config: llmConfig, outputLanguage: outputLanguage ?? EntryLanguageOptions.load(from: recording.languageOptionsURL).output)
                 let framesDirectoryURL = recording.framesDirectoryURL
                 let frames = try await VideoUnderstandingService.loadOrExtractFrames(
                     videoURL: videoURL,
@@ -1431,7 +1447,7 @@ final class RecordingViewModel: EntryTodoEditing {
                         recording: recording,
                         llmConfig: llmConfig,
                         context: context,
-                        autoResumeAttempt: autoResumeAttempt + 1
+                        autoResumeAttempt: autoResumeAttempt + 1, outputLanguage: outputLanguage
                     )
                 } else {
                     self.showErrorMessage(String(localized: "画面分析被意外中断，请重试（已完成的部分会保留）。"))
@@ -1585,7 +1601,7 @@ final class RecordingViewModel: EntryTodoEditing {
     /// 无总结也无待办时提示先执行其一
     /// - Returns: 任务结果强类型化：`.succeeded` 仅当生成了非空标题并已落库
     @discardableResult
-    func polishRecordingTitle(_ recording: AudioRecording, llmConfig: LLMConfig, context: ModelContext) -> Task<StepOutcome, Never> {
+    func polishRecordingTitle(_ recording: AudioRecording, llmConfig: LLMConfig, context: ModelContext, outputLanguage: String? = nil) -> Task<StepOutcome, Never> {
         let recordingID = recording.id
         // 只取消「同一条目」的上一次标题润色
         titleTasks[recordingID]?.cancel()
@@ -1602,7 +1618,7 @@ final class RecordingViewModel: EntryTodoEditing {
                 }
             }
             do {
-                let snapshot = try LLMConfigSnapshot(config: llmConfig)
+                let snapshot = try LLMConfigSnapshot(config: llmConfig, outputLanguage: outputLanguage ?? EntryLanguageOptions.load(from: recording.languageOptionsURL).output)
                 var sources: [String] = []
                 let summary = recording.decryptedSummary
                 if !summary.isEmpty { sources.append(summary) }
@@ -2662,6 +2678,9 @@ final class RecordingViewModel: EntryTodoEditing {
                 do {
                     let original = recording.folderName.isEmpty ? recording.fileURL : recording.folderURL
                     try FileManager.default.removeItem(at: original)
+                    if recording.folderName.isEmpty {
+                        try EntryLanguageOptions.removeLegacyFile(in: recording.folderURL, id: recording.id)
+                    }
                     context.delete(recording)
                     try context.save()
                 } catch {
@@ -2671,8 +2690,11 @@ final class RecordingViewModel: EntryTodoEditing {
                     break
                 }
             }
-            if newFolderName != nil, let original = snapshots.last?.audioURL {
-                do { try FileManager.default.removeItem(at: original) }
+            if newFolderName != nil, let original = snapshots.last {
+                do {
+                    try FileManager.default.removeItem(at: original.audioURL)
+                    try EntryLanguageOptions.removeLegacyFile(in: original.folderURL, id: original.id)
+                }
                 catch {
                     PersistenceReporting.reportSaveFailure(error)
                     deletionFailed = true
@@ -2725,15 +2747,16 @@ final class RecordingViewModel: EntryTodoEditing {
                     }
                 }
             } else {
-                // 旧数据（无文件夹），仅删除单个音频文件
+                // 根目录由旧条目共用，仅删除此录音及其语言偏好。
                 let fileURL = recording.fileURL
-                if FileManager.default.fileExists(atPath: fileURL.path) {
-                    do {
+                do {
+                    if FileManager.default.fileExists(atPath: fileURL.path) {
                         try FileManager.default.removeItem(at: fileURL)
-                    } catch {
-                        showErrorMessage(String(localized: "录音文件删除失败：\(UserFacingError.summary(for: error))。数据库记录已保留以防止数据复活，请手动删除文件后重试。"))
-                        return
                     }
+                    try EntryLanguageOptions.removeLegacyFile(in: recording.folderURL, id: recording.id)
+                } catch {
+                    showErrorMessage(String(localized: "录音文件删除失败：\(UserFacingError.summary(for: error))。数据库记录已保留以防止数据复活，请手动删除文件后重试。"))
+                    return
                 }
             }
         }
@@ -2755,7 +2778,7 @@ final class RecordingViewModel: EntryTodoEditing {
     /// AI 拆解总结为待办事项
     /// - Returns: 任务结果强类型化：`.succeeded` 仅当本次确实拆出待办并已落盘
     @discardableResult
-    func extractTodos(from recording: AudioRecording, llmConfig: LLMConfig) -> Task<StepOutcome, Never> {
+    func extractTodos(from recording: AudioRecording, llmConfig: LLMConfig, outputLanguage: String? = nil) -> Task<StepOutcome, Never> {
         let recordingID = recording.id
         // 只取消「同一条目」的上一次拆解
         todoExtractionTasks[recordingID]?.cancel()
@@ -2787,7 +2810,7 @@ final class RecordingViewModel: EntryTodoEditing {
 
             do {
                 let previous = try TodoDocument.read(from: recording.folderURL)
-                let snapshot = try LLMConfigSnapshot(config: llmConfig)
+                let snapshot = try LLMConfigSnapshot(config: llmConfig, outputLanguage: outputLanguage ?? EntryLanguageOptions.load(from: recording.languageOptionsURL).output)
                 // 端点信任与模型类型解耦；待办文档返回后逐字段还原。
                 let savedPIIValue = UserDefaults.standard.object(forKey: "enable_pii_scrub") as? Bool ?? true
                 let piiEnabled = EffectiveSettingsResolver.piiScrubEnabled(

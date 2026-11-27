@@ -202,8 +202,9 @@ struct ProcessingReliabilityTests {
             let context = ModelContext(container)
             previousVM = vm
             previousContext = context
-            let factory = EntryProcessingSteps(context: context, container: container, recordings: vm, notes: nil, persistence: .readWrite)
-            let step = factory.processing(.recording(UUID()), .summary(asMeeting: nil), configID: BuiltInQwenModel.id)
+            let factory = EntryProcessingSteps(context: context, container: container, recordings: vm, notes: nil,
+                                               experience: .standard, persistence: .readWrite, languages: .success(EntryLanguageOptions()))
+            let step = factory.processing(.recording(UUID()), .summary(asMeeting: nil), approved: .builtInQwen)
             _ = center.enqueue(TaskCenter.Job(folderName: "absent", title: "", steps: [step], isDurable: true))
         }
         for _ in 0..<300 where center.failedJobs.isEmpty { try await Task.sleep(for: .milliseconds(2)) }

@@ -81,6 +81,7 @@ struct STTConfigSnapshot: Codable, Sendable {
     var modelPath: String
     var baseURL: String
     var language: String
+    var script: TranscriptScript?
     var enableSpeakerDiarization: Bool
     var diarizationModelPath: String
     var enableVoiceprintRecognition: Bool
@@ -91,6 +92,7 @@ struct STTConfigSnapshot: Codable, Sendable {
         self.modelPath = config.modelPath
         self.baseURL = config.baseURL
         self.language = config.language
+        self.script = config.script
         self.enableSpeakerDiarization = config.enableSpeakerDiarization
         self.diarizationModelPath = config.diarizationModelPath
         self.enableVoiceprintRecognition = config.enableVoiceprintRecognition
@@ -111,6 +113,7 @@ struct STTConfigSnapshot: Codable, Sendable {
             apiKey: key,
             baseURL: baseURL,
             language: language,
+            script: script,
             enableSpeakerDiarization: enableSpeakerDiarization,
             diarizationModelPath: diarizationModelPath,
             enableVoiceprintRecognition: enableVoiceprintRecognition,
@@ -163,6 +166,7 @@ struct BackgroundTaskEntry: Codable, Sendable, Identifiable {
     /// 总结模板选择（true=会议总结，false=概要总结）：用户点按钮时随任务入队，
     /// 守护进程续跑不重新判定；旧队列条目缺字段解码为 nil → 条目持久化判定/文本分类兑底
     var isMeeting: Bool?
+    var outputLanguage: String?
     /// 发起任务时的体验模式。保存为可选以兼容旧队列；守护进程用它保持
     /// 自动总结与 PII 保护语义，不受入队后模式切换影响。
     var experience: AppExperience?
@@ -180,6 +184,7 @@ struct BackgroundTaskEntry: Codable, Sendable, Identifiable {
         llmConfigID: UUID? = nil,
         sttSnapshot: STTConfigSnapshot? = nil,
         isMeeting: Bool? = nil,
+        outputLanguage: String? = nil,
         experience: AppExperience? = nil
     ) {
         self.id = UUID()
@@ -188,6 +193,7 @@ struct BackgroundTaskEntry: Codable, Sendable, Identifiable {
         self.llmConfigID = llmConfigID
         self.sttSnapshot = sttSnapshot
         self.isMeeting = isMeeting
+        self.outputLanguage = outputLanguage
         self.experience = experience
         self.enqueuedAt = Date()
     }

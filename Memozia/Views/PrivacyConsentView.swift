@@ -53,7 +53,8 @@ struct PrivacyConsentView: View {
             Text("不同意将退出 Memozia，且未同意前无法使用录音、转写与总结功能。")
         }
         #if os(macOS)
-        .frame(width: 600, height: 640)
+        .frame(minWidth: 420, idealWidth: 600, minHeight: 480, idealHeight: 640)
+        .environment(\.layoutDirection, .interfaceLanguageDirection)
         #endif
     }
 
@@ -74,12 +75,14 @@ struct PrivacyConsentView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
+            InterfaceLanguagePicker().fixedSize()
+
             // 版本号是合规可核对项：用户需要知道当前同意的是哪一版
             Text(MemoziaPrivacyPolicy.versionLine)
                 .font(.caption)
                 .foregroundStyle(.tertiary)
 
-            // 协议正文当前只有简体中文，明确语言优先顺序，避免用户误以为是本地化缺失
+            // 正文已按当前语言解析；此处说明权威版本。
             Text("本政策以简体中文版本为准。")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
@@ -156,6 +159,7 @@ struct PrivacyConsentView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            .accessibilityIdentifier("acceptPrivacy")
             .disabled(!hasScrolledToBottom)
 
             if !hasScrolledToBottom {
@@ -175,8 +179,7 @@ struct PrivacyConsentView: View {
         .padding(24)
     }
 
-    /// 政策正文以简体中文为权威版本，因此按 verbatim 渲染：只本地化标题而正文仍是中文
-    /// 会造成语言混排。若将来补齐正文译文，再改回 `LocalizedStringKey`。
+    /// sections 已完成本地化，避免将译文再次当作键。
     private func privacySection(title: String, content: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(verbatim: title)

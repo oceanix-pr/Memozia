@@ -119,12 +119,13 @@ final class BuiltInModelAccess: NSObject, NSWindowDelegate {
         progress = 0
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 460, height: 300),
-            styleMask: [.titled, .closable], backing: .buffered, defer: false
+            styleMask: [.titled, .closable, .resizable], backing: .buffered, defer: false
         )
         window.title = String(localized: "下载内置模型")
         window.isReleasedWhenClosed = false
         window.delegate = self
-        window.contentViewController = NSHostingController(rootView: BuiltInModelDownloadView(access: self))
+        window.contentViewController = NSHostingController(rootView: BuiltInModelDownloadView(access: self)
+            .environment(\.layoutDirection, .interfaceLanguageDirection))
         window.center()
         self.window = window
         NSApp.activate(ignoringOtherApps: true)
@@ -201,6 +202,13 @@ private struct BuiltInModelDownloadView: View {
                 .font(.title3.bold())
             Text("下载约 1.8 GB，完成后将自动继续当前操作。文字总结和图片理解均在本机完成，无需 API Key。")
                 .fixedSize(horizontal: false, vertical: true)
+            if !access.isDownloading {
+                Button("连接云服务") {
+                    access.cancel()
+                    MenuBarController.shared.showMainWindow()
+                    NotificationCenter.default.post(name: .menuBarOpenSettings, object: SettingsView.SettingsSection.llm)
+                }
+            }
             Picker("下载源", selection: $access.source) {
                 ForEach(WhisperModelSource.allCases) { source in
                     Text(source.displayName).tag(source)
@@ -232,7 +240,7 @@ private struct BuiltInModelDownloadView: View {
             }
         }
         .padding(24)
-        .frame(width: 460)
+        .frame(minWidth: 420, idealWidth: 460)
     }
 }
 

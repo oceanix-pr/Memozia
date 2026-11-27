@@ -38,12 +38,12 @@ body = dialogLayers                      // 彈窗/確認/匯出/分享
   .modifier(LifecycleTasksModifier)      // 啟動任務鏈（序列）
 ```
 
-內部分三層：`observerLayers`（NavigationSplitView + onReceive 通知監聽 + onAppear 首屏）→ `sheetAndAlertLayers`（Privacy/Onboarding/Settings/Help 彈窗 + 錯誤 alert）→ 對話方塊層。
+內部分三層：`observerLayers`（NavigationSplitView + onReceive 通知監聽 + onAppear 首屏）→ `sheetAndAlertLayers`（Privacy/ReleaseHighlights/Settings/Help 彈窗 + 錯誤 alert）→ 對話方塊層。
 
 ### 2.2 關鍵機制
 
 - **通知監聽**：選單欄錄音控制、錄音全域性熱鍵、截圖熱鍵/選單、截圖儲存入庫、截圖許可權/錯誤彈窗、設定/幫助/剪貼簿筆記（完整表見 [02-整體架構](02-Architecture.md) §6）
-- **首屏門控**：`MemoziaPrivacyPolicy.needsConsent(...)`（同意布林量 + 政策主版本號）→ PrivacyConsentView；`hasCompletedOnboarding` → OnboardingView；**大版本升級**（`onboardingCompletedVersion != currentAppVersion`）重新展示引導介紹新功能
+- **首屏門控**：同意隱私政策後，可在空列表開始錄音、匯入檔案、新增筆記或開啟首次使用指引。普通模式首次錄音時選擇線上或面對面會議。
 - **側邊欄**：`RecordingListView` + 工具欄（**匯入音訊/影片**、新建快捷筆記、截圖〔僅專業模式〕、刪除、重新命名、同步磁碟資料、開始/停止會議錄音）+ macOS 檔案拖拽匯入（`AudioImportValidator` 校驗）
 - **詳情分流**：按選中項型別分流 `RecordingDetailView` / `QuickNoteDetailView`，注入轉寫/取消/LLM 配置/提醒列表等依賴
 - **處理佇列接入**：詳情列右上角工具欄常駐 `QueueToolbarButton`（圖示隨狀態變化：有失敗任務顯示警示圖示，否則按是否有活動任務區分；點選彈出 `QueuePanelView`）。RootView 的私有 extension 只做排程——把「轉寫 / 總結 / 潤色標題 / 畫面分析 / 拆解待辦 / 一鍵處理」構造成 `TaskCenter` 的 Job/Step 投遞，每個 Step 呼叫既有 ViewModel 方法並更新模型上的 `ProcessingStatus` 欄位，並按上下文上報 `TaskErrorCode`（見 [02-整體架構](02-Architecture.md) §3.4）
@@ -149,8 +149,8 @@ sidebar（分組列表，頂部帶「設定與命令」搜尋框）+ detail（�
 
 ## 11. HelpView / OnboardingView / PrivacyConsentView
 
-- **HelpView**：內建幫助，覆蓋會議錄音（含「錄音開始時靜音麥克風」預設與採集完整性報告）、匯入、快捷筆記、轉為語音、轉寫、聲紋識別、總結、AI 待辦、智慧截圖、選單欄/後臺錄音、錄音管理、資料隱私、快捷鍵；「快捷鍵」小節不硬編碼，由 `AppCommandCatalog.shortcutReferenceIDs` 生成（名稱與當前快捷鍵同上）
-- **OnboardingView**：功能特性引導頁（大版本升級重新展示）。普通模式使用精簡主鏈路頁面，Pro 保留完整功能介紹（「快捷筆記」頁含轉語音說明）。引導頁**不再引導下載模型**：轉寫與說話人區分的模型準備都發生在實際使用時（系統語音識別按語言資產按需安裝，說話人分離模型由 `SpeakerDiarizationService.ensureModelsReady` 首次使用時自動下載，失敗則提示並降級為不做分離）。
+- **HelpView**：可搜尋已本地化的標題及內文。說明及快速鍵依目前模式顯示，常見問題提供目前會議類型、模型狀態和設定入口。
+- **OnboardingView**：從 macOS「輔助說明」選單開啟首次使用指引的獨立視窗，可按目前模式重新閱讀。主版或次版升級且有對應更新摘要時只顯示摘要。
 - **PrivacyConsentView**：首啟隱私同意（資料收集、許可權用途、傳輸、本地儲存、螢幕共享說明、使用者權利、第三方服務約束；`interactiveDismissDisabled` 強制選擇）
 
 ## 12. iOS 分享擴充套件（已下線）

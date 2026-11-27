@@ -331,6 +331,10 @@ extension AudioRecording {
         Self.resolveFolderURL(forFolderName: folderName)
     }
 
+    var languageOptionsURL: URL {
+        EntryLanguageOptions.file(in: folderURL, legacyID: folderName.isEmpty ? id : nil)
+    }
+
     /// 获取本地文件 URL
     var fileURL: URL {
         folderURL.appendingPathComponent(storedFileName)

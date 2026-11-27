@@ -35,7 +35,7 @@ Do not edit the generated `.xcodeproj` manually. Configure an available signing 
 
 ## 3. Models and first run
 
-- Consent precedes experience-specific onboarding. Onboarding no longer includes a model download page; prepare models on first use or manage them in Pro settings. Request microphone, system audio, speech, screen recording, Accessibility, and Reminders permissions as required by the chosen feature.
+- After consent the main window offers recording, import and notes. The Help menu opens Getting Started on demand. Models and system permissions are requested when the user chooses a feature that needs them.
 - On macOS 26+, `SystemTranscription`/`SystemTranscriptionService` use SpeechAnalyzer with system-managed language assets, independent of Whisper folders. `STTMode.defaultMode` and experience resolution select according to system capability; older systems retain WhisperKit.
 - Local Whisper uses a selected folder, defaulted by `WhisperModelFolder.defaultPath`; CoreML/tokenizer files must be complete. Loading resolves nested model folders.
 - Model downloads use `WhisperModelOption.catalog` and the chosen Hugging Face/HF-Mirror source (mirror default). Pass the endpoint explicitly to `WhisperKit.download`, then move `<folder>/models/<repo>/<tier>` to `<folder>/<tier>` and load it. `TaskCenter.whisperDownloadJob` supports genuine pause/resume by preserving downloaded pieces and `.cache` metadata on cancellation.

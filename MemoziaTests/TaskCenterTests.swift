@@ -366,6 +366,27 @@ struct TaskCenterTests {
         #expect(TaskErrorCode.inputFileMissing.recovery == .revealInFinder)
     }
 
+    @Test("从专业切到普通模式后，重试只可继续无需画面的剩余步骤")
+    func retryHonorsTheCurrentMode() async throws {
+        let center = TaskCenter()
+        let attempts = Counter()
+        let job = makeJob(folder: "retry-video", steps: [
+            step(.transcription) { .succeeded },
+            step(.visualAnalysis) { attempts.increment(); return .failed },
+            step(.summary) { .succeeded }
+        ])
+        let id = center.enqueue(job)
+        try await waitUntil { self.state(of: center, id: id) == .failed }
+        center.retryStep(jobID: id, experience: .standard)
+        center.retryJob(jobID: id, experience: .standard)
+        #expect(state(of: center, id: id) == .failed)
+        #expect(attempts.count == 1)
+        #expect(job.allowsRetry(from: 2, in: .standard))
+        #expect(!job.allowsRetry(from: 0, in: .standard))
+        center.retryStep(jobID: id, experience: .pro)
+        try await waitUntil { attempts.count == 2 }
+    }
+
     @Test("重试此步骤：只重排失败步骤，已完成的步骤不重跑")
     func retryStepKeepsCompletedStepsDone() async throws {
         let center = TaskCenter()

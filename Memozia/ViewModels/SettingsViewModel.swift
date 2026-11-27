@@ -19,6 +19,8 @@ final class SettingsViewModel {
     var whisperBaseURL: String = "https://api.openai.com/v1"
     var whisperLanguage: String = WhisperLanguage.zh.rawValue  // 默认简体中文
 
+    var whisperScript: TranscriptScript?
+
     // 说话人分离（sherpa-onnx CPU 推理）
     /// 转写后是否自动区分不同说话人
     var enableSpeakerDiarization: Bool = true
@@ -47,7 +49,16 @@ final class SettingsViewModel {
     var autoMuteDetection: Bool = true
     var appMuteDetection: Bool = false
     /// 普通模式只暴露会议场景，不让用户直接处理采集源组合。
-    var standardRecordingMode: StandardRecordingMode = .onlineMeeting
+    private(set) var standardRecordingMode: StandardRecordingMode = .onlineMeeting
+    private var savedMeetingType: StandardRecordingMode? {
+        defaults.string(forKey: Keys.standardRecordingMode).flatMap(StandardRecordingMode.init(rawValue:))
+    }
+    var hasChosenMeetingType: Bool { savedMeetingType != nil }
+
+    func chooseStandardMeetingType(_ mode: StandardRecordingMode) {
+        standardRecordingMode = mode
+        defaults.set(mode.rawValue, forKey: Keys.standardRecordingMode)
+    }
     /// 与 Pro 转写路径分开，保证普通模式下载模型不覆盖专业配置。
     var standardWhisperModelPath: String = WhisperModelFolder.defaultPath
 
@@ -103,6 +114,7 @@ final class SettingsViewModel {
         static let recordingSource = "recording_source"
         static let autoMuteDetection = "auto_mute_detection"
         static let appMuteDetection = "app_mute_detection"
+        static let whisperScript = "whisper_chinese_script"
         static let standardRecordingMode = AppExperiencePreference.standardRecordingModeKey
         static let standardWhisperModelPath = AppExperiencePreference.standardWhisperModelPathKey
         static let showHiddenRecordings = "show_hidden_recordings"
@@ -117,11 +129,12 @@ final class SettingsViewModel {
     }
 
     // UserDefaults
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
 
     // MARK: - 初始化
 
-    init() {
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         loadSettings()
     }
 
@@ -141,6 +154,7 @@ final class SettingsViewModel {
             self.whisperModelSource = whisperModelSource
         }
         self.whisperBaseURL = defaults.string(forKey: Keys.whisperBaseURL) ?? "https://api.openai.com/v1"
+        whisperScript = defaults.string(forKey: Keys.whisperScript).flatMap(TranscriptScript.init(rawValue:))
         self.whisperLanguage = defaults.string(forKey: Keys.whisperLanguage) ?? WhisperLanguage.zh.rawValue
 
         // 说话人分离（开关默认开启；未下载模型时自动跳过不影响转写）
@@ -162,7 +176,9 @@ final class SettingsViewModel {
         self.enablePIIScrub = defaults.object(forKey: Keys.enablePIIScrub) as? Bool ?? true
 
         // API Key 从 Keychain 读取
-        self.whisperAPIKey = (try? keychain.get(KeychainKeys.whisperAPIKey)) ?? ""
+        if !AppRuntime.isIsolatedInterfaceTest {
+            self.whisperAPIKey = (try? keychain.get(KeychainKeys.whisperAPIKey)) ?? ""
+        }
 
         // Active LLM Config ID
         if let idStr = defaults.string(forKey: Keys.activeLLMConfigID),
@@ -177,10 +193,8 @@ final class SettingsViewModel {
         }
         self.autoMuteDetection = defaults.object(forKey: Keys.autoMuteDetection) as? Bool ?? true
         self.appMuteDetection = defaults.bool(forKey: Keys.appMuteDetection)
-        if let raw = defaults.string(forKey: Keys.standardRecordingMode),
-           let mode = StandardRecordingMode(rawValue: raw) {
-            self.standardRecordingMode = mode
-        }
+        // 兼容旧版本保存的场景。新安装只在用户选定场景后写入该偏好。
+        standardRecordingMode = savedMeetingType ?? .onlineMeeting
         if let path = defaults.string(forKey: Keys.standardWhisperModelPath), !path.isEmpty {
             self.standardWhisperModelPath = path
         }
@@ -195,6 +209,7 @@ final class SettingsViewModel {
     // MARK: - 保存设置
 
     func saveSettings() {
+        guard !AppRuntime.isIsolatedInterfaceTest else { return }
         defaults.set(sttMode.rawValue, forKey: Keys.sttMode)
         defaults.set(whisperModelPath, forKey: Keys.whisperModelPath)
         defaults.set(whisperModelSource.rawValue, forKey: Keys.whisperModelSource)
@@ -202,6 +217,7 @@ final class SettingsViewModel {
         whisperModelSource.applyAsHubEnvironment()
         defaults.set(whisperBaseURL, forKey: Keys.whisperBaseURL)
         defaults.set(whisperLanguage, forKey: Keys.whisperLanguage)
+        defaults.set(whisperScript?.rawValue, forKey: Keys.whisperScript)
 
         // 说话人分离
         defaults.set(enableSpeakerDiarization, forKey: Keys.enableSpeakerDiarization)
@@ -235,7 +251,6 @@ final class SettingsViewModel {
         defaults.set(recordingSource.rawValue, forKey: Keys.recordingSource)
         defaults.set(autoMuteDetection, forKey: Keys.autoMuteDetection)
         defaults.set(appMuteDetection, forKey: Keys.appMuteDetection)
-        defaults.set(standardRecordingMode.rawValue, forKey: Keys.standardRecordingMode)
         defaults.set(standardWhisperModelPath, forKey: Keys.standardWhisperModelPath)
 
         // 隐藏录音开关
@@ -287,6 +302,7 @@ final class SettingsViewModel {
             apiKey: whisperAPIKey,
             baseURL: whisperBaseURL,
             language: whisperLanguage,
+            script: whisperScript,
             enableSpeakerDiarization: enableSpeakerDiarization,
             diarizationModelPath: diarizationModelPath,
             enableVoiceprintRecognition: enableVoiceprintRecognition,

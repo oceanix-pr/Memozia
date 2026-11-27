@@ -72,6 +72,16 @@ struct LLMTitleGenerationTests {
         #expect(title == "项目进度")
     }
 
+    @Test func englishTitleKeepsCompleteWords() async throws {
+        let fixture = TodoHTTPFixture { _ in
+            .json(Self.response(content: "Quarterly product planning"))
+        }
+        defer { fixture.close() }
+        let title = try await LLMService.generateTitle(from: "We discussed the product roadmap.",
+            config: config(host: fixture.host, isLocal: false), session: fixture.session)
+        #expect(title == "Quarterly product planning")
+    }
+
     @Test func cloudTitleKeepsExistingRequestAndSkipsProbe() async throws {
         let fixture = TodoHTTPFixture { request in
             #expect(request.httpMethod == "POST")

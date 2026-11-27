@@ -57,6 +57,8 @@ struct QuickNoteDetailView: View {
         VStack(spacing: 0) {
             // 标题栏
             headerBar
+            EntryLanguagePicker(fileURL: quickNote.languageOptionsURL, readOnly: isReadOnly)
+                .id(quickNote.id)
 
             if !quickNote.isImageNote && supportsNoteSpeech {
                 HStack {

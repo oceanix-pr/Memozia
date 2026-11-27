@@ -227,6 +227,12 @@ struct RecordingDetailView: View {
                 Divider()
             }
 
+            if selectedTab != .visual {
+                EntryLanguagePicker(fileURL: recording.languageOptionsURL,
+                                    transcription: selectedTab == .transcript ? settingsVM.makeSTTConfig(experience: experience) : nil,
+                                    readOnly: isReadOnly)
+                    .id(recording.id)
+            }
             tabContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -247,6 +253,9 @@ struct RecordingDetailView: View {
         }
         .onChange(of: selectedTab) { _, tab in
             handleTabChange(tab)
+        }
+        .onChange(of: settingsVM.activeLLMConfigID) {
+            selectedLLMConfig = settingsVM.getActiveLLMConfig(from: llmConfigs)
         }
         .onChange(of: selectedLLMConfig) { _, config in
             // 详情页选中的模型写回全局「活动大模型配置」并持久化（与笔记详情页同一语义）：
@@ -588,7 +597,7 @@ struct RecordingDetailView: View {
                             }
                             .buttonStyle(.borderedProminent)
                             .controlSize(.regular)
-                            .help("一键处理：转写 → 画面分析 → 总结 → 拆解待办")
+                            .help(experience == .pro ? "一键处理：转写 → 画面分析 → 总结 → 拆解待办" : "转写、总结、待办一次跑完")
                             .disabled(isReadOnly)
                             // 实测按钮宽度，回传给标题行做对齐留白（见 oneClickButtonReserve）
                             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { oneClickButtonWidth = $0 }

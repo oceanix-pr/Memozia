@@ -478,12 +478,12 @@ struct StabilityRegressionTests {
     }
 
     /// 系统语音识别没有自动语种检测：空值表示跟随系统语言；
-    /// 中文与粤语统一落到简体中文（系统无粤语模型），其余语言沿用自身代码
+    /// 普通话与粤语分别请求对应 locale，书写字形单独决定
     @Test func systemLocaleMappingFromLanguageSetting() {
         #expect(STTConfig.systemLocaleIdentifier(forLanguage: "") == nil)
         #expect(STTConfig.systemLocaleIdentifier(forLanguage: WhisperLanguage.zh.rawValue) == "zh_CN")
-        #expect(STTConfig.systemLocaleIdentifier(forLanguage: WhisperLanguage.zhYue.rawValue) == "zh_CN")
-        #expect(STTConfig.systemLocaleIdentifier(forLanguage: "yue") == "zh_CN")
+        #expect(STTConfig.systemLocaleIdentifier(forLanguage: WhisperLanguage.zhYue.rawValue) == "yue-HK")
+        #expect(STTConfig.systemLocaleIdentifier(forLanguage: "yue") == "yue-HK")
         #expect(STTConfig.systemLocaleIdentifier(forLanguage: WhisperLanguage.en.rawValue) == "en")
         #expect(STTConfig.systemLocaleIdentifier(forLanguage: WhisperLanguage.ja.rawValue) == "ja")
     }

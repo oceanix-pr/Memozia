@@ -129,8 +129,7 @@ final class SystemTranscriptionService: @unchecked Sendable {
 
     // MARK: - 语言与模型资产
 
-    /// 解析实际使用的 locale：显式语言优先 → 系统语言 → en-US；
-    /// 三者都不被支持时抛出错误（而不是静默换成别的语言）
+    /// 显式语言缺少匹配时报告错误；仅未指定语言时使用系统语言。
     static func resolvedLocale(for language: String) async throws -> Locale {
         let requested = STTConfig.systemLocaleIdentifier(forLanguage: language)
             .map { Locale(identifier: $0) }
@@ -140,17 +139,12 @@ final class SystemTranscriptionService: @unchecked Sendable {
             return matched
         }
         if let requested {
-            Self.logger.warning("系统语音识别不支持语言 \(requested.identifier)，改用系统语言")
+            throw SystemTranscriptionError.localeUnsupported(requested.identifier)
         }
         if let systemMatched = await SpeechTranscriber.supportedLocale(equivalentTo: .current) {
             return systemMatched
         }
-        if let fallback = await SpeechTranscriber.supportedLocale(equivalentTo: Locale(identifier: "en_US")) {
-            return fallback
-        }
-        throw SystemTranscriptionError.localeUnsupported(
-            requested?.identifier ?? Locale.current.identifier
-        )
+        throw SystemTranscriptionError.localeUnsupported(Locale.current.identifier)
     }
 
     /// 按语言确保系统模型已安装；已安装时为幂等空操作

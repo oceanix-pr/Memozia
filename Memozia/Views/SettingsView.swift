@@ -61,7 +61,7 @@ struct SettingsView: View {
     /// 离线参考回声消除：默认开启，仅专业模式的录音页暴露
     @AppStorage(EchoReductionPreference.defaultsKey) private var echoReductionEnabled: Bool = true
 
-    @State private var selectedSection: SettingsSection? = .stt
+    @Binding var selectedSection: SettingsSection?
     /// 设置搜索词：同时匹配设置页名称与应用命令（名称 / 当前快捷键）
     @State private var commandSearchText = ""
     /// detail 列导航路径：页内 NavigationLink（如“管理声纹库”“管理词典”）推入的层级；
@@ -161,6 +161,11 @@ struct SettingsView: View {
             NSLocalizedString(rawValue, comment: "")
         }
 
+        func name(for experience: AppExperience) -> String {
+            if self == .llm && experience == .standard { return String(localized: "智能服务") }
+            return localizedName
+        }
+
         var icon: String {
             switch self {
             case .stt:       return "waveform"
@@ -189,6 +194,7 @@ struct SettingsView: View {
     var body: some View {
         #if os(macOS)
         macOSLayout
+            .environment(\.layoutDirection, .interfaceLanguageDirection)
         #else
         /* iOS 专属分支（工程已改为仅 macOS，注释保留以备不时之需）
         iOSLayout
@@ -244,7 +250,7 @@ struct SettingsView: View {
                             detailContent(for: section)
                                 .navigationTitle(section.localizedName)
                         } label: {
-                            Label(section.localizedName, systemImage: section.icon)
+                            Label(section.name(for: experienceStore.current), systemImage: section.icon)
                         }
                     }
                 }
@@ -310,9 +316,10 @@ struct SettingsView: View {
             if !commandSearchText.isEmpty && !matchingCommands.isEmpty {
                 Section("命令") {
                     ForEach(matchingCommands) { command in
-                        if command.settingsDestination != nil {
+                        if let destination = visibleDestination(for: command) {
                             Button {
-                                openSettingsDestination(of: command)
+                                detailPath.removeAll()
+                                selectedSection = destination
                             } label: {
                                 commandRowLabel(command)
                             }
@@ -326,8 +333,9 @@ struct SettingsView: View {
             }
             Section {
                 ForEach(matchingSections, id: \.self) { section in
-                    Label(section.localizedName, systemImage: section.icon)
+                    Label(section.name(for: experienceStore.current), systemImage: section.icon)
                         .tag(section)
+                        .accessibilityIdentifier("settingsSection_\(String(describing: section))")
                 }
             }
         }
@@ -338,7 +346,11 @@ struct SettingsView: View {
     private var matchingSections: [SettingsView.SettingsSection] {
         let query = commandSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return visibleSections }
-        return visibleSections.filter { $0.localizedName.localizedCaseInsensitiveContains(query) }
+        return visibleSections.filter {
+            $0.name(for: experienceStore.current).localizedCaseInsensitiveContains(query) ||
+                $0.localizedName.localizedCaseInsensitiveContains(query) ||
+                ($0 == .llm && String(localized: "智能服务").localizedCaseInsensitiveContains(query))
+        }
     }
 
     /// 搜索命中的命令：按本地化名称或当前快捷键匹配；普通模式不列出仅专业模式可用的命令
@@ -370,13 +382,12 @@ struct SettingsView: View {
         }
     }
 
-    /// 跳到命令对应的设置页（目标页在当前模式下不可见时保持原位，不静默跳错页）
-    private func openSettingsDestination(of command: AppCommandDescriptor) {
+    private func visibleDestination(for command: AppCommandDescriptor) -> SettingsSection? {
+        if command.id == .captureRegion && !experienceStore.isPro { return .hotkeys }
         guard let destination = command.settingsDestination,
               let section = SettingsSection(rawValue: destination.rawValue),
-              visibleSections.contains(section) else { return }
-        detailPath.removeAll()
-        selectedSection = section
+              visibleSections.contains(section) else { return nil }
+        return section
     }
 
     // MARK: - 数据管理
@@ -758,7 +769,7 @@ struct SettingsView: View {
     private var standardRecordingSettingsView: some View {
         Form {
             Section("会议类型") {
-                Picker("会议类型", selection: $settingsVM.standardRecordingMode) {
+                Picker("会议类型", selection: Binding(get: { settingsVM.standardRecordingMode }, set: settingsVM.chooseStandardMeetingType)) {
                     ForEach(StandardRecordingMode.allCases) { mode in
                         Text(mode.displayName).tag(mode)
                     }
@@ -780,7 +791,6 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("录音")
-        .onChange(of: settingsVM.standardRecordingMode) { settingsVM.saveSettings() }
     }
 
     /// 当前生效配置对应的服务商。用于「选择服务商」列表打勾：
@@ -795,7 +805,7 @@ struct SettingsView: View {
             BuiltInModelSettingsSection(settingsVM: settingsVM, isActive: settingsVM.getActiveLLMConfig(from: llmConfigs)?.isBuiltIn == true)
             Section("智能服务") {
                 if let active = settingsVM.getActiveLLMConfig(from: llmConfigs) {
-                    LabeledContent("已连接服务", value: active.name)
+                    LabeledContent("当前服务", value: active.name)
                     Label(
                         active.isLocal ? "在本机处理" : "通过云端处理",
                         systemImage: active.isLocal ? "house.fill" : "cloud.fill"
@@ -1018,9 +1028,6 @@ struct SettingsView: View {
                     // .task 只在选中系统语音识别时挂载，进入该模式即刷新一次状态
                     systemTranscriptionStatusRow(language: settingsVM.whisperLanguage)
                         .task { refreshSystemLocaleStatus(language: settingsVM.whisperLanguage) }
-                    Text("识别语言取下方「转写语言」；选择「自动检测」时使用系统语言。系统语音识别不提供说话人标签，说话人区分仍由本地分离组件按时间轴标注。")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
             }
 
@@ -1036,12 +1043,17 @@ struct SettingsView: View {
             Section("语言设置") {
                 Picker("转写语言", selection: $settingsVM.whisperLanguage) {
                     ForEach(WhisperLanguage.allCases) { lang in
-                        Text(lang.displayName).tag(lang.rawValue)
+                        Text(lang == .auto && settingsVM.sttMode == .system ? String(localized: "跟随系统") : lang.displayName).tag(lang.rawValue)
                     }
                 }
-                Text("选择音频中的语言以提升识别精度，默认简体中文。")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                if settingsVM.whisperLanguage == WhisperLanguage.zh.rawValue || settingsVM.whisperLanguage == WhisperLanguage.zhYue.rawValue {
+                    Picker("中文字形", selection: Binding(
+                        get: { settingsVM.makeSTTConfig().effectiveScript },
+                        set: { settingsVM.whisperScript = $0 }
+                    )) {
+                        ForEach(TranscriptScript.allCases, id: \.self) { Text($0.name).tag($0) }
+                    }
+                }
             }
 
             Section("说话人分离") {
@@ -1790,79 +1802,81 @@ struct SettingsView: View {
 
     // MARK: - 关于
     private var aboutView: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            Image("Logo")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 80, height: 80)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-            Text(verbatim: "Memozia").font(.largeTitle).fontWeight(.bold)
-            if let chineseName = AppBranding.chineseName {
-                Text(verbatim: chineseName).font(.title3).foregroundStyle(.secondary)
-            }
-            Text(appVersion).font(.caption).foregroundStyle(.tertiary)
-            if AppUpdateService.shared.isStarted {
-                AppUpdateSettingsView()
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                Toggle("专业模式", isOn: Binding(
-                    get: { experienceStore.isPro },
-                    set: { experienceStore.set($0 ? .pro : .standard) }
-                ))
-                .font(.headline)
-
-                Text(experienceStore.isPro
-                     ? String(localized: "已开放模型、声纹、词典、视频理解、录屏和高级数据管理。")
-                     : String(localized: "使用自动配置和精简界面；录音、转写、总结、待办与安全保护保持可用。"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(12)
-            .frame(maxWidth: 360, alignment: .leading)
-            .background(.quaternary.opacity(0.25), in: RoundedRectangle(cornerRadius: 10))
-
-            VStack(spacing: 8) {
-                Label("会议录音：麦克风 + 系统音频", systemImage: "record.circle")
-                Label("系统静音检测：跟随系统静音自动暂停", systemImage: "mic.slash")
-                Label("快捷笔记：文字 / 图片即录即拆待办", systemImage: "note.text")
-                Label("本地 WhisperKit + OpenAI API 双模式转写", systemImage: "waveform")
-                Label("AI 待办拆解：一键写入系统提醒事项", systemImage: "checklist")
-                Label("LM Studio / Ollama / 云端 API 总结", systemImage: "brain")
-                Label("数据加密存储 + 数据文件夹位于文稿目录", systemImage: "lock.shield")
-            }
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-
-            Divider()
-                .frame(width: 240)
-
-            // 隐私、帮助与反馈
-            VStack(spacing: 12) {
-                NavigationLink(value: DetailRoute.privacyPolicy) {
-                    Label("隐私政策", systemImage: "hand.raised.fill")
+        ScrollView {
+            VStack(spacing: 24) {
+                Spacer()
+                Image("Logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 80, height: 80)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                Text(verbatim: "Memozia").font(.largeTitle).fontWeight(.bold)
+                if let chineseName = AppBranding.chineseName {
+                    Text(verbatim: chineseName).font(.title3).foregroundStyle(.secondary)
                 }
-                Button {
-                    showHelp = true
-                } label: {
-                    Label("使用帮助", systemImage: "questionmark.circle.fill")
+                Text(appVersion).font(.caption).foregroundStyle(.tertiary)
+                InterfaceLanguagePicker().fixedSize()
+                if AppUpdateService.shared.isStarted {
+                    AppUpdateSettingsView()
                 }
-                .buttonStyle(.plain)
-                if MemoziaContact.email != nil {
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle("专业模式", isOn: Binding(
+                        get: { experienceStore.isPro },
+                        set: { experienceStore.set($0 ? .pro : .standard) }
+                    ))
+                    .font(.headline)
+
+                    Text(experienceStore.isPro
+                         ? String(localized: "已开放模型、声纹、词典、视频理解、录屏和高级数据管理。")
+                         : String(localized: "使用自动配置和精简界面；录音、转写、总结、待办与安全保护保持可用。"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(12)
+                .frame(maxWidth: 360, alignment: .leading)
+                .background(.quaternary.opacity(0.25), in: RoundedRectangle(cornerRadius: 10))
+
+                VStack(spacing: 8) {
+                    Label("会议录音：麦克风 + 系统音频", systemImage: "record.circle")
+                        Label("快捷笔记：文字 / 图片即录即拆待办", systemImage: "note.text")
+                    Label("语音转写", systemImage: "waveform")
+                    Label("AI 待办拆解：一键写入系统提醒事项", systemImage: "checklist")
+                    Label("智能总结", systemImage: "brain")
+                    Label("数据加密存储 + 数据文件夹位于文稿目录", systemImage: "lock.shield")
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+                Divider()
+                    .frame(width: 240)
+
+                // 隐私、帮助与反馈
+                VStack(spacing: 12) {
+                    NavigationLink(value: DetailRoute.privacyPolicy) {
+                        Label("隐私政策", systemImage: "hand.raised.fill")
+                    }
                     Button {
-                        showFeedback = true
+                        showHelp = true
                     } label: {
-                        Label("用户反馈", systemImage: "envelope.fill")
+                        Label("使用帮助", systemImage: "questionmark.circle.fill")
                     }
                     .buttonStyle(.plain)
+                    if MemoziaContact.email != nil {
+                        Button {
+                            showFeedback = true
+                        } label: {
+                            Label("用户反馈", systemImage: "envelope.fill")
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
-            }
-            .font(.subheadline)
+                .font(.subheadline)
 
-            Spacer()
+                Spacer()
+            }
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity)
         .navigationTitle("关于")
         .sheet(isPresented: $showFeedback) {
             if let email = MemoziaContact.email {
@@ -1870,7 +1884,11 @@ struct SettingsView: View {
             }
         }
         .sheet(isPresented: $showHelp) {
-            HelpView()
+            HelpView(settings: settingsVM) { destination in
+                commandSearchText = ""
+                detailPath.removeAll()
+                selectedSection = destination
+            }
         }
     }
 }

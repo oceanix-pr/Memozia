@@ -11,6 +11,27 @@ struct AppExperienceTests {
         return defaults
     }
 
+    @MainActor @Test func onlyAnUpgradeWithReleaseNotesShowsHighlights() {
+        #expect(RootView.showsReleaseHighlights(completed: "9.8.9", current: "9.9.0"))
+        #expect(!RootView.showsReleaseHighlights(completed: "", current: "9.9.0"))
+        #expect(!RootView.showsReleaseHighlights(completed: "9.9.0", current: "9.9.1"))
+        #expect(!RootView.showsReleaseHighlights(completed: "10.0", current: "9.9.0"))
+        #expect(!RootView.showsReleaseHighlights(completed: "9.9.0", current: "10.0"))
+    }
+
+    @MainActor @Test func firstRecordingRemembersTheChosenMeetingType() {
+        let defaults = makeDefaults()
+        let settings = SettingsViewModel(defaults: defaults)
+        #expect(!settings.hasChosenMeetingType)
+        settings.chooseStandardMeetingType(.inPersonMeeting)
+        let reopened = SettingsViewModel(defaults: defaults)
+        #expect(reopened.hasChosenMeetingType)
+        #expect(reopened.standardRecordingMode == .inPersonMeeting)
+        #expect(reopened.makeRecordingConfig(experience: .standard).source == .microphone)
+        reopened.chooseStandardMeetingType(.onlineMeeting)
+        #expect(reopened.makeRecordingConfig(experience: .standard).source == .mixed)
+    }
+
     @Test("全新用户默认普通模式")
     func newInstallDefaultsToStandard() {
         let defaults = makeDefaults()

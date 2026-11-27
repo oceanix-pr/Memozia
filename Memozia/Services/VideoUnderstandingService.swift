@@ -293,6 +293,7 @@ enum VideoUnderstandingService {
         update(framesCacheVersion)
         update(config.chatCompletionsURL)
         update(config.modelName)
+        update(config.prompt(.visualNotes))
         update(config.isLocal ? "local" : "remote")
         update(config.supportsVision ? "vision" : "ocr")
         for frame in frames.sorted(by: { $0.time < $1.time }) {

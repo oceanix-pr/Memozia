@@ -366,7 +366,7 @@ struct QueuePanelView: View {
                             .font(.caption2)
                             .foregroundStyle(.tertiary)
                     }
-                    Text((code?.isRetryable ?? true)
+                    Text(((code?.isRetryable ?? true) && job.allowsRetry(from: job.currentStep, in: AppExperienceStore.shared.current))
                          ? String(localized: "可重试")
                          : String(localized: "不可重试"))
                         .font(.caption2)
@@ -382,18 +382,23 @@ struct QueuePanelView: View {
 
     @ViewBuilder
     private func failureActions(job: TaskCenter.Job, code: TaskErrorCode?) -> some View {
+        let experience = AppExperienceStore.shared.current
         VStack(alignment: .leading, spacing: 6) {
+            if !job.allowsRetry(from: 0, in: experience) {
+                Text("普通模式只处理视频中的音频。").font(.caption).foregroundStyle(.secondary)
+            }
             HStack(spacing: 6) {
-                if code?.isRetryable ?? true {
+                if (code?.isRetryable ?? true) && job.allowsRetry(from: job.currentStep, in: experience) {
                     Button(String(localized: "重试此步骤")) {
-                        center.retryStep(jobID: job.id)
+                        center.retryStep(jobID: job.id, experience: experience)
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
                 }
                 Button(String(localized: "重新执行整个任务")) {
-                    center.retryJob(jobID: job.id)
+                    center.retryJob(jobID: job.id, experience: experience)
                 }
+                .disabled(!job.allowsRetry(from: 0, in: experience))
                 .buttonStyle(.bordered)
                 .controlSize(.small)
             }

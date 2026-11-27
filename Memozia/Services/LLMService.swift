@@ -1,5 +1,6 @@
 import Foundation
 import ImageIO
+import NaturalLanguage
 import UniformTypeIdentifiers
 import os
 #if canImport(AppKit)
@@ -152,7 +153,7 @@ enum LLMService {
                 onToken: onToken, onReasoning: onReasoning, onAttemptStart: onAttemptStart, session: session
             )
             try Task.checkCancellation()
-            let coverage = "\n\n> " + String(localized: "本总结已分段处理全部输入，再归并生成；AI 结果仍需核对原文。")
+            let coverage = "\n\n> " + coverageNote(outputLanguage: config.outputLanguage, result: result)
             onToken(coverage)
             return result + coverage
         }
@@ -274,16 +275,16 @@ enum LLMService {
         // 模板经 PromptTemplateStore 解析：用户可在「设置 → 提示词」自定义，未自定义时用内置默认
         let systemBase: String
         if isMeeting {
-            systemBase = PromptTemplateStore.resolved(.meetingSummary)
+            systemBase = config.prompt(.meetingSummary)
         } else if hasVisual {
-            systemBase = PromptTemplateStore.resolved(.videoOverview)
+            systemBase = config.prompt(.videoOverview)
         } else {
-            systemBase = PromptTemplateStore.resolved(.overviewSummary)
+            systemBase = config.prompt(.overviewSummary)
         }
 
         let systemContent = systemBase
             + "\n\n重要结论和行动项不得编造来源、负责人或日期。没有明确依据时标注待确认。需要注明录音时间时，使用普通时间戳。输入也可能是按顺序排列的分段摘要，应归并全部段落而非仅总结开头。"
-            + (condense ? "\n\n这是长内容的中间归并步骤。请压缩至最多\(config.isBuiltIn ? 600 : 1500)个汉字左右，保留决议、未决事项、行动项、负责人、日期及必要的时间点；不得添加本段之外的信息。" : "")
+            + (condense ? "\n\n这是长内容的中间归并步骤。请压缩至最多\(config.isBuiltIn ? 600 : 1500)个字符左右，保留决议、未决事项、行动项、负责人、日期及必要的时间点；不得添加本段之外的信息。" : "")
             + (piiScrubbed ? "\n\n" + Self.piiPlaceholderRule : "")
 
         let request = ChatCompletionRequest(
@@ -299,6 +300,15 @@ enum LLMService {
             onToken: onToken,
             onReasoning: onReasoning
         )
+    }
+
+    /// 与生成的正文使用同一语言。显式选择优先；跟随原文时从实际生成的正文辨认语言。
+    static func coverageNote(outputLanguage: String, result: String) -> String {
+        let code = outputLanguage.isEmpty ? NLLanguageRecognizer.dominantLanguage(for: result)?.rawValue : outputLanguage
+        let bundle = code.flatMap { language in
+            Bundle.preferredLocalizations(from: Bundle.main.localizations, forPreferences: [language]).first
+        }.flatMap { Bundle.main.url(forResource: $0, withExtension: "lproj") }.flatMap(Bundle.init(url:))
+        return String(localized: "本总结已分段处理全部输入，再归并生成；AI 结果仍需核对原文。", bundle: bundle ?? .main)
     }
 
     /// 把「画面要点」作为同时间轴佐证素材追加到总结 user 内容尾部（会议/非会议共用）。
@@ -575,7 +585,14 @@ enum LLMService {
         }
         title = String(scalars)
         if title.isEmpty { title = lineFallback }
-        return String(title.prefix(10))
+        // Keep Chinese titles compact. Give other scripts room for a short phrase.
+        let chinese = config.outputLanguage.hasPrefix("zh") ||
+            (config.outputLanguage.isEmpty && title.range(of: #"^\p{Han}+$"#, options: .regularExpression) != nil)
+        if chinese { return String(title.prefix(10)) }
+        guard title.count > 64 else { return title }
+        let prefix = title.prefix(64)
+        guard let space = prefix.lastIndex(where: { $0.isWhitespace }) else { return String(prefix) }
+        return String(prefix[..<space])
     }
 
     /// 只在服务声明支持时关闭思考；其余模型保留输出预算，用 SSE 避免在思考中被
@@ -592,7 +609,7 @@ enum LLMService {
         let capped = content.count > titleLimit ? String(content.prefix(titleLimit)) : content
 
         let request = ChatCompletionRequest(
-            config: config, systemPrompt: PromptTemplateStore.resolved(.title), userContent: capped,
+            config: config, systemPrompt: config.prompt(.title), userContent: capped,
             stream: config.isLocal, temperature: 0.3, reasoningEffort: capabilities.reasoningOffValue
         )
 
@@ -685,7 +702,7 @@ enum LLMService {
             ["type": "image_url", "image_url": ["url": dataURL]]
         ]
         let request = ChatCompletionRequest(
-            config: config, systemPrompt: PromptTemplateStore.resolved(.screenshotSummary),
+            config: config, systemPrompt: config.prompt(.screenshotSummary),
             userContent: userContent, stream: true, temperature: 0.5
         )
 
@@ -985,7 +1002,7 @@ enum LLMService {
         }
 
         let request = ChatCompletionRequest(
-            config: config, systemPrompt: PromptTemplateStore.resolved(.visualNotes),
+            config: config, systemPrompt: config.prompt(.visualNotes),
             userContent: userContent, stream: true, temperature: 0.3, reasoningEffort: reasoningEffort
         )
         // 多图请求体大 + 视觉模型首 token 慢，与截图总结同一档超时
@@ -1070,7 +1087,7 @@ enum LLMService {
     """
 
     /// 会议总结内置提示词（保留给测试与「恢复默认」对照）。
-    /// 运行期实际使用 `PromptTemplateStore.resolved(.meetingSummary)`，可能被用户自定义覆盖。
+    /// 运行期实际使用 `config.prompt(.meetingSummary)`，可能被用户自定义覆盖。
     static var systemPrompt: String { PromptTemplateKind.meetingSummary.defaultText }
 }
 
@@ -1095,10 +1112,18 @@ struct LLMConfigSnapshot: Sendable {
         return EndpointPolicy.trust(for: url) != .loopback || scrubLoopbackText
     }
 
-    init(config: LLMConfig) throws {
+    let outputLanguage: String
+
+    func prompt(_ kind: PromptTemplateKind) -> String {
+        let template = PromptTemplateStore.resolved(kind)
+        return template + ContentLanguages.outputInstruction(outputLanguage)
+    }
+
+    init(config: LLMConfig, outputLanguage: String = "") throws {
         guard let url = config.chatCompletionsURL else {
             throw LLMError.invalidURL
         }
+        self.outputLanguage = outputLanguage
         self.chatCompletionsURL = url.absoluteString
         self.apiKey = config.apiKey
         self.modelName = config.modelName

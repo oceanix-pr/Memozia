@@ -446,6 +446,7 @@ enum BackgroundWorker {
                 llmConfig: llmConfig,
                 context: context,
                 asMeeting: entry.isMeeting,
+                outputLanguage: entry.outputLanguage,
                 experience: entry.experience, origin: .worker
             )
             // 结论由 ViewModel 给出：只有「本次确实产出并持久化」才算完成，
@@ -483,6 +484,7 @@ enum BackgroundWorker {
                 for: note,
                 llmConfig: llmConfig,
                 context: context,
+                outputLanguage: entry.outputLanguage,
                 experience: entry.experience, origin: .worker
             )
             switch await task.value {

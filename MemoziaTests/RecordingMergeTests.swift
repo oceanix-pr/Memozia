@@ -171,6 +171,7 @@ struct RecordingMergeTests {
             }
             let recording = AudioRecording(fileName: "标题 \(index)", fileExtension: "wav", duration: 99,
                                            storedFileName: storedName, folderName: legacy ? "" : name)
+            _ = try EntryLanguageOptions.update(at: recording.languageOptionsURL) { $0.output = index == 2 ? "de" : "ar" }
             recording.createdAt = Date(timeIntervalSince1970: Double(index + 1))
             recording.transcriptionStatus = .completed
             recording.summary = source.summary
@@ -184,6 +185,7 @@ struct RecordingMergeTests {
         let targetID = target.id
         let targetDate = target.createdAt
         let oldPaths = recordings.map { legacy ? $0.fileURL : $0.folderURL }
+        let originalPreferences = recordings.map(\.languageOptionsURL)
         let todo = TodoItem(title: "保留待办", reminderIdentifier: "reminder-to-preserve", status: .exported)
         if !legacy {
             try TodoDocument(source: "summary", model: "test", items: [todo]).save(to: recordings[0].folderURL)
@@ -199,7 +201,11 @@ struct RecordingMergeTests {
         #expect(oldPaths.dropLast().allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
         #expect(FileManager.default.fileExists(atPath: sentinel.path))
         #expect(!merged.folderName.isEmpty)
-        if legacy { #expect(!FileManager.default.fileExists(atPath: oldPaths.last!.path)) }
+        #expect(try EntryLanguageOptions.load(from: merged.languageOptionsURL).output == "de")
+        if legacy {
+            #expect(!FileManager.default.fileExists(atPath: oldPaths.last!.path))
+            #expect(originalPreferences.allSatisfy { !FileManager.default.fileExists(atPath: $0.path) })
+        }
         #expect(abs(merged.duration - 1.5) < 0.05)
         #expect(merged.segments.count == 3)
         #expect(merged.transcriptionStatus == .completed)

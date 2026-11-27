@@ -80,6 +80,10 @@ actor RecordingMergeService {
             try manager.createDirectory(at: staging, withIntermediateDirectories: false)
             let meta: [String: Any] = ["title": latest.title, "isHidden": latest.isHidden, "hasVideoSource": false]
             try JSONSerialization.data(withJSONObject: meta).write(to: staging.appendingPathComponent("meta.json"), options: .atomic)
+            let languages = EntryLanguageOptions.file(in: latest.folderURL, legacyID: latest.id)
+            if manager.fileExists(atPath: languages.path) {
+                try manager.copyItem(at: languages, to: EntryLanguageOptions.file(in: staging))
+            }
         } else {
             try manager.copyItem(at: latest.folderURL, to: staging)
         }
