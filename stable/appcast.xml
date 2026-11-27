@@ -3,31 +3,35 @@
     <channel>
         <title>Memozia</title>
         <item>
-            <title>9.8.9</title>
-            <pubDate>Fri, 27 Nov 2026 14:16:57 +0800</pubDate>
-            <sparkle:version>169</sparkle:version>
-            <sparkle:shortVersionString>9.8.9</sparkle:shortVersionString>
+            <title>9.9.0</title>
+            <pubDate>Fri, 27 Nov 2026 20:13:51 +0800</pubDate>
+            <sparkle:version>170</sparkle:version>
+            <sparkle:shortVersionString>9.9.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <description sparkle:format="markdown"><![CDATA[# Memozia 9.8.9 (169)
+            <description sparkle:format="markdown"><![CDATA[# Memozia 9.9.0 (170)
 
-- Switching recordings or notes during a Reminders export now keeps results with the original entry. Edits made while to-dos are being generated or exported are preserved.
-- Failed background transcription and summary jobs stay in the queue for retry. Cancelling a job affects only its active step. Quitting waits for queued transcript writes, including their preparation.
-- Long transcripts now restore in the background. In two local cold-start tests with 3,000 timestamped segments, the longest main-thread pause dropped from about 1.8 seconds to under 3 milliseconds.
-- Repeated searches reuse an in-memory index. Adding an entry updates its month in the sidebar, and image previews decode at display size and refresh after annotation.
-- Microphone samples now go through a bounded write queue. If the disk falls behind and audio is lost, Memozia reports it. Speaker diarization now frees native memory after processing silence.
+## English
 
-- 在提醒事项导出期间切换录音或笔记，写入结果会回到原条目。生成或导出待办期间做的人工编辑也会保留。
-- 后台转写和总结失败后保留任务以便重试。取消任务只影响它正在执行的步骤。退出时会等待已提交的转写完成编码和写盘。
-- 长转写改为后台恢复。在两次包含 3,000 个带时间戳片段的本机冷启动测试中，主线程最长停顿从约 1.8 秒降至 3 毫秒以内。
-- 连续搜索可复用内存索引。新增条目只刷新侧边栏对应月份，图片预览按显示尺寸解码，重新标注后会刷新。
-- 麦克风采样通过有界队列写盘。磁盘过慢导致采样丢失时会提示。修复了说话人分离处理静音片段时的内存泄漏。
+- Open **Help → Getting Started** at any time. The guide follows your current mode and starts on the first page each time you reopen it. After accepting the privacy policy, you can also start a recording, import a file, or create a note directly from the empty library.
+- Normal Mode remembers whether you record online meetings with microphone and system audio, or in-person meetings with the microphone. When you import a video, Normal Mode processes its audio track. For your first summary, you can download the on-device model or connect a cloud service.
+- Set the transcription language, Chinese writing system, and summary language separately for each recording. Notes also have a summary language. Summaries follow the source language by default, and queued jobs retain the choices you made when starting them.
+- Search Help in your interface language. The answers about missing meeting audio and generating a summary show your recording or model settings and link to the relevant controls. You can change the interface language on the privacy screen or in **Settings → About**, then restart. The guide, Help, and Settings follow Arabic reading direction.
 
-This Apple Silicon preview requires macOS 15 or later. It uses ad-hoc signing with Hardened Runtime and is distributed without Apple notarization. Sparkle verifies the update ZIP with Ed25519. In Memozia 9.7.0 or later, choose **Check for Updates**. For a first installation, extract the ZIP and copy `Memozia.app` to Applications.
+## 简体中文
 
-本版为 Apple Silicon 未公证预览版，要求 macOS 15 或更高版本，使用临时签名并启用 Hardened Runtime。Sparkle 通过 Ed25519 验证更新包。9.7.0 及以上版本可在应用内检查更新。首次安装请解压 ZIP，将 `Memozia.app` 拷贝到「应用程序」。
+- 随时从 **帮助 → 首次使用指引** 重看当前模式的操作说明，每次打开都从第一页开始。首次同意隐私政策后，可直接在主窗口录音、导入文件或新建笔记。
+- 普通模式会记住会议类型。线上会议同时录制麦克风和系统声音，面对面会议使用麦克风。导入视频时只处理音轨。首次生成纪要时，可下载本机模型或连接云服务。
+- 每条录音可分别选择转写语言、中文字形和纪要语言，笔记也可以单独选择纪要语言。纪要默认跟随原文，排队任务会保留发起时的语言选择。
+- 可用当前界面语言搜索帮助。「录不到对方的声音」和「怎么生成纪要」会显示当前录音场景或模型状态，并可打开相关设置。界面语言可在隐私页或 **设置 → 关于** 中切换，重启生效。阿拉伯语下，指引、帮助和设置按从右到左的顺序排列。
+
+## Installation / 安装
+
+This Apple Silicon preview requires macOS 15 or later. It uses ad-hoc signing with Hardened Runtime and is distributed without Apple notarization. Sparkle verifies the update ZIP with Ed25519. In Memozia 9.7.0 or later, choose **Check for Updates**. For a first installation, extract the ZIP and move `Memozia.app` to Applications.
+
+本预览版适用于搭载 Apple Silicon、运行 macOS 15 或更高版本的 Mac，采用临时签名并启用 Hardened Runtime，尚未经过 Apple 公证。Sparkle 使用 Ed25519 验证更新包。Memozia 9.7.0 及以上版本可在应用内检查更新。首次安装请解压 ZIP，将 `Memozia.app` 拷贝到「应用程序」。
 ]]></description>
-            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.8.9/Memozia-v9.8.9-169-arm64.zip" length="44962847" type="application/octet-stream" sparkle:edSignature="olnKRqF6vvSuEIRVmhhqlQundYXyyg1sc+2ufNbYYC/0gBexIrjvrMqUW9Wy8fPelxm/JYWvhmDqy9PdoWZMAA=="/>
+            <enclosure url="https://github.com/oceanix-pr/Memozia/releases/download/v9.9.0/Memozia-v9.9.0-170-arm64.zip" length="45078005" type="application/octet-stream" sparkle:edSignature="SZFR2N43gnob02TzpL5ACuMaBMhe9ztV2novTjOb5tozrxE+0B9eJxoeXqlc1/BSVwf/vZQFIBEJjM9domMVCQ=="/>
         </item>
     </channel>
 </rss>
